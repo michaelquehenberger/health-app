@@ -1,54 +1,43 @@
-# LIVION – Health App (Testphase)
+# LIVION – MVP Fitnesstests (Testphase)
 
-Klickbarer Prototyp für die Testphase mit Gabi. Grundlage sind die Projektdokumente
-„Health App – Konzept“, „Auswertungslogik – Testphase Gabi“, „Übungsdatenbank“ (alle Entwurf v0.1)
-und das „Moodboard Health App – Entwurf 1“.
+Web-App für das Handy: Sicherheitscheck (PAR-Q+), sieben Basis-Tests und der persönliche Verlauf
+Baseline → Tag 30 → Tag 90. Grundlage: [`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md).
 
-**Keine Diagnose, keine Therapieempfehlung.** Regeln und Übungen sind Entwurf und brauchen die fachliche Prüfung.
+**Keine Diagnose.** Daten bleiben nur im Browser des Geräts, gespeichert wird eine Teilnehmer-ID, kein Name.
 
 ## Starten
 
 ```bash
 npm install
 npm run dev      # Entwicklung, http://localhost:5173
-npm test         # Tests der Auswertungslogik
-npm run build    # fertige Web-App in dist/
+npm test         # automatische Tests der Berechnungen
+npm run build    # fertige Web-App im Ordner dist/
 ```
 
-## Was der Prototyp kann
+## Umsetzung der Übergabe
 
-| Bildschirm | Inhalt |
+| Bereich | Stand |
 | --- | --- |
-| Willkommen | Zweck, Hinweis „keine Diagnose“, Einwilligung (Art. 9 DSGVO) |
-| Profil | Alter, Geschlecht, Ernährung, Allergien, Medikamente, Trinkvorgabe, Zeit, Rhythmus |
-| Beschwerde | Körperkarte, Art, Beginn, Stärke 0–10, Sicherheitsfragen (rote Flaggen) |
-| Heute | Tageskarte: 3–4 Übungen nach Wochenmuster und Stufe, Video-Link, Trinken, Ernährung, Schmerzregel |
-| Werte | Blutwerte von Hand mit Laborbereich, Ampel „im Bereich / außerhalb“, Plausibilitätsprüfung |
-| Verlauf | Schmerz vorher/nachher, Blutwerte über die Zeit, Beschwerden |
-| Einstellungen | Profil, Export (JSON), alles löschen |
+| Profil | Teilnehmer-ID (T01), Alter, Geschlecht, Größe, Gewicht, BMI automatisch, Ziel |
+| Sicherheits-Gate | Offizielles PAR-Q+ wird extern ausgefüllt (eparmedx.com); die App fragt nur das Ergebnis ab. Ohne Freigabe sind die Tests gesperrt. Freigabe 12 Monate gültig. |
+| Tests | T1, T5, T7, T4, T3, T8, T2 in der Reihenfolge des Testtags; Stoppuhr für T2, T3, T4; Abbruch mit Grund |
+| Vergleichswerte | T2 Fitness-Index nur Männer 20–65; T4 Springer 2007 nur 40–59 J. ohne Streuung; T5 Hinweis ab 1,5 cm Seitendifferenz; sonst keine |
+| Datenqualität | B (nach Anleitung) oder C (abgewichen oder geschätzt) |
+| Verlauf | je Test Baseline, Tag 30, Tag 90 |
+| Einstellungen | Profil, Einwilligung, Export (JSON und CSV mit den Pflichtfeldern), Import, alles löschen |
 
-Daten liegen nur im Browser des Geräts (localStorage). Kein Server, keine Weitergabe.
-Schriften (Sora, Inter) sind lokal eingebunden, nicht von Google nachgeladen.
+## Offen (nicht erfunden, bewusst ausgelassen)
+
+- UKK-Formel für Frauen: Bei Frauen werden nur die Rohdaten gespeichert und die Gehzeit angezeigt.
+- Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
+- Pausenlänge beim Einbeinstand.
+- Sportmedizinische Freigabe der Abbruchregeln.
+- Die Testanleitungen sind knapp gehalten und mit dem Konzept abzugleichen.
+- Vorschlag des Messzeitpunkts (ab Tag 20 „Tag 30“, ab Tag 60 „Tag 90“) ist nur eine Voreinstellung; er lässt sich in der Testmappe ändern.
 
 ## Aufbau
 
-- `src/data/exercises.ts` – Übungsdatenbank mit Quellen
-- `src/logic/redFlags.ts` – rote Flaggen und Kombinationsregeln mit Blutwerten
-- `src/logic/labs.ts` – Marker, Bewertung gegen den Laborbereich, Plausibilität
-- `src/logic/plan.ts` – Wochenmuster, Stufen, Schmerzregel, Tageskarte (`RULES_VERSION`)
-- `src/logic/logic.test.ts` – Tests der Regeln
-
-## Annahmen, die die Fachprüfung bestätigen muss
-
-- Schmerzgrenze 5/10; Stufe sinkt nach einer Überschreitung, steigt nach 3 regelkonformen Einheiten.
-- Ärztliche Abklärung nach 2 Überschreitungen in Folge.
-- „Lange Morgensteifigkeit“ als länger als 30 Minuten formuliert.
-- Spannen für „beobachten“ und „deutlich außerhalb“ je Blutwert fehlen noch.
-- Verteilung des Wochenmusters auf Wochentage.
-
-## Noch nicht enthalten (nächste Schritte)
-
-- Befund-Upload mit KI-Auslesung (braucht Server in der EU und AV-Vertrag)
-- PubMed-Anbindung für Supplement- und Ernährungshinweise mit Studienquelle
-- Erinnerungen per E-Mail oder Push, Login und Sync
-- Eingebettete, fachlich geprüfte Videos (derzeit Links zu Arthritis UK, Englisch)
+- `src/calc.ts` – BMI, UKK-Index, Einbeinstand, Median (Tests in `src/calc.test.ts`)
+- `src/tests.ts` – Testkatalog, Abbruchregeln, PAR-Q+-Hinweise
+- `src/results.ts` – Zusammenfassung je Test und Messzeitpunkt
+- `src/screens/` – Bildschirme

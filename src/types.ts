@@ -1,17 +1,13 @@
-import type { Region } from './data/exercises';
+import type { Sex } from './calc';
 
 export interface Profile {
-  name: string;
+  /** Pseudonym, keine Namen speichern. */
+  participantId: string;
   age: number | null;
-  sex: 'weiblich' | 'maennlich' | 'divers' | '';
-  diet: string;
-  allergies: string;
-  medications: string;
-  /** Herz- oder Nierenerkrankung bzw. ärztliche Trinkvorgabe: dann keine Trinkmenge. */
-  fluidRestriction: boolean;
-  experience: 'wenig' | 'mittel' | 'viel';
-  minutesPerDay: number;
-  rhythm: 'taeglich' | 'woechentlich';
+  sex: Sex;
+  heightCm: number | null;
+  weightKg: number | null;
+  goal: string;
 }
 
 export interface Consent {
@@ -19,77 +15,45 @@ export interface Consent {
   textVersion: string;
 }
 
-export type ComplaintType = 'steifigkeit' | 'schwaeche' | 'belastungsschmerz' | 'druck' | 'stechen' | 'misch';
-
-export interface RedFlagAnswers {
-  /** Gelenk plötzlich stark schmerzhaft, heiß, geschwollen oder gerötet, nicht belastbar */
-  acuteHotJoint: boolean;
-  fever: boolean;
-  injury: boolean;
-  /** Schüttelfrost, Gewichtsverlust, Nachtschweiß */
-  systemic: boolean;
-  /** Taubheit, Kribbeln, Kraftverlust */
-  neuro: boolean;
-  suddenOnset: boolean;
-  /** Rücken: Lähmung, Blasen- oder Darmstörung */
-  caudaEquina: boolean;
-  chestPain: boolean;
-  multipleSwollenJoints: boolean;
-  longMorningStiffness: boolean;
+/** Sicherheits-Gate nach PAR-Q+ (Bestätigung, das Formular selbst wird offiziell ausgefüllt). */
+export interface Gate {
+  status: 'freigegeben' | 'gesperrt';
+  /** Wie die Freigabe zustande kam */
+  via: 'parq-alle-nein' | 'folgefragen-alle-nein' | 'eparmedx-oder-fachperson' | null;
+  date: string; // ISO-Datum
 }
 
-export interface Complaint {
-  id: string;
-  date: string; // ISO-Datum YYYY-MM-DD
-  region: Region;
-  type: ComplaintType;
-  since: string;
-  intensity: number; // 0–10
-  swellingOrWarmth: boolean;
-  redFlags: RedFlagAnswers;
-  active: boolean;
-}
+export type Timepoint = 'baseline' | 'tag30' | 'tag90';
+export type Quality = 'A' | 'B' | 'C';
+export type TestId = 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'T7' | 'T8';
 
-export interface LabReport {
-  id: string;
-  date: string;
-  lab: string;
-}
-
-export interface LabValue {
-  id: string;
-  reportId: string;
-  marker: string; // Schlüssel aus MARKERS
-  value: number;
+export interface Measurement {
+  metric: string;
   unit: string;
-  refLow: number | null;
-  refHigh: number | null;
+  value: number | null;
 }
 
-export interface Feedback {
-  date: string;
-  painBefore: number | null;
-  painAfter: number | null;
-  painMorning: number | null; // am nächsten Morgen
-  swelling: boolean;
-  done: string[]; // abgehakte Übungs-IDs
-  drinkMl?: number;
-}
+export type InputValue = number | string | boolean | null;
 
-export interface DayCardRecord {
-  date: string;
-  exerciseIds: string[];
-  level: number;
-  rulesVersion: string;
+export interface TestRecord {
+  id: string;
+  testId: TestId;
+  timepoint: Timepoint;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:MM
+  method: string;
+  quality: Quality;
+  comment: string;
+  /** Abbruchgrund, wenn der Test abgebrochen wurde */
+  aborted: string | null;
+  inputs: Record<string, InputValue>;
+  measurements: Measurement[];
 }
 
 export interface AppData {
-  version: 1;
+  version: 2;
   consent: Consent | null;
   profile: Profile | null;
-  complaints: Complaint[];
-  reports: LabReport[];
-  values: LabValue[];
-  feedback: Feedback[];
-  dayCards: DayCardRecord[];
+  gate: Gate | null;
+  records: TestRecord[];
 }

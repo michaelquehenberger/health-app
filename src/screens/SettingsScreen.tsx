@@ -1,11 +1,33 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { AppData, Profile } from '../types';
-import { exportJson, formatDate } from '../store';
+import { exportCsv, exportJson, formatDate, parseData } from '../store';
 import { ProfileForm } from './ProfileForm';
-import { RULES_VERSION } from '../logic/plan';
+import { PARQ_ATTRIBUTION } from '../tests';
 
-export function SettingsScreen({ data, update, reset }: { data: AppData; update: (fn: (d: AppData) => AppData) => void; reset: () => void }) {
+export function SettingsScreen({ data, update, replace, reset, openGate }: {
+  data: AppData;
+  update: (fn: (d: AppData) => AppData) => void;
+  replace: (d: AppData) => void;
+  reset: () => void;
+  openGate: () => void;
+}) {
   const [saved, setSaved] = useState(false);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const file = useRef<HTMLInputElement>(null);
+
+  async function onImport(f: File | undefined) {
+    if (!f) return;
+    const parsed = parseData(await f.text());
+    if (!parsed) {
+      setImportMsg('Die Datei ist kein gültiger Export dieser App.');
+      return;
+    }
+    if (confirm('Import ersetzt alle Daten auf diesem Gerät. Fortfahren?')) {
+      replace(parsed);
+      setImportMsg(`Importiert: ${parsed.records.length} Messungen.`);
+    }
+  }
+
   return (
     <>
       <ProfileForm
@@ -13,20 +35,27 @@ export function SettingsScreen({ data, update, reset }: { data: AppData; update:
         submitLabel={saved ? 'Gespeichert' : 'Profil speichern'}
         onSave={(p: Profile) => { update((d) => ({ ...d, profile: p })); setSaved(true); setTimeout(() => setSaved(false), 1500); }}
       />
+
       <div className="card">
-        <span className="label">Deine Daten</span>
-        <p className="small">Alle Angaben liegen nur in diesem Browser auf diesem Gerät. Es gibt keinen Server und keine Weitergabe.</p>
-        {data.consent && <p className="muted">Einwilligung am {formatDate(data.consent.acceptedAt.slice(0, 10))} (Textversion {data.consent.textVersion})</p>}
-        <button className="btn dark" onClick={() => exportJson(data)}>Daten exportieren (JSON)</button>
+        <span className="label">Sicherheitscheck</span>
+        <p className="small">{data.gate?.status === 'freigegeben' ? `Freigegeben am ${formatDate(data.gate.date)}.` : 'Noch nicht freigegeben.'}</p>
+        <button className="btn ghost" onClick={openGate}>Sicherheitscheck öffnen</button>
+      </div>
+
+      <div className="card">
+        <span className="label">Einwilligung und Daten</span>
+        {data.consent && <p className="small">Einwilligung am {formatDate(data.consent.acceptedAt.slice(0, 10))} (Textversion {data.consent.textVersion}).</p>}
+        <p className="small">Alle Angaben liegen nur in diesem Browser auf diesem Gerät.</p>
+        <button className="btn dark" onClick={() => exportJson(data)}>Sicherung exportieren (Datei)</button>
+        <button className="btn ghost" onClick={() => exportCsv(data)}>Messwerte als Tabelle (CSV)</button>
+        <button className="btn ghost" onClick={() => file.current?.click()}>Sicherung importieren</button>
+        <input ref={file} type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { onImport(e.target.files?.[0]); e.target.value = ''; }} />
+        {importMsg && <p className="small" role="status">{importMsg}</p>}
         <button className="btn danger" onClick={() => { if (confirm('Alle Daten und die Einwilligung unwiderruflich löschen?')) reset(); }}>
           Alle Daten löschen
         </button>
       </div>
-      <div className="card">
-        <span className="label">Erinnerung</span>
-        <p className="small">Erinnerungen per E-Mail oder Push kommen mit dem Server in einem späteren Schritt. Bis dahin hilft ein Wecker oder ein Kalendereintrag.</p>
-      </div>
-      <p className="footer-note">LIVION Testphase · Regeln {RULES_VERSION} · keine Diagnose, keine Therapieempfehlung</p>
+      <p className="footer-note">LIVION MVP · keine Diagnose · {PARQ_ATTRIBUTION}</p>
     </>
   );
 }
