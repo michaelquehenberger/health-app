@@ -13,6 +13,8 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
 }) {
   const [saved, setSaved] = useState(false);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [pendingImport, setPendingImport] = useState<AppData | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const file = useRef<HTMLInputElement>(null);
 
   async function onImport(f: File | undefined) {
@@ -22,10 +24,8 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
       setImportMsg('Die Datei ist kein gültiger Export dieser App.');
       return;
     }
-    if (confirm('Import ersetzt alle Daten auf diesem Gerät. Fortfahren?')) {
-      replace(parsed);
-      setImportMsg(`Importiert: ${parsed.records.length} Messungen.`);
-    }
+    setImportMsg(null);
+    setPendingImport(parsed);
   }
 
   return (
@@ -50,10 +50,27 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
         <button className="btn ghost" onClick={() => exportCsv(data)}>Messwerte als Tabelle (CSV)</button>
         <button className="btn ghost" onClick={() => file.current?.click()}>Sicherung importieren</button>
         <input ref={file} type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { onImport(e.target.files?.[0]); e.target.value = ''; }} />
+        {pendingImport && (
+          <div className="card note">
+            <p className="small">Die Datei enthält {pendingImport.records.length} Messungen. Der Import ersetzt alle Daten auf diesem Gerät.</p>
+            <div className="row">
+              <button className="btn dark" onClick={() => { replace(pendingImport); setImportMsg(`Importiert: ${pendingImport.records.length} Messungen.`); setPendingImport(null); }}>Ja, importieren</button>
+              <button className="btn ghost" onClick={() => setPendingImport(null)}>Abbrechen</button>
+            </div>
+          </div>
+        )}
         {importMsg && <p className="small" role="status">{importMsg}</p>}
-        <button className="btn danger" onClick={() => { if (confirm('Alle Daten und die Einwilligung unwiderruflich löschen?')) reset(); }}>
-          Alle Daten löschen
-        </button>
+        {!confirmDelete ? (
+          <button className="btn danger" onClick={() => setConfirmDelete(true)}>Alle Daten löschen</button>
+        ) : (
+          <div className="card alert">
+            <p className="small"><strong>Wirklich alles löschen?</strong> Profil, Freigabe, alle Messungen und die Einwilligung werden unwiderruflich entfernt.</p>
+            <div className="row">
+              <button className="btn danger" onClick={reset}>Ja, alles löschen</button>
+              <button className="btn ghost" onClick={() => setConfirmDelete(false)}>Abbrechen</button>
+            </div>
+          </div>
+        )}
       </div>
       <p className="footer-note">LIVION MVP · keine Diagnose · {PARQ_ATTRIBUTION}</p>
     </>
