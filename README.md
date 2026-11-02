@@ -34,7 +34,7 @@ npm run build    # fertige Web-App im Ordner dist/
 
 | Punkt | Stand in der App |
 | --- | --- |
-| UKK-Formel gegen verifizierte Quelle geprüft und getestet | Männer: Testfall 109,4 automatisch getestet. Frauen: Kandidat hinter Schalter, **Verifikation offen** |
+| UKK-Formel gegen verifizierte Quelle geprüft und getestet | Männer: Testfall 109,4 automatisch getestet. Frauen: als geprüft übernommen (Entscheidung 02.11.2026), Testfall 108,8 automatisch getestet; Referenz der Prüfung noch nicht dokumentiert |
 | UKK-Test auf 20–65 Jahre beschränkt | erledigt: Altersprüfung vor Teststart, außerhalb nur Gehzeit und Puls |
 | PAR-Q+ unverändert | erledigt: automatischer Wortlaut-Test gegen `docs/health-app-mvp-uebergabe-v0.4.md` |
 | Consent per Häkchen, protokolliert, ohne Name | erledigt: Text, Fassung, Zeitstempel, Ereignis, Teilnehmer-ID, App-Version, Sprache |
@@ -70,7 +70,6 @@ npm run build    # fertige Web-App im Ordner dist/
 
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
-- UKK-Formel für Frauen: Kandidatenformel hinter dem Schalter „Frauenindex“ in den Einstellungen (Standard aus, Anzeige „vorläufig“); Prüfung am Original fehlt.
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
 - PAR-Q+: Erlaubnis für kommerzielle Nutzung (PARQ@hs-gesundheit.de, Anfrageinhalt in Übergabe 5.7); Häkchen statt Unterschrift rechtlich prüfen.
 - Sportmedizinische Freigabe der Abbruchregeln.

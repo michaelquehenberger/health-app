@@ -131,7 +131,7 @@ export const TESTS: TestDef[] = [
     ],
     stop: 'Ende nach 2 km oder früher bei einem Abbruchgrund.',
     result: 'Gehzeit in Minuten und Sekunden, Puls am Ende in bpm, dazu Größe und Gewicht.',
-    comparison: 'Fitness-Index für Männer von 20–65 Jahren. Bei Frauen vorerst Gehzeit und Puls als Verlauf.',
+    comparison: 'Fitness-Index mit Bewertung für Erwachsene von 20–65 Jahren. Außerhalb dieses Alters oder bei eingeschränktem Gehen nur Gehzeit und Puls als Verlauf.',
     needsStopwatch: true,
   },
 ];

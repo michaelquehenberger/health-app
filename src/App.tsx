@@ -9,7 +9,7 @@ import { FolderScreen } from './screens/FolderScreen';
 import { TestScreen } from './screens/TestScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
-import { baselineDate, suggestTimepoint } from './results';
+import { baselineDate, nextStep, suggestTimepoint } from './results';
 import { EMPTY_HEALTH, type HealthState } from './health/types';
 import { TodayScreen } from './health/screens/TodayScreen';
 import { HealthHome, type HealthView } from './health/screens/HealthHome';
@@ -125,15 +125,16 @@ export function App() {
             timepoint={timepoint}
             timepointSource={timepoint === suggested ? 'vorschlag' : 'manuell'}
             profile={profile}
-            womenIndex={data.settings?.womenIndex ?? false}
             mobilityLimited={latestAnamnesis(data.anamneses)?.answersB['9b'] === 'ja'}
+            nextTestId={(() => { const n = nextStep(data.records, timepoint, todayIso()); return n.kind === 'test' ? n.testId : null; })()}
+            onNext={(id) => setTest(id)}
             onSave={(r) => update((d) => ({ ...d, records: [...d.records, r] }))}
             onBack={() => setTest(null)}
           />
         ) : tab === 'tests' ? (
-          <FolderScreen data={data} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
+          <FolderScreen data={data} update={update} goHistory={() => setTab('verlauf')} goSettings={() => setTab('einstellungen')} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
         ) : null}
-        {tab === 'anamnese' && <AnamnesisScreen data={data} update={update} onDone={() => window.scrollTo(0, 0)} />}
+        {tab === 'anamnese' && <AnamnesisScreen data={data} update={update} onDone={() => window.scrollTo(0, 0)} goTests={() => setTab('tests')} />}
         {tab === 'verlauf' && <HistoryScreen data={data} profile={profile} />}
         {tab === 'einstellungen' && <SettingsScreen data={data} update={update} replace={replace} reset={reset} openGate={() => setTab('anamnese')} />}
       </main>

@@ -150,3 +150,22 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .result-big { font-family: var(--font-head); font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.05; }
 .trials { display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 8px; align-items: center; }
 .card.dark .seg button[aria-pressed='true'] { background: var(--mint); border-color: var(--mint); color: var(--navy); }
+
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stepper li { display: flex; flex-direction: column; gap: 6px; font-size: 14px; position: relative; }
+.stepper .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 800 14px var(--font-head); background: var(--surface-2); color: var(--ink); }
+.stepper li.done .dot { background: var(--mint); color: var(--navy); }
+
+.guide { margin: 0; display: grid; gap: 10px; }
+.guide-photo { position: relative; border-radius: 14px; overflow: hidden; }
+.guide-photo img { display: block; width: 100%; height: auto; }
+.guide-photo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.guide-side { width: 100%; height: auto; background: var(--offwhite); border-radius: 14px; }
+.guide figcaption { color: var(--ink-2); }
+.card.dark .guide figcaption { color: #d7e0e6; }
+
+.todo { list-style: none; counter-reset: todo; margin: 0; padding: 0; display: grid; gap: 14px; }
+.todo > li { counter-increment: todo; position: relative; padding-left: 40px; display: flex; flex-direction: column; gap: 6px; }
+.todo > li::before { content: counter(todo); position: absolute; left: 0; top: -2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font: 800 13px var(--font-head); color: var(--ink); }
+.todo > li.done::before { background: var(--mint); }
+.todo > li .btn { align-self: flex-start; }

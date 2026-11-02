@@ -5,6 +5,7 @@ import {
 } from '../calc';
 import { Check, Seg } from '../components/ui';
 import { Stopwatch } from '../components/Stopwatch';
+import { TestGuide } from '../components/TestGuides';
 import { PROTOCOL_VERSION, STOP_RULES, testDef, timepointLabel } from '../tests';
 import type { InputValue, Measurement, Profile, TestId, TestRecord, Timepoint } from '../types';
 import { formatDate, nowTime, todayIso, uid } from '../store';
@@ -293,7 +294,7 @@ function onOutputIf(onOutput: (o: FormOutput | null) => void, ok: boolean, build
 }
 
 // ---------- Ergebnis ----------
-export function ResultView({ record, profile, womenIndex = false }: { record: TestRecord; profile: Profile; womenIndex?: boolean }) {
+export function ResultView({ record, profile }: { record: TestRecord; profile: Profile }) {
   const m = (k: string) => record.measurements.find((x) => x.metric === k)?.value ?? null;
   const age = profile.age ?? 0;
   let main: ReactNode = null;
@@ -309,11 +310,10 @@ export function ResultView({ record, profile, womenIndex = false }: { record: Te
       main = <><span className="result-big">{Math.floor(s / 60)}:{String(Math.round(s % 60)).padStart(2, '0')}</span> <span className="muted">min für 2 km</span></>;
       const r = ukkIndex(
         { sex: profile.sex, age: m('alter') ?? age, minutes: Math.floor(s / 60), seconds: s % 60, pulse: m('puls_ende') ?? 0, bmi: m('bmi') ?? 0 },
-        { womenIndex, mobilityLimited: record.inputs.gehen_eingeschraenkt === true },
+        { mobilityLimited: record.inputs.gehen_eingeschraenkt === true },
       );
       comparison = r.kind === 'index'
         ? <><p className="small">Fitness-Index: <strong className="big-num">{formatNum(r.value, 1)}</strong> · Bewertung: <strong>{r.rating}</strong></p>
-          {r.provisional && <p className="small"><span className="chip watch">vorläufig</span> Berechnet mit der noch nicht am Original geprüften Kandidatenformel für Frauen.</p>}
           <p className="muted">Der Index ist eine Schätzung und eignet sich besser, um Veränderungen zu sehen, als für einen absoluten Wert.</p></>
         : <p className="small">{r.reason}</p>;
       break;
@@ -367,8 +367,9 @@ export function ResultView({ record, profile, womenIndex = false }: { record: Te
 }
 
 // ---------- Test-Screen ----------
-export function TestScreen({ testId, timepoint, timepointSource, profile, womenIndex = false, mobilityLimited = false, onSave, onBack }: {
-  womenIndex?: boolean;
+export function TestScreen({ testId, timepoint, timepointSource, profile, mobilityLimited = false, nextTestId = null, onNext, onSave, onBack }: {
+  nextTestId?: TestId | null;
+  onNext?: (id: TestId) => void;
   mobilityLimited?: boolean;
   testId: TestId;
   timepoint: Timepoint;
@@ -425,8 +426,15 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, womenI
   if (saved) {
     return (
       <>
-        <ResultView record={saved} profile={profile} womenIndex={womenIndex} />
-        <button className="btn primary block" onClick={onBack}>Zurück zur Testmappe</button>
+        <ResultView record={saved} profile={profile} />
+        {nextTestId && nextTestId !== testId && onNext ? (
+          <>
+            <button className="btn primary block" onClick={() => onNext(nextTestId)}>Weiter: {testDef(nextTestId).name}</button>
+            <button className="btn ghost block" onClick={onBack}>Zur Testmappe</button>
+          </>
+        ) : (
+          <button className="btn primary block" onClick={onBack}>Weiter zur Übersicht</button>
+        )}
       </>
     );
   }
@@ -442,6 +450,7 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, womenI
         <p className="small"><strong>Ausgangsposition:</strong> {def.setup}</p>
         <p className="small"><strong>Versuche:</strong> {def.attempts}</p>
         <ol className="steps">{def.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+        <TestGuide testId={testId} />
         <p className="small"><strong>Ende des Versuchs:</strong> {def.stop}</p>
         <p className="small"><strong>Ergebnis:</strong> {def.result}</p>
         <p className="small muted"><strong>Vergleich:</strong> {def.comparison}</p>

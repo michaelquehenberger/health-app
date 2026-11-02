@@ -53,10 +53,11 @@ function Source() {
   );
 }
 
-export function AnamnesisScreen({ data, update, onDone }: {
+export function AnamnesisScreen({ data, update, onDone, goTests }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   onDone: () => void;
+  goTests: () => void;
 }) {
   const today = todayIso();
   const current = latestAnamnesis(data.anamneses);
@@ -90,32 +91,38 @@ export function AnamnesisScreen({ data, update, onDone }: {
     const history = [...data.anamneses].sort((x, y) => y.date.localeCompare(x.date));
     return (
       <>
-        <div className="card dark">
-          <span className="label">Anamnese · PAR-Q+</span>
-          {valid && current ? (
-            <>
-              <h2>{RESULT_LABEL[computeResult(current)!]}</h2>
-              <p className="muted">Ausgefüllt am {formatDate(current.date)} · gültig bis {formatDate(current.validUntil)} oder bis sich dein Gesundheitszustand ändert.</p>
-            </>
-          ) : (
-            <>
-              <h2>{expired ? 'Deine Anamnese ist abgelaufen.' : 'Einmal ausfüllen, dann gilt sie für alle Tests.'}</h2>
-              <p className="muted">
-                Der Fragebogen PAR-Q+ klärt, ob du vor mehr Bewegung Rücksprache halten solltest. Er gilt höchstens {ANAMNESIS_VALID_MONTHS} Monate.
-                Ohne gültige Freigabe bleiben die Tests gesperrt.
-              </p>
-            </>
-          )}
-          <button className={valid ? 'btn ghost' : 'btn primary'} style={valid ? { color: 'var(--offwhite)', borderColor: 'var(--offwhite)' } : undefined} onClick={start}>
-            {valid ? 'Mein Gesundheitszustand hat sich geändert – neu ausfüllen' : 'Anamnese ausfüllen'}
-          </button>
-        </div>
-
-        {valid && current && (
-          <div className="card">
-            <p className="small">{evaluationNote(current)}</p>
-            <button className="btn ghost" onClick={() => setShowAnswers((v) => !v)}>{showAnswers ? 'Antworten ausblenden' : 'Antworten ansehen'}</button>
-            {showAnswers && <AnswersView a={current} />}
+        {valid && current ? (
+          <>
+            <div className="card mint">
+              <span className="label" style={{ color: 'var(--navy)' }}>Anamnese · PAR-Q+</span>
+              <h1>{RESULT_LABEL[computeResult(current)!]}. Die Tests sind freigeschaltet.</h1>
+              <p className="small">Gültig bis {formatDate(current.validUntil)} oder bis sich dein Gesundheitszustand ändert.</p>
+            </div>
+            <div className="card">
+              <span className="label">So geht es weiter</span>
+              <ol className="steps">
+                <li><strong>Ruhepuls an 5–7 Morgen:</strong> jeden Morgen in Ruhe messen und eintragen, am besten ab morgen früh.</li>
+                <li><strong>Testtag, etwa 1 Stunde:</strong> die sechs Tests der Reihe nach, den Gehtest zuletzt. Was du brauchst, steht in der Testmappe.</li>
+                <li><strong>Nach 30 und 90 Tagen wiederholen:</strong> Die Testmappe zeigt dir, wann es so weit ist.</li>
+              </ol>
+              <button className="btn primary block" onClick={goTests}>Zur Testmappe</button>
+            </div>
+            <div className="card">
+              <p className="small">{evaluationNote(current)}</p>
+              <button className="btn ghost" onClick={() => setShowAnswers((v) => !v)}>{showAnswers ? 'Antworten ausblenden' : 'Antworten ansehen'}</button>
+              {showAnswers && <AnswersView a={current} />}
+              <button className="btn ghost" onClick={start}>Mein Gesundheitszustand hat sich geändert – neu ausfüllen</button>
+            </div>
+          </>
+        ) : (
+          <div className="card dark">
+            <span className="label">Anamnese · PAR-Q+</span>
+            <h2>{expired ? 'Deine Anamnese ist abgelaufen.' : 'Einmal ausfüllen, dann gilt sie für alle Tests.'}</h2>
+            <p className="muted">
+              Der Fragebogen PAR-Q+ klärt, ob du vor mehr Bewegung Rücksprache halten solltest. Er gilt höchstens {ANAMNESIS_VALID_MONTHS} Monate.
+              Ohne gültige Freigabe bleiben die Tests gesperrt.
+            </p>
+            <button className="btn primary" onClick={start}>Anamnese ausfüllen</button>
           </div>
         )}
 

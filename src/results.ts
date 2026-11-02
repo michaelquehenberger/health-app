@@ -50,7 +50,7 @@ export function summarize(records: TestRecord[], testId: TestId, tp: Timepoint):
       const sec = m(last, 'gehzeit');
       const time = sec === null ? '–' : `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')} min`;
       return idx !== null
-        ? { done: true, text: `Index ${fmt(idx, 0)} · ${time}`, value: idx, unit: 'Index', records: all }
+        ? { done: true, text: `Index ${fmt(idx, 1)} · ${time}`, value: idx, unit: 'Index', records: all }
         : { done: true, text: `Gehzeit ${time} · Puls ${fmt(m(last, 'puls_ende'), 0)} bpm`, value: sec, unit: 's', records: all };
     }
     case 'T3': {
@@ -93,3 +93,51 @@ export function baselineDate(records: TestRecord[]): string | null {
   const b = records.filter((r) => r.timepoint === 'baseline').map((r) => r.date).sort();
   return b[0] ?? null;
 }
+
+/** Abstand der Wiederholungsmessungen ab Baseline-Beginn (Tage). */
+export const FOLLOW_UP_DAYS: Record<Timepoint, number> = { baseline: 0, tag30: 30, tag90: 90 };
+
+export type NextStep =
+  | { kind: 'ruhepuls'; measured: number; needed: number; doneToday: boolean }
+  | { kind: 'test'; testId: TestId; remaining: number }
+  | { kind: 'ruhepulsRest'; measured: number; needed: number; doneToday: boolean }
+  | { kind: 'fertig'; next: Timepoint | null; dueDate: string | null };
+
+const pad = (n: number) => String(n).padStart(2, '0');
+function plusDays(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + n);
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+}
+
+/**
+ * Nächster Schritt für einen Messzeitpunkt:
+ * 1. Ruhepuls, solange heute noch nicht gemessen und noch Morgen fehlen
+ * 2. sonst der nächste offene Test in der Reihenfolge des Testtags
+ * 3. sonst restliche Ruhepuls-Morgen
+ * 4. alles erledigt → nächster Messzeitpunkt mit Datum
+ */
+export function nextStep(records: TestRecord[], tp: Timepoint, today: string): NextStep {
+  const pulse = recordsFor(records, 'T1', tp).filter((r) => !r.aborted);
+  const measured = pulse.length;
+  const doneToday = pulse.some((r) => r.date === today);
+  const pulseDone = summarize(records, 'T1', tp).done;
+  const open = TESTS.filter((t) => t.id !== 'T1' && !summarize(records, t.id, tp).done);
+  if (!pulseDone && !doneToday) return { kind: 'ruhepuls', measured, needed: RESTING_PULSE_MIN_MORNINGS, doneToday };
+  if (open.length > 0) return { kind: 'test', testId: open[0].id, remaining: open.length };
+  if (!pulseDone) return { kind: 'ruhepulsRest', measured, needed: RESTING_PULSE_MIN_MORNINGS, doneToday };
+  const order: Timepoint[] = ['baseline', 'tag30', 'tag90'];
+  const next = order[order.indexOf(tp) + 1] ?? null;
+  const base = baselineDate(records);
+  return { kind: 'fertig', next, dueDate: next && base ? plusDays(base, FOLLOW_UP_DAYS[next]) : null };
+}
+
+/** Material für den Testtag (aus den Testanleitungen abgeleitet). */
+export const MATERIAL = [
+  'stabiler Stuhl ohne Rollen, an eine Wand gestellt',
+  'freie Wand',
+  'Maßband oder Lineal (Zentimeter)',
+  'eine flache, abgemessene Strecke von 2 km',
+  'Puls messen können (Finger, Pulsuhr oder Ring)',
+  'bequeme Kleidung, Wasser, das Handy mit dieser App',
+];
