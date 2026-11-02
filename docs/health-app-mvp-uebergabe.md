@@ -2,6 +2,12 @@
 
 Stand: 1. November 2026 | Basis: `health-app-livion-konzept.md` (Projekt-Doc) + Prüfung der offenen Punkte
 
+> **Stand im Repo:** Diese Datei ist die Übergabe v0.1. Mit v0.2 (2. November 2026) wurde Abschnitt 5 ersetzt:
+> Der deutsche PAR-Q+ (Fassung 01.07.2024, Hochschule für Gesundheit Bochum) ist als einmalige Anamnese
+> direkt in der App umgesetzt. Die Texte liegen wörtlich in `src/parq-de.json`, die Ablauflogik in `src/parq.ts`.
+> Neue offene Punkte aus v0.2: 3a kommerzielle Nutzung des PAR-Q+ (Erlaubnis einholen),
+> 3b Häkchen statt Unterschrift (für kommerziell rechtlich prüfen).
+
 ## 0. Hinweise an Claude Code
 
 - Der Nutzer (Michael) hat **keine Programmierkenntnisse**. Jeden Schritt einzeln und in einfachen Worten erklären, Befehle zum Kopieren anbieten, nach jedem Schritt prüfen lassen, ob es funktioniert.
