@@ -4,28 +4,20 @@ import { Check } from '../../components/ui';
 import { EXERCISES } from '../data/exercises';
 import { blocksPlan, checkRedFlags } from '../logic/redFlags';
 import { analyzePlan, buildAnalysisContext, RULES_VERSION } from '../ai/planAnalysis';
-import { AI_KEY_STORAGE, LAB_MODEL, LabExtractError } from '../ai/labExtract';
+import { LabExtractError } from '../ai/labExtract';
+import { CLAUDE_APP_URL, useAiAvailable } from '../ai/useAi';
 import type { AppData } from '../../types';
 import type { HealthState } from '../types';
 import { formatDate, todayIso, uid } from '../../store';
 import { APP_LANGUAGE, APP_VERSION } from '../../version';
 
-export const AI_ANALYSIS_CONSENT_VERSION = '2026-11-02-ki-auswertung';
-
-function readKey(): string {
-  try {
-    return localStorage.getItem(AI_KEY_STORAGE) ?? '';
-  } catch {
-    return '';
-  }
-}
+export const AI_ANALYSIS_CONSENT_VERSION = '2026-11-02-ki-auswertung-claude-konto';
 
 export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d: HealthState) => HealthState) => void }) {
   const h = data.health!;
   const today = todayIso();
   const [consentOk, setConsentOk] = useState(false);
-  const [key, setKey] = useState(readKey);
-  const [keyInput, setKeyInput] = useState('');
+  const ai = useAiAvailable();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,8 +30,8 @@ export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d
     setError(null);
     try {
       const ctx = buildAnalysisContext(data, today);
-      const result = await analyzePlan(ctx, key);
-      const rec = { id: uid(), createdAt: new Date().toISOString(), model: LAB_MODEL, rulesVersion: RULES_VERSION, input: ctx.input, result };
+      const result = await analyzePlan(ctx);
+      const rec = { id: uid(), createdAt: new Date().toISOString(), model: 'Claude (claude.ai)', rulesVersion: RULES_VERSION, input: ctx.input, result };
       update((d) => ({ ...d, analyses: [...(d.analyses ?? []), rec].slice(-10) }));
     } catch (e) {
       setError(e instanceof LabExtractError ? e.message : 'Die Auswertung ist fehlgeschlagen. Dein Tagesplan nach den Regeln gilt weiter.');
@@ -57,18 +49,28 @@ export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d
     );
   }
 
-  if (!h.aiAnalysisConsent) {
+  if (ai === null) return null;
+  if (!ai) {
+    return (
+      <div className="card note">
+        <span className="label">KI-Auswertung · Schritt 5</span>
+        <p className="small">Die KI-Auswertung aller Daten gibt es in der <a href={CLAUDE_APP_URL} target="_blank" rel="noreferrer">LIVION-Version auf claude.ai</a>, dort über dein eigenes Claude-Konto. Dein Tagesplan unten entsteht hier nach den Regeln aus Anamnese, Beschwerden und Blutwerten.</p>
+      </div>
+    );
+  }
+
+  if (h.aiAnalysisConsent?.textVersion !== AI_ANALYSIS_CONSENT_VERSION) {
     return (
       <div className="card">
         <span className="label">KI-Auswertung · Schritt 5</span>
         <h3>Alle Daten zusammen auswerten</h3>
         <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
-          <li>Die KI (<strong>Anthropic, Claude</strong>) bekommt deine Testwerte, Blutwerte mit Laborbereich, Beschwerden und Oura-Mittelwerte. <strong>Ohne Namen und ohne Teilnehmer-ID;</strong> Medikamente und Allergien nur als „angegeben“.</li>
+          <li>Claude (Anthropic) bekommt über dein eigenes Claude-Konto deine Testwerte, Blutwerte mit Laborbereich, Beschwerden und Oura-Mittelwerte. <strong>Ohne Namen und ohne Teilnehmer-ID;</strong> Medikamente und Allergien nur als „angegeben“.</li>
           <li>Sie fasst zusammen und wählt Übungen, aber nur aus der geprüften Übungsliste der App. Rote Flaggen und die Schmerzregel gehen immer vor.</li>
           <li>Das Ergebnis ist Information, keine Diagnose und keine Therapie.</li>
         </ul>
         <Check checked={consentOk} onChange={setConsentOk}>
-          Ich willige ein, dass meine Gesundheitsdaten ohne Namen zur Auswertung an Anthropic übertragen werden. Ich kann das jederzeit widerrufen; der Tagesplan nach den Regeln funktioniert auch ohne KI.
+          Ich willige ein, dass meine Gesundheitsdaten ohne Namen zur Auswertung an Claude geschickt werden. Ich kann das jederzeit widerrufen; der Tagesplan nach den Regeln funktioniert auch ohne KI.
         </Check>
         <button className="btn primary" disabled={!consentOk}
           onClick={() => update((d) => ({ ...d, aiAnalysisConsent: { acceptedAt: new Date().toISOString(), textVersion: AI_ANALYSIS_CONSENT_VERSION, appVersion: APP_VERSION, language: APP_LANGUAGE } }))}>
@@ -81,17 +83,7 @@ export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d
   return (
     <div className="card">
       <span className="label">KI-Auswertung · Schritt 5</span>
-      {!key ? (
-        <>
-          <p className="small">Für die Auswertung braucht die App einmal den API-Schlüssel. Er bleibt nur auf diesem Gerät.</p>
-          <label className="field">API-Schlüssel
-            <input type="password" autoComplete="off" value={keyInput} onChange={(e) => setKeyInput(e.target.value)} />
-          </label>
-          <button className="btn dark" disabled={!keyInput.trim()} onClick={() => { const k = keyInput.trim(); try { localStorage.setItem(AI_KEY_STORAGE, k); } catch { /* nur für diese Sitzung */ } setKey(k); setKeyInput(''); }}>
-            Schlüssel speichern
-          </button>
-        </>
-      ) : (
+      {(
         <>
           {!latest && <h3>Deine Daten zusammen auswerten</h3>}
           {latest && (

@@ -1,8 +1,6 @@
 // KI-Auswertung (Schritt 5): fasst alle Daten zusammen und wählt Übungen aus der gepflegten Übungsdatenbank.
 // Sicherheitsrahmen bleibt regelbasiert: rote Flaggen sperren den Aufruf, die KI kann nur IDs aus EXERCISES
 // wählen (feste Liste im Antwortschema), und die Stufe aus der Schmerzregel begrenzt die Auswahl.
-import Anthropic from '@anthropic-ai/sdk';
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 import { EXERCISES, regionInfo, type Exercise } from '../data/exercises';
 import { evaluateValue, marker } from '../logic/labs';
@@ -15,7 +13,8 @@ import { TESTS } from '../../tests';
 import { bmi } from '../../calc';
 import type { AppData } from '../../types';
 import { EMPTY_HEALTH } from '../types';
-import { createClient, LAB_MODEL, LabExtractError } from './labExtract';
+import { LabExtractError, promptWithSchema, toAppError } from './labExtract';
+import { sampleCap, type SampleFn } from '../../platform';
 
 const EXERCISE_IDS = EXERCISES.map((e) => e.id) as [string, ...string[]];
 
@@ -134,38 +133,22 @@ export function applySafety(r: PlanAnalysisResult, allowed: Exercise[]): PlanAna
   };
 }
 
-export async function analyzePlan(ctx: AnalysisContext, apiKey: string, client: Anthropic = createClient(apiKey)): Promise<PlanAnalysisResult> {
-  if (!apiKey.trim()) throw new LabExtractError('schluessel', 'Kein API-Schlüssel hinterlegt.');
-  let response;
-  try {
-    response = await client.beta.messages.create({
-      model: LAB_MODEL,
-      max_tokens: 16000,
-      thinking: { type: 'adaptive' },
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system: SYSTEM,
-      messages: [{ role: 'user', content: `Werte die folgenden Angaben aus.\n\n${ctx.input}` }],
-      output_config: { format: betaZodOutputFormat(PlanAnalysis) },
-    });
-  } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) throw new LabExtractError('schluessel', 'Der API-Schlüssel wurde abgelehnt.');
-    if (e instanceof Anthropic.RateLimitError) throw new LabExtractError('netz', 'Zu viele Anfragen. Bitte in einer Minute erneut versuchen.');
-    if (e instanceof Anthropic.APIError) throw new LabExtractError('netz', `Fehler bei der Auswertung (${e.status ?? 'Netz'}).`);
-    throw new LabExtractError('netz', 'Keine Verbindung zur Auswertung.');
-  }
-  if (response.stop_reason === 'refusal') throw new LabExtractError('abgelehnt', 'Die Auswertung wurde abgelehnt. Dein Tagesplan nach den Regeln gilt weiter.');
-  if (response.stop_reason === 'max_tokens') throw new LabExtractError('antwort', 'Die Antwort war zu lang. Bitte erneut versuchen.');
-  const text = response.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
+/** Für das Prüfen der Antwort: Übungs-IDs zunächst als Text, damit eine falsche ID nicht die ganze Antwort verwirft;
+ * applySafety lässt danach nur erlaubte IDs durch. */
+const LenientAnalysis = PlanAnalysis.extend({ uebungen: z.array(z.object({ id: z.string(), grund: z.string() })) });
+
+export async function analyzePlan(ctx: AnalysisContext, sample?: SampleFn | null): Promise<PlanAnalysisResult> {
+  const fn = sample === undefined ? await sampleCap() : sample;
+  if (!fn) throw new LabExtractError('nicht_verfuegbar', 'Die KI-Auswertung gibt es nur in der LIVION-Version auf claude.ai.');
   let json: unknown;
   try {
-    json = JSON.parse(text);
-  } catch {
-    throw new LabExtractError('antwort', 'Die Antwort konnte nicht gelesen werden. Bitte erneut versuchen.');
+    json = await fn.json(promptWithSchema(SYSTEM, PlanAnalysis, `Werte die folgenden Angaben aus.\n\n${ctx.input}`), { cache: false });
+  } catch (e) {
+    throw toAppError(e, 'Keine Verbindung zur Auswertung.');
   }
-  const parsed = PlanAnalysis.safeParse(json);
+  const parsed = LenientAnalysis.safeParse(json);
   if (!parsed.success) throw new LabExtractError('antwort', 'Die Antwort hatte nicht das erwartete Format. Bitte erneut versuchen.');
-  return applySafety(parsed.data, ctx.allowed);
+  return applySafety(parsed.data as PlanAnalysisResult, ctx.allowed);
 }
 
 export { RULES_VERSION };

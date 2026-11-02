@@ -1,7 +1,8 @@
 // Daten nur lokal im Browser auf diesem Gerät. Kein Server, keine Cloud.
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppData, TestRecord } from './types';
 import { EMPTY_HEALTH, type HealthState } from './health/types';
+import { inClaude, useCapability, type Db, type UserCap, saveFile } from './platform';
 
 const KEY = 'livion-mvp-v2';
 
@@ -60,14 +61,96 @@ function save(data: AppData): void {
   }
 }
 
+// Auf claude.ai: Daten im privaten Speicher der Seite (nur die Person selbst kann sie lesen).
+// Aufgeteilt in mehrere Dokumente, weil ein Dokument höchstens 256 KiB haben darf.
+type Parts = Record<string, unknown>;
+function toParts(d: AppData): Parts {
+  const { health, ...app } = d;
+  const h = health ?? EMPTY_HEALTH;
+  const { wearables, analyses, ...core } = h;
+  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [] };
+}
+function fromParts(p: Parts): AppData | null {
+  if (!p.app) return null;
+  const core = (p.health ?? {}) as Partial<HealthState>;
+  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [] } as Partial<HealthState>;
+  return parseData(JSON.stringify({ ...(p.app as object), health }));
+}
+
+async function cloudStore(): Promise<{ load(): Promise<AppData | null>; save(d: AppData): Promise<void>; clear(): Promise<void> } | null> {
+  const [db, user] = await Promise.all([useCapability<Db>('db'), useCapability<UserCap>('user')]);
+  const id = user ? await user.id() : null;
+  if (!db || !id) return null;
+  const col = `data/users/${id}`;
+  const written = new Map<string, string>();
+  return {
+    async load() {
+      const snap = await db.collection(col).get();
+      const parts: Parts = {};
+      for (const d of snap.docs) {
+        const json = d.data()?.json;
+        if (typeof json === 'string') {
+          written.set(d.id, json);
+          parts[d.id] = JSON.parse(json);
+        }
+      }
+      return fromParts(parts);
+    },
+    async save(d) {
+      for (const [k, v] of Object.entries(toParts(d))) {
+        const json = JSON.stringify(v);
+        if (written.get(k) === json) continue;
+        await db.doc(`${col}/${k}`).set({ json, savedAt: new Date().toISOString() });
+        written.set(k, json);
+      }
+    },
+    async clear() {
+      for (const k of written.keys()) await db.doc(`${col}/${k}`).delete().catch(() => undefined);
+      written.clear();
+    },
+  };
+}
+
+export type StorageState = 'lokal' | 'laedt' | 'claude' | 'claude-fehler';
+
 export function useAppData() {
   const [data, setData] = useState<AppData>(load);
+  const [storage, setStorage] = useState<StorageState>(inClaude ? 'laedt' : 'lokal');
+  const cloud = useRef<Awaited<ReturnType<typeof cloudStore>>>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!inClaude) return;
+    let done = false;
+    // Höchstens 10 Sekunden warten, dann mit den Daten im Browser weiterarbeiten.
+    const t = setTimeout(() => { if (!done) { done = true; setStorage('claude-fehler'); } }, 10_000);
+    cloudStore()
+      .then(async (c) => {
+        if (!c) throw new Error('kein Speicher');
+        const remote = await c.load();
+        if (done) return;
+        done = true;
+        clearTimeout(t);
+        cloud.current = c;
+        if (remote) setData(remote);
+        setStorage('claude');
+      })
+      .catch(() => { if (!done) { done = true; clearTimeout(t); setStorage('claude-fehler'); } });
+    return () => clearTimeout(t);
+  }, []);
+
   useEffect(() => {
     save(data);
-  }, [data]);
+    if (storage !== 'claude' || !cloud.current) return;
+    if (timer.current) clearTimeout(timer.current);
+    const c = cloud.current;
+    timer.current = setTimeout(() => { c.save(data).catch(() => setStorage('claude-fehler')); }, 800);
+  }, [data, storage]);
+
   const update = useCallback((fn: (d: AppData) => AppData) => setData((d) => fn(d)), []);
   const replace = useCallback((d: AppData) => setData(d), []);
   const reset = useCallback(() => {
+    void cloud.current?.clear();
     try {
       localStorage.removeItem(KEY);
       localStorage.removeItem('livion-oura-client');
@@ -77,16 +160,11 @@ export function useAppData() {
     }
     setData(EMPTY);
   }, []);
-  return { data, update, replace, reset };
+  return { data, update, replace, reset, storage };
 }
 
 function download(name: string, content: string, type: string): void {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
+  void saveFile(name, content, type);
 }
 
 /** Der Oura-Zugang gehört nicht in die Sicherungsdatei: Wer die Datei hat, hätte sonst Zugriff auf die Oura-Daten. */

@@ -1,3 +1,4 @@
+import { inClaude, saveFile } from '../../platform';
 import { useRef, useState } from 'react';
 import { formatDate, todayIso, addDays } from '../../store';
 import type { HealthState } from '../types';
@@ -65,18 +66,19 @@ export function WearablesPanel({ data, update }: { data: HealthState; update: (f
   }
 
   function downloadTemplate() {
-    const url = URL.createObjectURL(new Blob(['﻿' + CSV_TEMPLATE], { type: 'text/csv' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'wearable-vorlage.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    void saveFile('wearable-vorlage.csv', '\uFEFF' + CSV_TEMPLATE, 'text/csv');
   }
 
   const recent = [...data.wearables].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
 
   return (
     <>
+      {inClaude ? (
+      <div className="card note">
+        <span className="label">Oura</span>
+        <p className="small">Auf der Claude-Seite kann die App Oura nicht direkt abrufen, weil die Seite keine anderen Dienste erreichen darf. Trag die Oura-Werte (Schlaf, HRV, Ruhepuls, VO2max) über die Datei unten ein.</p>
+      </div>
+      ) : (
       <div className="card">
         <span className="label">Oura</span>
         {!oura && (
@@ -113,8 +115,9 @@ export function WearablesPanel({ data, update }: { data: HealthState; update: (f
             )}
           </>
         )}
-        <p className="muted" style={{ fontSize: 12 }}>Schlafdaten erscheinen erst, wenn der Ring in der Oura-App synchronisiert wurde. Die App wertet nichts mit KI aus; sie rechnet nur lokal Durchschnitte.</p>
+        <p className="muted" style={{ fontSize: 12 }}>Schlafdaten erscheinen erst, wenn der Ring in der Oura-App synchronisiert wurde. Die App rechnet Durchschnitte der letzten 7 Tage; die KI-Auswertung bekommt nur diese Durchschnitte.</p>
       </div>
+      )}
 
       <div className="card">
         <span className="label">Garmin und andere: Datei einlesen</span>

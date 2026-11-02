@@ -19,6 +19,11 @@ Seit Version 0.5 gibt es zusätzlich das **Gesundheitsmodul** (Beschwerden mit r
 
 „Heute“ zeigt den Weg und immer den nächsten Schritt (`src/journey.ts`, Tests in `src/journey.test.ts`).
 
+## Zwei Versionen
+
+- **Web-Version (GitHub Pages):** ohne KI, Daten nur im Browser.
+- **LIVION auf claude.ai** (https://claude.ai/artifact/CcV5wLqF523Xz99WmMnobG): gleiche App mit KI über das Claude-Konto der Person, ohne API-Schlüssel; Daten im privaten Speicher der Seite (nur die Person selbst kann sie lesen). Befunde als Foto, Oura per Datei. Bauen mit `npm run build:claude` (ergibt `dist-claude/livion.html`).
+
 ## Starten
 
 ```bash

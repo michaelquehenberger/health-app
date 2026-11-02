@@ -8,10 +8,10 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "build:claude": "tsc -p tsconfig.json && vite build --mode claude && node tools/claude-page.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "1.3.0",
     "@fontsource/inter": "5.2.8",
     "@fontsource/sora": "5.2.8",
     "react": "18.3.1",

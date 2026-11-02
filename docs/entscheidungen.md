@@ -4,6 +4,7 @@ Getroffene Produktentscheidungen zu offenen Punkten der MVP-Übergabe. Neueste o
 
 | Datum | Punkt | Entscheidung | Von |
 |---|---|---|---|
+| 02.11.2026 | KI ohne API-Schlüssel | Keine API-Schlüssel. Die KI (Befund-Foto auslesen, Auswertung) läuft nur in der LIVION-Version auf claude.ai über das Claude-Konto der Person; Daten dort im privaten Speicher der Seite. Die Web-Version auf GitHub Pages bleibt ohne KI (Werte von Hand, Plan nach Regeln). Auf claude.ai: Befunde nur als Foto, Oura nur per Datei-Import. | Michael |
 | 02.11.2026 | Beschwerden an mehreren Stellen | Seite links/rechts direkt auf der Körperkarte; bei Knie, Hüfte, Schulter und Hand Pflicht. Mehrere Beschwerden gleichzeitig (z. B. Hüfte links und rechts); der Tagesplan berücksichtigt alle, die vorsichtigste Angabe bestimmt die Stufe. | Michael |
 | 02.11.2026 | Rahmen für die Testphase | Vorerst kein eigener Server, kein AV-Vertrag mit Anthropic, keine MDR-Prüfung (kein Verkauf) und keine ärztliche Fachprüfung der Regeln. Diese Punkte kommen erst, wenn die App verkauft werden soll. Quellen mit PubMed-Belegen gelten als erledigt. | Michael |
 | 02.11.2026 | KI-Auswertung (Schritt 5) | Umsetzung nach Konzept und Auswertungslogik: KI fasst alle Daten zusammen und wählt nur aus der Übungsdatenbank; rote Flaggen und Schmerzregel gehen vor; keine Diagnose, keine Dosis. Übernahme in den Tagesplan nur auf Knopfdruck. | Michael |

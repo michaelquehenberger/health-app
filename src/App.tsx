@@ -32,7 +32,7 @@ const TABS: { id: Tab; label: string; icon: () => ReactNode }[] = [
 ];
 
 export function App() {
-  const { data, update, replace, reset } = useAppData();
+  const { data, update, replace, reset, storage } = useAppData();
   const [tab, setTab] = useState<Tab>('heute');
   const [healthView, setHealthView] = useState<HealthView>('beschwerden');
   const [test, setTest] = useState<TestId | null>(null);
@@ -81,6 +81,14 @@ export function App() {
     setHealthView('wearables');
   }, [update]);
 
+  if (storage === 'laedt') {
+    return (
+      <div className="app" style={{ paddingBottom: 32 }}>
+        <div className="topbar"><Wordmark /><span className="badge-test">Testphase</span></div>
+        <div className="card" role="status"><p>Deine Daten werden geladen …</p></div>
+      </div>
+    );
+  }
   if (!data.consent) {
     return <Welcome onAccept={(consent) => update((d) => ({ ...d, consent }))} />;
   }
