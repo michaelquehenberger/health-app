@@ -67,7 +67,7 @@ export function App() {
             onBack={() => setTest(null)}
           />
         ) : tab === 'tests' ? (
-          <FolderScreen data={data} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
+          <FolderScreen data={data} update={update} goHistory={() => setTab('verlauf')} goSettings={() => setTab('einstellungen')} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
         ) : null}
         {tab === 'anamnese' && <AnamnesisScreen data={data} update={update} onDone={() => window.scrollTo(0, 0)} goTests={() => setTab('tests')} />}
         {tab === 'verlauf' && <HistoryScreen data={data} profile={profile} />}

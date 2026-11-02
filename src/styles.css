@@ -163,3 +163,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .guide-side { width: 100%; height: auto; background: var(--offwhite); border-radius: 14px; }
 .guide figcaption { color: var(--ink-2); }
 .card.dark .guide figcaption { color: #d7e0e6; }
+
+.todo { list-style: none; counter-reset: todo; margin: 0; padding: 0; display: grid; gap: 14px; }
+.todo > li { counter-increment: todo; position: relative; padding-left: 40px; display: flex; flex-direction: column; gap: 6px; }
+.todo > li::before { content: counter(todo); position: absolute; left: 0; top: -2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font: 800 13px var(--font-head); color: var(--ink); }
+.todo > li.done::before { background: var(--mint); }
+.todo > li .btn { align-self: flex-start; }

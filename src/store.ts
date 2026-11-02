@@ -66,6 +66,28 @@ function download(name: string, content: string, type: string): void {
   URL.revokeObjectURL(url);
 }
 
+/** Kalenderdatei (.ics) mit ganztägigen Terminen, z. B. für Tag 30 und Tag 90. */
+export function calendarIcs(events: { date: string; title: string; description: string }[], now = new Date()): string {
+  const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const d = (iso: string) => iso.replace(/-/g, '');
+  const next = (iso: string) => {
+    const [y, m, day] = iso.split('-').map(Number);
+    return todayIso(new Date(y, m - 1, day + 1)).replace(/-/g, '');
+  };
+  const esc = (t: string) => t.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, '\\n');
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//LIVION//MVP//DE', 'CALSCALE:GREGORIAN'];
+  for (const e of events) {
+    lines.push('BEGIN:VEVENT', `UID:livion-${d(e.date)}-${Math.random().toString(36).slice(2, 8)}@livion`, `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${d(e.date)}`, `DTEND;VALUE=DATE:${next(e.date)}`, `SUMMARY:${esc(e.title)}`, `DESCRIPTION:${esc(e.description)}`, 'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
+export function downloadCalendar(events: { date: string; title: string; description: string }[]): void {
+  download('livion-termine.ics', calendarIcs(events), 'text/calendar');
+}
+
 export function exportJson(data: AppData): void {
   download(`livion-${data.profile?.participantId ?? 'daten'}-${todayIso()}.json`, JSON.stringify(data, null, 2), 'application/json');
 }
@@ -94,6 +116,11 @@ export function exportCsv(data: AppData): void {
 export function todayIso(d = new Date()): string {
   const p = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+export function addDaysIso(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return todayIso(new Date(y, m - 1, d + n));
 }
 
 export function nowTime(d = new Date()): string {

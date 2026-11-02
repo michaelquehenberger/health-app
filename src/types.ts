@@ -51,6 +51,16 @@ export interface TestRecord {
   measurements: Measurement[];
 }
 
+/** Rückmeldung nach einem Messzeitpunkt (Testplan: drei Fragen). */
+export interface FeedbackEntry {
+  id: string;
+  timepoint: Timepoint;
+  date: string;
+  usedAsIntended: string;
+  understandable: string;
+  missing: string;
+}
+
 export interface AppData {
   version: 2;
   consent: Consent | null;
@@ -58,4 +68,5 @@ export interface AppData {
   /** Alle Anamnesen (PAR-Q+), die jüngste gilt. Gesundheitsdaten nach Art. 9 DSGVO. */
   anamneses: Anamnesis[];
   records: TestRecord[];
+  feedback?: FeedbackEntry[];
 }

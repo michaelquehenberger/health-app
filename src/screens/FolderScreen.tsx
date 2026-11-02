@@ -4,6 +4,7 @@ import { MATERIAL, baselineDate, nextStep, recordsFor, summarize } from '../resu
 import type { AppData, TestId, Timepoint } from '../types';
 import { daysBetween, formatDate, todayIso } from '../store';
 import { RESTING_PULSE_MIN_MORNINGS } from '../calc';
+import { CompletionPanel } from './CompletionPanel';
 
 /** Drei Etappen je Messzeitpunkt: Anamnese, Ruhepuls an 5–7 Morgen, Testtag. */
 function Stepper({ unlocked, pulseDone, pulseCount, testsDone, testsTotal }: {
@@ -26,8 +27,11 @@ function Stepper({ unlocked, pulseDone, pulseCount, testsDone, testsTotal }: {
   );
 }
 
-export function FolderScreen({ data, unlocked, timepoint, suggested, setTimepoint, openTest, openGate }: {
+export function FolderScreen({ data, update, unlocked, timepoint, suggested, setTimepoint, openTest, openGate, goHistory, goSettings }: {
   data: AppData;
+  update: (fn: (d: AppData) => AppData) => void;
+  goHistory: () => void;
+  goSettings: () => void;
   unlocked: boolean;
   timepoint: Timepoint;
   suggested: Timepoint;
@@ -54,6 +58,8 @@ export function FolderScreen({ data, unlocked, timepoint, suggested, setTimepoin
           <p className="muted">Einmal den Fragebogen PAR-Q+ beantworten, etwa 5 Minuten. Danach sind die Tests freigeschaltet.</p>
           <button className="btn primary" onClick={openGate}>Zur Anamnese</button>
         </div>
+      ) : step.kind === 'fertig' || step.kind === 'ruhepulsRest' ? (
+        <CompletionPanel data={data} update={update} timepoint={timepoint} step={step} openTest={openTest} goHistory={goHistory} goSettings={goSettings} />
       ) : (
         <div className="card dark">
           <span className="label">Dein nächster Schritt · {timepointLabel(timepoint)}</span>
@@ -85,27 +91,6 @@ export function FolderScreen({ data, unlocked, timepoint, suggested, setTimepoin
               )}
             </>
           )}
-          {step.kind === 'ruhepulsRest' && (
-            <>
-              <h1>Nur noch der Ruhepuls</h1>
-              <p className="muted">
-                Alle Tests sind erledigt. Es fehlen noch {step.needed - step.measured} Morgen Ruhepuls.
-                {step.doneToday ? ' Heute ist schon eingetragen, morgen früh weiter.' : ''}
-              </p>
-              {!step.doneToday && <button className="btn primary" onClick={() => openTest('T1')}>Ruhepuls eintragen</button>}
-            </>
-          )}
-          {step.kind === 'fertig' && (
-            <>
-              <h1>{timepointLabel(timepoint)} abgeschlossen</h1>
-              <p className="muted">
-                {step.next && step.dueDate
-                  ? `Nächste Messung: ${timepointLabel(step.next)} ab ${formatDate(step.dueDate)}. Bis dahin musst du nichts tun. Deine Werte findest du unter Verlauf.`
-                  : 'Alle Messzeitpunkte sind erledigt. Deine Entwicklung findest du unter Verlauf.'}
-              </p>
-              <p className="muted small">Tipp: Unter Einstellungen eine Sicherung exportieren.</p>
-            </>
-          )}
         </div>
       )}
 
@@ -115,7 +100,7 @@ export function FolderScreen({ data, unlocked, timepoint, suggested, setTimepoin
         </div>
       )}
 
-      {unlocked && (
+      {unlocked && step.kind !== 'fertig' && step.kind !== 'ruhepulsRest' && (
         <details className="card" open={testsDone === 0}>
           <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Was du für den Testtag brauchst</summary>
           <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 4 }}>
