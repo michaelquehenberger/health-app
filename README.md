@@ -1,7 +1,7 @@
 # LIVION – MVP Fitnesstests (Testphase)
 
 Web-App für das Handy: einmalige Anamnese (PAR-Q+), sieben Basis-Tests und der persönliche Verlauf
-Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.1 ([`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md)) und v0.2.
+Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.3 ([`docs/health-app-mvp-uebergabe-v0.3.md`](docs/health-app-mvp-uebergabe-v0.3.md)); frühere Fassung v0.1 in [`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md).
 
 Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push auf `main` neu veröffentlicht).
 

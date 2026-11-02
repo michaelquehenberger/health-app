@@ -80,3 +80,21 @@ describe('Ablauf', () => {
     expect(anamnesisValid({ ...a, endedAt: '2026-12-01' }, '2026-12-02')).toBe(false);
   });
 });
+
+describe('PAR-Q+ Wortlaut', () => {
+  it('jede Textzeile steht wörtlich in der Übergabe v0.3 (docs/)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const doc = readFileSync(new URL('../docs/health-app-mvp-uebergabe-v0.3.md', import.meta.url), 'utf8')
+      .replace(/\[(www\.[^\]]+)\]\([^)]+\)/g, '$1');
+    const lines: string[] = [];
+    const walk = (x: unknown, key = ''): void => {
+      if (typeof x === 'string') { if (key !== 'id' && key !== 'version') lines.push(...x.split('\n').filter(Boolean)); }
+      else if (Array.isArray(x)) x.forEach((v) => walk(v));
+      else if (x && typeof x === 'object') Object.entries(x).forEach(([k, v]) => k !== 'source' && walk(v, k));
+    };
+    walk(PARQ);
+    const missing = lines.filter((l) => !doc.includes(l));
+    expect(missing).toEqual([]);
+    expect(lines.length).toBeGreaterThan(100);
+  });
+});
