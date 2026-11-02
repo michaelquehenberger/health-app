@@ -9,7 +9,7 @@ import { evaluateValue, marker } from '../logic/labs';
 import { latestByMarker } from '../logic/redFlags';
 import { describe as describeComplaint, TIMINGS, TRIGGERS } from '../logic/complaints';
 import { summarizeWearables } from '../wearables/days';
-import { primaryComplaint, computeProgression, RULES_VERSION } from '../logic/plan';
+import { activeComplaints, computeProgression, RULES_VERSION } from '../logic/plan';
 import { summarize } from '../../results';
 import { TESTS } from '../../tests';
 import { bmi } from '../../calc';
@@ -95,9 +95,10 @@ export function buildAnalysisContext(data: AppData, today: string): AnalysisCont
   lines.push(w.nights === 0 ? 'keine Daten' : `Schlaf ${fmt(w.avgSleepHours)} h, Ruhepuls ${fmt(w.avgRestingHr, 0)} bpm, HRV ${fmt(w.avgHrv, 0)} ms, VO2max ${fmt(w.latestVo2max)} (${w.nights} Tage)`);
 
   const prog = computeProgression(h.feedback, today);
-  const complaint = primaryComplaint(h.complaints);
-  const mild = complaint && ['druck', 'stechen', 'misch'].includes(complaint.type);
-  const level = mild ? 0 : complaint?.type === 'belastungsschmerz' ? Math.max(0, prog.level - 1) : prog.level;
+  // gleiche Regel wie im Tagesplan: die vorsichtigste Beschwerde bestimmt die Stufe
+  const act = activeComplaints(h.complaints);
+  const mild = act.some((c) => ['druck', 'stechen', 'misch'].includes(c.type));
+  const level = mild ? 0 : act.some((c) => c.type === 'belastungsschmerz') ? Math.max(0, prog.level - 1) : prog.level;
   lines.push('', '## Schmerzregel', `aktuelle Stufe ${level} (0 = leicht, nur Beweglichkeit; 1 = Start; 2 = gesteigert)`);
 
   const regions = new Set(active.map((c) => c.region));

@@ -31,20 +31,29 @@ const NO_FLAGS: RedFlagAnswers = {
   suddenOnset: false, caudaEquina: false, chestPain: false, multipleSwollenJoints: false, longMorningStiffness: false,
 };
 
-// Punkte auf der Körperkarte (Vorderansicht); mehrere Punkte können dieselbe Region meinen.
-const SPOTS: { region: Region; x: number; y: number }[] = [
+// Punkte auf der Körperkarte (Vorderansicht: die rechte Körperseite ist links im Bild).
+const SPOTS: { region: Region; side?: Side; x: number; y: number }[] = [
   { region: 'nacken', x: 100, y: 62 },
-  { region: 'schulter', x: 64, y: 84 }, { region: 'schulter', x: 136, y: 84 },
+  { region: 'schulter', side: 'rechts', x: 64, y: 84 }, { region: 'schulter', side: 'links', x: 136, y: 84 },
   { region: 'ruecken', x: 100, y: 140 },
-  { region: 'hand', x: 36, y: 204 }, { region: 'hand', x: 164, y: 204 },
-  { region: 'huefte', x: 78, y: 188 }, { region: 'huefte', x: 122, y: 188 },
-  { region: 'knie', x: 84, y: 266 }, { region: 'knie', x: 116, y: 266 },
+  { region: 'hand', side: 'rechts', x: 36, y: 204 }, { region: 'hand', side: 'links', x: 164, y: 204 },
+  { region: 'huefte', side: 'rechts', x: 78, y: 188 }, { region: 'huefte', side: 'links', x: 122, y: 188 },
+  { region: 'knie', side: 'rechts', x: 84, y: 266 }, { region: 'knie', side: 'links', x: 116, y: 266 },
 ];
 
-function BodyMap({ value, onChange }: { value: Region | null; onChange: (r: Region) => void }) {
+/** Paarige Regionen: Seite ist Pflicht und „mittig“ gibt es nicht. */
+const PAIRED: Region[] = ['schulter', 'hand', 'huefte', 'knie'];
+const sideOptions = (r: Region | null) => (r && PAIRED.includes(r) ? SIDES.filter((s) => s.value !== 'mittig') : SIDES);
+
+/** „Hüfte links“ */
+export function complaintLabel(c: { region: Region; side?: Side }): string {
+  return `${regionInfo(c.region).label}${c.side ? ` ${c.side}` : ''}`;
+}
+
+function BodyMap({ region, side, onChange }: { region: Region | null; side: Side | null; onChange: (r: Region, s: Side | null) => void }) {
   return (
     <div className="body-map">
-      <svg viewBox="0 0 200 350" role="group" aria-label="Körperkarte: Region antippen">
+      <svg viewBox="0 0 200 350" role="group" aria-label="Körperkarte: Stelle antippen">
         <g fill="none" stroke="#B8C6D1" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="100" cy="32" r="18" strokeWidth="6" />
           <path d="M100 56 V190" />
@@ -55,21 +64,26 @@ function BodyMap({ value, onChange }: { value: Region | null; onChange: (r: Regi
           <path d="M84 190 L84 266 L86 336" />
           <path d="M116 190 L116 266 L114 336" />
         </g>
-        {SPOTS.map((s, i) => (
-          <g
-            key={i}
-            className="spot"
-            role="button"
-            tabIndex={0}
-            aria-pressed={value === s.region}
-            aria-label={regionInfo(s.region).label}
-            onClick={() => onChange(s.region)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(s.region); } }}
-          >
-            <circle cx={s.x} cy={s.y} r="9" />
-            <circle cx={s.x} cy={s.y} r="16" fill="transparent" stroke="none" />
-          </g>
-        ))}
+        <text x="22" y="20" fontSize="11" fill="#6B7C8A">rechts</text>
+        <text x="148" y="20" fontSize="11" fill="#6B7C8A">links</text>
+        {SPOTS.map((s, i) => {
+          const pressed = region === s.region && (!s.side || side === s.side || side === 'beidseits');
+          return (
+            <g
+              key={i}
+              className="spot"
+              role="button"
+              tabIndex={0}
+              aria-pressed={pressed}
+              aria-label={complaintLabel(s)}
+              onClick={() => onChange(s.region, s.side ?? null)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(s.region, s.side ?? null); } }}
+            >
+              <circle cx={s.x} cy={s.y} r="9" />
+              <circle cx={s.x} cy={s.y} r="16" fill="transparent" stroke="none" />
+            </g>
+          );
+        })}
       </svg>
     </div>
   );
@@ -89,11 +103,18 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
   const setFlag = (k: keyof RedFlagAnswers, v: boolean) => setFlags((f) => ({ ...f, [k]: v }));
 
   const active = data.complaints.filter((c) => c.active);
-  const valid = region !== null && intensity !== null && qualities.length > 0 && duration !== null;
+  const needsSide = region !== null && PAIRED.includes(region);
+  const valid = region !== null && intensity !== null && qualities.length > 0 && duration !== null && (!needsSide || side !== null);
+  const [saved, setSaved] = useState<string | null>(null);
+
+  function reset() {
+    setRegion(null); setSide(null); setQualities([]); setTiming([]); setTriggers([]);
+    setDuration(null); setCourse(null); setIntensity(null); setSwelling(false); setFlags(NO_FLAGS);
+  }
   // Kribbeln oder Taubheit ist zugleich eine Sicherheitsfrage
   const neuro = flags.neuro || qualities.includes('kribbeln');
 
-  function save() {
+  function save(more: boolean) {
     if (!valid || region === null || intensity === null) return;
     const c: Complaint = {
       id: uid(), date: todayIso(), region, type: primaryType(qualities),
@@ -101,21 +122,35 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
       redFlags: { ...flags, neuro, caudaEquina: region === 'ruecken' ? flags.caudaEquina : false }, active: true,
       side: side ?? undefined, qualities, timing, triggers, duration: duration ?? undefined, course: course ?? undefined,
     };
-    // Eine neue Angabe zur selben Region ersetzt die alte (die alte bleibt im Verlauf).
-    update((d) => ({ ...d, complaints: [...d.complaints.map((x) => (x.region === region ? { ...x, active: false } : x)), c] }));
-    onDone();
+    // Eine neue Angabe zur selben Stelle (Region und Seite) ersetzt die alte; die alte bleibt im Verlauf.
+    // Andere Stellen, z. B. Hüfte links neben Hüfte rechts, bleiben aktiv.
+    const same = (x: Complaint) => x.region === region && (x.side ?? null) === (side ?? null);
+    update((d) => ({ ...d, complaints: [...d.complaints.map((x) => (x.active && same(x) ? { ...x, active: false } : x)), c] }));
+    if (more) {
+      setSaved(complaintLabel(c));
+      reset();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      onDone();
+    }
   }
 
   return (
     <>
+      {saved && (
+        <div className="card note" role="status">
+          <strong>{saved} gespeichert.</strong>
+          <p className="small">Trag jetzt die nächste Beschwerde ein. Jede Stelle zählt im Plan mit.</p>
+        </div>
+      )}
       {active.length > 0 && (
         <div className="card">
           <span className="label">Aktuelle Beschwerden</span>
           {active.map((c) => (
             <div key={c.id} className="row between">
               <div>
-                <strong>{regionInfo(c.region).label}</strong>
-                <div className="muted">{describe(c) || c.since} · Stärke {c.intensity}/10 · eingetragen {formatDate(c.date)}</div>
+                <strong>{complaintLabel(c)}</strong>
+                <div className="muted">{describe({ ...c, side: undefined }) || c.since} · Stärke {c.intensity}/10 · eingetragen {formatDate(c.date)}</div>
               </div>
               <button className="btn ghost" style={{ minHeight: 40 }}
                 onClick={() => update((d) => ({ ...d, complaints: d.complaints.map((x) => (x.id === c.id ? { ...x, active: false } : x)) }))}>
@@ -129,13 +164,15 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
       <div className="card">
         <span className="label">Beschwerde eintragen · ca. 1 Minute</span>
         <h2>Wo spürst du es?</h2>
-        <BodyMap value={region} onChange={setRegion} />
+        <p className="small muted">Tippe die Stelle an. Die Figur schaut dich an: deine rechte Seite ist links im Bild.</p>
+        <BodyMap region={region} side={side} onChange={(r, sd) => { setRegion(r); setSide(sd); setSaved(null); }} />
         <div className="seg" aria-label="Region als Liste">
           {REGIONS.map((r) => (
-            <button key={r.id} type="button" aria-pressed={region === r.id} onClick={() => setRegion(r.id)}>{r.label}</button>
+            <button key={r.id} type="button" aria-pressed={region === r.id} onClick={() => { setRegion(r.id); setSide(null); setSaved(null); }}>{r.label}</button>
           ))}
         </div>
-        {region && <Seg label="Welche Seite?" value={(side ?? '') as Side} onChange={setSide} options={SIDES} />}
+        {region && <Seg label={needsSide ? 'Welche Seite? (Pflicht)' : 'Welche Seite?'} value={(side ?? '') as Side} onChange={setSide} options={sideOptions(region)} />}
+        {needsSide && side === 'beidseits' && <p className="small muted">Tut es links und rechts unterschiedlich weh, trag die Seiten lieber einzeln ein.</p>}
         <Multi label="Wie fühlt es sich an?" options={QUALITIES} value={qualities} onChange={setQualities} />
         {qualities.includes('kribbeln') && <p className="small muted">Kribbeln oder Taubheit wird auch bei den Sicherheitsfragen berücksichtigt.</p>}
         <Multi label="Wann tritt es auf?" options={TIMINGS} value={timing} onChange={setTiming} />
@@ -161,8 +198,9 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
         <Check checked={flags.chestPain} onChange={(v) => setFlag('chestPain', v)}>Brustschmerz oder Atemnot bei Belastung.</Check>
         <Check checked={flags.multipleSwollenJoints} onChange={(v) => setFlag('multipleSwollenJoints', v)}>Mehrere Gelenke sind geschwollen.</Check>
         <Check checked={flags.longMorningStiffness} onChange={(v) => setFlag('longMorningStiffness', v)}>Die Steifigkeit am Morgen hält länger als 30 Minuten an.</Check>
-        <button className="btn primary block" disabled={!valid} onClick={save}>Speichern und Plan ansehen</button>
-        {!valid && <p className="muted">Bitte Region, Art der Beschwerde, Dauer und Stärke angeben.</p>}
+        <button className="btn primary block" disabled={!valid} onClick={() => save(false)}>Speichern und Plan ansehen</button>
+        <button className="btn dark block" disabled={!valid} onClick={() => save(true)}>Speichern und weitere Beschwerde eintragen</button>
+        {!valid && <p className="muted">Bitte Stelle{needsSide ? ', Seite' : ''}, Art der Beschwerde, Dauer und Stärke angeben.</p>}
       </div>
     </>
   );

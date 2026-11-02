@@ -81,7 +81,10 @@ export interface DayCard {
   date: string;
   focus: DayFocus;
   focusLabel: string;
+  /** Hauptregion (stärkste Beschwerde) */
   region: Region | null;
+  /** Alle Regionen mit aktiver Beschwerde, stärkste zuerst */
+  regions: Region[];
   exercises: Exercise[];
   level: number;
   endurance: string | null;
@@ -102,16 +105,27 @@ function dayNumber(isoDate: string): number {
   return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
 }
 
-/** Wählt n Einträge, je Tag versetzt, damit nicht jeden Tag dieselben Übungen kommen. */
-function rotate<T>(items: T[], n: number, seed: number): T[] {
-  if (items.length <= n) return items;
+/** Ganze Liste, je Tag um eins versetzt. */
+function shift<T>(items: T[], seed: number): T[] {
+  if (items.length === 0) return items;
   const start = seed % items.length;
-  return Array.from({ length: n }, (_, i) => items[(start + i) % items.length]);
+  return [...items.slice(start), ...items.slice(0, start)];
+}
+
+/** Aktive Beschwerden, stärkste zuerst (bei Gleichstand die neueste). */
+export function activeComplaints(complaints: Complaint[]): Complaint[] {
+  return complaints.filter((c) => c.active).sort((a, b) => b.intensity - a.intensity || b.date.localeCompare(a.date));
 }
 
 export function primaryComplaint(complaints: Complaint[]): Complaint | null {
-  const active = complaints.filter((c) => c.active).sort((a, b) => b.date.localeCompare(a.date));
-  return active[0] ?? null;
+  return activeComplaints(complaints)[0] ?? null;
+}
+
+/** Abwechselnd aus mehreren Listen, damit jede Region drankommt. */
+function interleave<T>(lists: T[][]): T[] {
+  const out: T[] = [];
+  for (let i = 0; lists.some((l) => i < l.length); i++) for (const l of lists) if (i < l.length) out.push(l[i]);
+  return out;
 }
 
 export function buildDayCard(args: {
@@ -126,7 +140,9 @@ export function buildDayCard(args: {
 }): DayCard {
   const { date, profile, complaints, feedback, values, reports, preferredIds } = args;
   const pattern = WEEK_PATTERN[dayOfWeek(date)];
-  const complaint = primaryComplaint(complaints);
+  const active = activeComplaints(complaints);
+  const complaint = active[0] ?? null;
+  const regions = [...new Set(active.map((c) => c.region))];
   const prog = computeProgression(feedback, date);
   const notes: string[] = [];
 
@@ -134,11 +150,12 @@ export function buildDayCard(args: {
   let focus = pattern.focus;
   const mildTypes = ['druck', 'stechen', 'misch'];
 
-  if (complaint?.type === 'belastungsschmerz') {
+  // Sicherheit zuerst: die vorsichtigste Angabe über alle Beschwerden bestimmt die Stufe.
+  if (active.some((c) => c.type === 'belastungsschmerz')) {
     level = Math.max(0, level - 1);
     notes.push('Belastungsschmerz: Die Dosis ist eine Stufe niedriger. Teile Aktivitäten im Alltag in Etappen ein.');
   }
-  if (complaint && mildTypes.includes(complaint.type)) {
+  if (active.some((c) => mildTypes.includes(c.type))) {
     level = 0;
     notes.push('Bei Druck, Stechen oder gemischten Beschwerden startet der Plan mit dem mildesten Block. Beschreibe die Beschwerde bei Gelegenheit genauer.');
   }
@@ -146,9 +163,10 @@ export function buildDayCard(args: {
   let exercises: Exercise[] = [];
   const seed = dayNumber(date);
   if (complaint && focus !== 'ruhe') {
-    const pool = EXERCISES.filter((e) => e.region === complaint.region);
-    const mobility = pool.filter((e) => e.kind === 'beweglichkeit');
-    const strength = pool.filter((e) => e.kind === 'kraeftigung');
+    const pool = EXERCISES.filter((e) => regions.includes(e.region));
+    const byRegion = (kind: Exercise['kind']) => interleave(regions.map((r) => shift(pool.filter((e) => e.region === r && e.kind === kind), seed)));
+    const mobility = byRegion('beweglichkeit');
+    const strength = byRegion('kraeftigung');
     const maxCount = profile.minutesPerDay < 10 ? 3 : 4;
 
     let nMob = 3;
@@ -156,18 +174,20 @@ export function buildDayCard(args: {
     if (focus === 'kraeftigung' && level >= 1) {
       nMob = 2;
       nStr = level === 1 ? 1 : 2;
-      if (complaint.type === 'schwaeche') nStr = Math.min(2, nStr + 1);
+      if (active.some((c) => c.type === 'schwaeche')) nStr = Math.min(2, nStr + 1);
     }
     if (complaint.type === 'steifigkeit' && nStr > 1) nStr = 1;
+    // Bei mehreren Regionen mindestens eine Übung je Region (bis zur Höchstzahl).
+    if (regions.length > 1) nMob = Math.max(nMob, Math.min(regions.length, maxCount) - nStr);
     const mild = focus === 'leicht' || level === 0;
     if (mild) {
       nMob = 3;
       nStr = 0;
     }
-    const mob = rotate(mobility, Math.min(nMob, mobility.length), seed);
+    const mob = mobility.slice(0, Math.min(nMob, mobility.length));
     // Hat eine Region zu wenige Beweglichkeitsübungen, wird mit Kräftigung aufgefüllt, außer im milden Block.
     const fill = mild ? 0 : nMob - mob.length;
-    const str = rotate(strength, Math.min(nStr + fill, strength.length), seed);
+    const str = strength.slice(0, Math.min(nStr + fill, strength.length));
     exercises = [...mob, ...str].slice(0, maxCount);
     if (preferredIds?.length) {
       const strengthToday = !mild && nStr + fill > 0;
@@ -214,6 +234,7 @@ export function buildDayCard(args: {
     focus,
     focusLabel: pattern.label,
     region: complaint?.region ?? null,
+    regions,
     exercises,
     level,
     endurance,
