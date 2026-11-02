@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  balanceReference, bestBalance, bmi, median, restingPulseBaseline, sideDifference, sitToStandValue, ukkIndex, ukkRating,
+  balanceReference, bestBalance, bmi, median, restingPulseBaseline, sideDifference, sitToStandValue, ukkIndex, ukkIndexFemaleCandidate, ukkRating,
 } from './calc';
 
 describe('BMI', () => {
@@ -23,8 +23,22 @@ describe('UKK-Fitness-Index', () => {
       expect(r.rating).toBe('mittel');
     }
   });
-  it('rechnet für Frauen nicht (Formel offen)', () => {
+  it('rechnet für Frauen nicht, solange der Schalter aus ist', () => {
     expect(ukkIndex({ sex: 'weiblich', age: 48, minutes: 17, seconds: 0, pulse: 130, bmi: 23 }).kind).toBe('nichtBerechnet');
+  });
+  it('Rechentest Frauen-Kandidat (v0.3): 50 J., BMI 25, 17:00 min, Puls 135 → 108,8, vorläufig', () => {
+    expect(ukkIndexFemaleCandidate(50, 1020, 135, 25)).toBeCloseTo(108.766, 3);
+    const r = ukkIndex({ sex: 'weiblich', age: 50, minutes: 17, seconds: 0, pulse: 135, bmi: 25 }, { womenIndex: true });
+    expect(r.kind).toBe('index');
+    if (r.kind === 'index') {
+      expect(Math.round(r.value * 10) / 10).toBe(108.8);
+      expect(r.provisional).toBe(true);
+      expect(r.rating).toBe('mittel');
+    }
+  });
+  it('8,5 × Minuten entspricht 0,1417 × Sekunden (Abweichung unter 0,01 Indexpunkte)', () => {
+    const viaMinutes = 304 - (8.5 * 17 + 0.14 * 0 + 0.32 * 135 + 1.1 * 25 - 0.4 * 50);
+    expect(Math.abs(viaMinutes - ukkIndexFemaleCandidate(50, 1020, 135, 25))).toBeLessThan(0.05);
   });
   it('rechnet außerhalb von 20–65 Jahren nicht', () => {
     expect(ukkIndex({ sex: 'maennlich', age: 66, minutes: 15, seconds: 0, pulse: 130, bmi: 25 }).kind).toBe('nichtBerechnet');

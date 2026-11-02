@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
-  BALANCE_MAX_SECONDS, KNEE_WALL_SIDE_DIFF_CM, balanceReference, bestBalance, bmi, formatNum, sideDifference, sitToStandValue, ukkIndex,
+  BALANCE_MAX_SECONDS, BALANCE_PAUSE_SECONDS, KNEE_WALL_SIDE_DIFF_CM, balanceReference, bestBalance, bmi, formatNum, sideDifference, sitToStandValue, ukkIndex,
 } from '../calc';
 import { Check, Seg } from '../components/ui';
 import { Stopwatch } from '../components/Stopwatch';
-import { STOP_RULES, testDef, timepointLabel } from '../tests';
+import { PROTOCOL_VERSION, STOP_RULES, testDef, timepointLabel } from '../tests';
 import type { InputValue, Measurement, Profile, TestId, TestRecord, Timepoint } from '../types';
 import { formatDate, nowTime, todayIso, uid } from '../store';
 
@@ -126,11 +126,20 @@ function T4Form({ onOutput }: FormProps) {
   const setTrial = (side: 'links' | 'rechts', i: number, v: string) =>
     setTrials((t) => ({ ...t, [side]: t[side].map((x, j) => (j === i ? v : x)) }));
 
+  const [pauseKey, setPauseKey] = useState(0);
+  const [pausing, setPausing] = useState(false);
+
   const onStop = useCallback((s: number) => {
     setTrials((t) => {
       const i = t[leg].findIndex((x) => x === '');
       if (i === -1) return t;
-      return { ...t, [leg]: t[leg].map((x, j) => (j === i ? String(s).replace('.', ',') : x)) };
+      const next = { ...t, [leg]: t[leg].map((x, j) => (j === i ? String(s).replace('.', ',') : x)) };
+      // Pause nur, wenn noch ein Versuch folgt
+      if ([...next.links, ...next.rechts].some((x) => x === '')) {
+        setPausing(true);
+        setPauseKey((k) => k + 1);
+      }
+      return next;
     });
   }, [leg]);
 
@@ -145,14 +154,18 @@ function T4Form({ onOutput }: FormProps) {
       { metric: 'bester_versuch_links', unit: 's', value: bl },
       { metric: 'bester_versuch_rechts', unit: 's', value: br },
     ],
-    method: 'Einbeinstand, Augen offen, 3 Versuche, max. 45 s',
+    method: `Einbeinstand, Augen offen, 3 Versuche, max. ${BALANCE_MAX_SECONDS} s, ${BALANCE_PAUSE_SECONDS} s Pause`,
   }), [trials]);
 
   return (
     <>
       <Seg label="Stoppuhr für" value={leg} onChange={setLeg} options={[{ value: 'links', label: 'linkes Bein' }, { value: 'rechts', label: 'rechtes Bein' }]} />
-      <Stopwatch mode="up" maxSeconds={BALANCE_MAX_SECONDS} label={`Stand auf dem ${leg === 'links' ? 'linken' : 'rechten'} Bein`} onStop={onStop} />
-      <p className="muted small">Die gestoppte Zeit wird in das nächste freie Feld eingetragen. Zwischen den Versuchen kurz erholen.</p>
+      {pausing ? (
+        <PauseTimer key={pauseKey} seconds={BALANCE_PAUSE_SECONDS} onDone={() => setPausing(false)} />
+      ) : (
+        <Stopwatch mode="up" maxSeconds={BALANCE_MAX_SECONDS} label={`Stand auf dem ${leg === 'links' ? 'linken' : 'rechten'} Bein`} onStop={onStop} />
+      )}
+      <p className="muted small">Die gestoppte Zeit wird in das nächste freie Feld eingetragen. Danach folgen {BALANCE_PAUSE_SECONDS} Sekunden Pause.</p>
       <div className="trials">
         <span />
         <span className="muted small">1</span><span className="muted small">2</span><span className="muted small">3</span>
@@ -170,6 +183,37 @@ function T4Form({ onOutput }: FormProps) {
   );
 }
 const FragmentRow = ({ children }: { children: ReactNode }) => <>{children}</>;
+
+/** Pause zwischen zwei Versuchen; startet sofort und zählt herunter. */
+function PauseTimer({ seconds, onDone }: { seconds: number; onDone: () => void }) {
+  const [left, setLeft] = useState(seconds);
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => {
+    const start = performance.now();
+    const id = setInterval(() => {
+      const rest = Math.max(0, seconds - Math.floor((performance.now() - start) / 1000));
+      setLeft(rest);
+      if (rest === 0) {
+        clearInterval(id);
+        try {
+          navigator.vibrate?.(300);
+        } catch {
+          /* nicht verfügbar */
+        }
+        done.current();
+      }
+    }, 250);
+    return () => clearInterval(id);
+  }, [seconds]);
+  return (
+    <div className="card mint" style={{ alignItems: 'center', textAlign: 'center' }} role="timer" aria-live="polite">
+      <span className="label" style={{ color: 'var(--navy)' }}>Pause</span>
+      <div className="stopwatch">{left}<span className="small"> s</span></div>
+      <p className="small">Erholen. Danach startet die Stoppuhr für den nächsten Versuch.</p>
+    </div>
+  );
+}
 
 // ---------- T5 Knie-zur-Wand und T7 Sit-and-Reach ----------
 function SidesForm({ onOutput, kind }: FormProps & { kind: 'T5' | 'T7' }) {
@@ -245,7 +289,7 @@ function onOutputIf(onOutput: (o: FormOutput | null) => void, ok: boolean, build
 }
 
 // ---------- Ergebnis ----------
-export function ResultView({ record, profile }: { record: TestRecord; profile: Profile }) {
+export function ResultView({ record, profile, womenIndex = false }: { record: TestRecord; profile: Profile; womenIndex?: boolean }) {
   const m = (k: string) => record.measurements.find((x) => x.metric === k)?.value ?? null;
   const age = profile.age ?? 0;
   let main: ReactNode = null;
@@ -259,9 +303,13 @@ export function ResultView({ record, profile }: { record: TestRecord; profile: P
     case 'T2': {
       const s = m('gehzeit') ?? 0;
       main = <><span className="result-big">{Math.floor(s / 60)}:{String(Math.round(s % 60)).padStart(2, '0')}</span> <span className="muted">min für 2 km</span></>;
-      const r = ukkIndex({ sex: profile.sex, age, minutes: Math.floor(s / 60), seconds: s % 60, pulse: m('puls_ende') ?? 0, bmi: m('bmi') ?? 0 });
+      const r = ukkIndex(
+        { sex: profile.sex, age: m('alter') ?? age, minutes: Math.floor(s / 60), seconds: s % 60, pulse: m('puls_ende') ?? 0, bmi: m('bmi') ?? 0 },
+        { womenIndex },
+      );
       comparison = r.kind === 'index'
-        ? <><p className="small">Fitness-Index: <strong className="big-num">{formatNum(r.value, 0)}</strong> · Bewertung: <strong>{r.rating}</strong></p>
+        ? <><p className="small">Fitness-Index: <strong className="big-num">{formatNum(r.value, 1)}</strong> · Bewertung: <strong>{r.rating}</strong></p>
+          {r.provisional && <p className="small"><span className="chip watch">vorläufig</span> Berechnet mit der noch nicht am Original geprüften Kandidatenformel für Frauen.</p>}
           <p className="muted">Der Index ist eine Schätzung und eignet sich besser, um Veränderungen zu sehen, als für einen absoluten Wert.</p></>
         : <p className="small">{r.reason}</p>;
       break;
@@ -292,7 +340,7 @@ export function ResultView({ record, profile }: { record: TestRecord; profile: P
       break;
     case 'T8':
       main = <><span className="result-big">{formatNum(m('wiederholungen'), 0)}</span> <span className="muted">Wiederholungen ({record.inputs.variante === 'zehen' ? 'Zehen' : 'Knie'})</span></>;
-      comparison = <p className="small">Kein Vergleichswert, nur dein Verlauf.</p>;
+      comparison = <p className="small">Vergleichswert derzeit nicht verfügbar. Die Anzahl der korrekt ausgeführten Liegestütze wird gespeichert.</p>;
       break;
   }
 
@@ -301,15 +349,21 @@ export function ResultView({ record, profile }: { record: TestRecord; profile: P
       <span className="label">Ergebnis · {timepointLabel(record.timepoint)} · {formatDate(record.date)}</span>
       <div>{main}</div>
       {comparison}
-      <p className="muted">Datenqualität {record.quality} · {record.method}{record.comment ? ` · ${record.comment}` : ''}</p>
+      <p className="muted">
+        Datenqualität {record.quality} · {record.method} · Protokoll {record.protocolVersion ?? 'v0.1'}
+        {record.timepointSource === 'manuell' ? ' · Messzeitpunkt manuell gewählt' : ''}
+        {record.comment ? ` · ${record.comment}` : ''}
+      </p>
     </div>
   );
 }
 
 // ---------- Test-Screen ----------
-export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
+export function TestScreen({ testId, timepoint, timepointSource, profile, womenIndex = false, onSave, onBack }: {
+  womenIndex?: boolean;
   testId: TestId;
   timepoint: Timepoint;
+  timepointSource: 'vorschlag' | 'manuell';
   profile: Profile;
   onSave: (r: TestRecord) => void;
   onBack: () => void;
@@ -325,7 +379,7 @@ export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
   const [abortReason, setAbortReason] = useState<string | null>(null);
 
   const base = (): Omit<TestRecord, 'inputs' | 'measurements' | 'method' | 'aborted'> => ({
-    id: uid(), testId, timepoint, date, time, quality: deviated ? 'C' : 'B', comment: comment.trim(),
+    id: uid(), testId, timepoint, timepointSource, protocolVersion: PROTOCOL_VERSION, date, time, quality: deviated ? 'C' : 'B', comment: comment.trim(),
   });
 
   function save() {
@@ -362,7 +416,7 @@ export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
   if (saved) {
     return (
       <>
-        <ResultView record={saved} profile={profile} />
+        <ResultView record={saved} profile={profile} womenIndex={womenIndex} />
         <button className="btn primary block" onClick={onBack}>Zurück zur Testmappe</button>
       </>
     );
@@ -376,12 +430,18 @@ export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
       <div className="card dark">
         <span className="label">{def.id} · {def.group} · {timepointLabel(timepoint)}</span>
         <h1>{def.name}</h1>
+        <p className="small"><strong>Ausgangsposition:</strong> {def.setup}</p>
+        <p className="small"><strong>Versuche:</strong> {def.attempts}</p>
         <ol className="steps">{def.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+        <p className="small"><strong>Ende des Versuchs:</strong> {def.stop}</p>
+        <p className="small"><strong>Ergebnis:</strong> {def.result}</p>
+        <p className="small muted"><strong>Vergleich:</strong> {def.comparison}</p>
       </div>
 
       <div className="card note">
         <strong>Sofort aufhören bei:</strong>
-        <p className="small">{STOP_RULES.join(', ')}.</p>
+        <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 4 }}>{STOP_RULES.map((r) => <li key={r}>{r}</li>)}</ul>
+        <p className="small">Dann den Test über „Test abbrechen“ beenden und ärztlich abklären lassen.</p>
       </div>
 
       <div className="card">

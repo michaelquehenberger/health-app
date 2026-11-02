@@ -2,16 +2,18 @@ import { TESTS, TIMEPOINTS } from '../tests';
 import { Icon, Seg } from '../components/ui';
 import { baselineDate, summarize } from '../results';
 import type { AppData, TestId, Timepoint } from '../types';
-import { daysBetween, formatDate, gateValid, todayIso } from '../store';
+import { daysBetween, formatDate, todayIso } from '../store';
+import { timepointLabel } from '../tests';
 
-export function FolderScreen({ data, timepoint, setTimepoint, openTest, openGate }: {
+export function FolderScreen({ data, unlocked, timepoint, suggested, setTimepoint, openTest, openGate }: {
   data: AppData;
+  unlocked: boolean;
   timepoint: Timepoint;
+  suggested: Timepoint;
   setTimepoint: (t: Timepoint) => void;
   openTest: (id: TestId) => void;
   openGate: () => void;
 }) {
-  const unlocked = gateValid(data.gate);
   const base = baselineDate(data.records);
   const day = base ? daysBetween(base, todayIso()) : null;
   const doneCount = TESTS.filter((t) => summarize(data.records, t.id, timepoint).done).length;
@@ -25,14 +27,17 @@ export function FolderScreen({ data, timepoint, setTimepoint, openTest, openGate
           {base ? `Baseline begonnen am ${formatDate(base)} · heute ist Tag ${day}` : 'Noch keine Messung. Starte mit der Baseline.'}
         </p>
         <Seg label="Messzeitpunkt" value={timepoint} onChange={setTimepoint} options={TIMEPOINTS.map((t) => ({ value: t.id, label: t.label }))} />
+        <p className="muted small">
+          {timepoint === suggested ? `Vorschlag der App: ${timepointLabel(suggested)}. Du kannst ihn jederzeit ändern.` : `Manuell gewählt (Vorschlag wäre ${timepointLabel(suggested)}). Das wird bei der Messung vermerkt.`}
+        </p>
       </div>
 
       {!unlocked && (
         <div className="card alert">
           <span className="label">Gesperrt</span>
-          <h2>Erst der Sicherheitscheck.</h2>
-          <p className="small">Ohne abgeschlossenen Fragebogen PAR-Q+ bleiben die Tests gesperrt.</p>
-          <button className="btn dark" onClick={openGate}>Zum Sicherheitscheck</button>
+          <h2>Erst die Anamnese.</h2>
+          <p className="small">Ohne gültige Freigabe aus dem Fragebogen PAR-Q+ bleiben die Tests gesperrt.</p>
+          <button className="btn dark" onClick={openGate}>Zur Anamnese</button>
         </div>
       )}
 

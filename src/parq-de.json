@@ -1,0 +1,149 @@
+{
+  "version": "DE 01.07.2024",
+  "source": {
+    "copyright": "Copyright © 2024 PAR-Q+ Collaboration | Hochschule für Gesundheit Bochum",
+    "title": "PAR-Q+ „Physical Activity Readiness Questionnaire for Everyone“, deutsche Fassung, Version 01.07.2024",
+    "translation": "Übersetzung: Tobias Braun, Alina Rieckmann, Annika Glöckl, Cheyenne Hanna Haugwitz-Mayall, Christian Thiel",
+    "contact": "Kontakt: www.eparmedx.com | www.hs-gesundheit.de/PARQ | PARQ@hs-gesundheit.de",
+    "citation": "Warburton DER, Jamnik VK, Bredin SSD, Gledhill N on behalf of the PAR-Q+ Collaboration. The Physical Activity Readiness Questionnaire for Everyone (PAR-Q+) and Electronic Physical Activity Readiness Medical Examination (ePARmed-X+). Health & Fitness Journal of Canada 4(2):3-23, 2011."
+  },
+  "intro": "PAR-Q+ – „Physical Activity Readiness Questionnaire for Everyone“. Der gesundheitliche Nutzen von Sport und regelmäßiger körperlicher Aktivität ist unbestritten; mehr Menschen sollten sich täglich mehr bewegen. Körperliche Aktivität und Sport (nachfolgend als Bewegung bezeichnet) sind für die MEISTEN Menschen unbedenklich. Dieser Fragebogen gibt Ihnen Auskunft darüber, ob Sie Ihre Ärztin / Ihren Arzt, Physiotherapeut:in oder Sportwissenschaftler:in (nachfolgend als qualifizierte Personen mit Bewegungsexpertise bezeichnet) konsultieren sollten, bevor Sie sich mehr bewegen.",
+  "partA": {
+    "title": "ALLGEMEINE GESUNDHEITSFRAGEN",
+    "lead": "Bitte lesen Sie die folgenden Fragen genau durch und beantworten Sie jede Frage wahrheitsgemäß. Kreuzen Sie JA oder NEIN an",
+    "questions": [
+      { "id": "1", "text": "Hat Ihnen jemals eine Ärztin / ein Arzt gesagt, dass Sie eine Herzerkrankung ODER hohen Blutdruck haben?" },
+      { "id": "2", "text": "Haben Sie in Ruhe, bei Aktivitäten des täglichen Lebens ODER bei Bewegung Schmerzen in der Brust?" },
+      { "id": "3", "text": "Verlieren Sie manchmal das Gleichgewicht aufgrund von Schwindel ODER haben Sie innerhalb der letzten 12 Monaten mindestens einmal das Bewusstsein verloren?", "hint": "Bitte kreuzen Sie NEIN an, wenn der Schwindel im Zusammenhang mit Hyperventilation oder starker körperlicher Belastung stand." },
+      { "id": "4", "text": "Haben Sie eine diagnostizierte chronische Erkrankung (langandauernd bzw. dauerhaft; ausgenommen Herzerkrankungen und / oder Bluthochdruck)?", "freeText": "Wenn ja, geben sie hier bitte die Erkrankung(en) an:" },
+      { "id": "5", "text": "Nehmen Sie zurzeit verordnete Medikamente für eine chronische Erkrankung?", "freeText": "Wenn ja, geben sie hier bitte die Erkrankung(en) mit jeweiliger Medikation an:" },
+      { "id": "6", "text": "Haben Sie zurzeit (oder hatten Sie in den letzten 12 Monaten) ein Problem oder eine Verletzung am Bewegungsapparat (Knochen, Gelenke, Muskeln, Bänder oder Sehnen), welche(s) sich durch mehr Bewegung verschlimmern könnte?", "hint": "Falls Sie in der Vergangenheit ein Problem hatten, welches Sie aber nicht in Ihrer jetzigen Bewegungsfähigkeit einschränkt, kreuzen Sie NEIN an. Bitte geben sie hier das Problem/die Verletzung an:", "freeText": "" },
+      { "id": "7", "text": "Hat Ihnen jemals eine Ärztin / ein Arzt gesagt, dass Sie Bewegung (körperliche Aktivität oder Training) nur unter medizinischer Aufsicht durchführen sollten?" }
+    ],
+    "allNo": "Wenn Sie alle sieben Fragen mit NEIN beantwortet haben, können Sie sich mehr bewegen (körperliche Aktivität oder Training). Bitte unterzeichnen Sie die EINVERSTÄNDNISERKLÄRUNG und überspringen Sie die Seiten 2 und 3.\nFangen Sie an, sich mehr zu bewegen – beginnen Sie langsam und steigern Sie sich allmählich. Folgen Sie den „Nationalen Bewegungsempfehlungen“ Ihrer Altersgruppe: www.bundesgesundheitsministerium.de\nSie können wahlweise eine Gesundheitsuntersuchung (z.B. Vorsorgeuntersuchung) oder Leistungsdiagnostik durchführen lassen.\nWenn Sie älter als 45 Jahre sind und NICHT an ein regelmäßiges Training mit starker bis maximaler Belastungsform gewöhnt sind, konsultieren Sie bitte vor solch intensiven Trainingseinheiten eine Ärztin / einen Arzt oder eine qualifizierte Person mit Bewegungsexpertise.\nWenn Sie weitere Fragen haben, wenden Sie sich an eine Ärztin / einen Arzt oder eine qualifizierte Person mit Bewegungsexpertise.",
+    "anyYes": "Wenn Sie mindestens eine der sieben Fragen mit JA beantwortet haben, FÜLLEN SIE BITTE DIE SEITEN 2 UND 3 AUS."
+  },
+  "partB": {
+    "title": "ERGÄNZENDE FRAGEN ZU IHREM GESUNDHEITSZUSTAND",
+    "questions": [
+      {
+        "id": "1",
+        "text": "Haben Sie eine Gelenkerkrankung (Arthrose, Arthritis), Osteoporose oder Rückenbeschwerden?",
+        "ifYes": "Wenn mindestens eine dieser Erkrankungen/Beschwerden vorliegt, beantworten Sie die Fragen 1a-1c.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 2 fort.",
+        "sub": [
+          { "id": "1a", "text": "Haben Sie Schwierigkeiten, Ihre Beschwerden mit Medikamenten oder anderen ärztlich verordneten Therapien zu kontrollieren? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente einnehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "1b", "text": "Haben Sie Gelenkschmerzen, kürzlich einen Knochenbruch erlitten (auch durch Osteoporose oder eine Krebserkrankung), Wirbelgleiten (Spondylolisthesis) und / oder eine Spondylolyse (Riss/Spalt im knöchernen Bogen eines Wirbelkörpers)?" },
+          { "id": "1c", "text": "Hatten Sie eine Steroidbehandlung (z.B. Kortison) als Injektion oder über Tabletten für mehr als 3 Monate?" }
+        ]
+      },
+      {
+        "id": "2",
+        "text": "Haben Sie aktuell eine Krebserkrankung?",
+        "ifYes": "Wenn ja, beantworten Sie die Fragen 2a-2b.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 3 fort.",
+        "sub": [
+          { "id": "2a", "text": "Handelt es sich bei der Krebserkrankung um einen der folgenden Arten: Lungen- / Bronchialkarzinom, Multiples Myelom (Plasmazellerkrankung der Knochen und des Knochenmarks, z.B. Plasmozytom) oder Kopf-Hals-Tumore?" },
+          { "id": "2b", "text": "Erhalten Sie zurzeit eine Krebstherapie (z.B. Chemo- oder Strahlentherapie)?" }
+        ]
+      },
+      {
+        "id": "3",
+        "text": "Haben Sie ein Herz-Kreislauf- oder Gefäß-Erkrankung? (z.B. Koronare Herzkrankheit / KHK, Herzinsuffizienz, Herzrhythmusstörungen)",
+        "ifYes": "Wenn mindestens eine der Erkrankungen vorliegt, beantworten Sie die Fragen 3a-3d.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 4 fort.",
+        "sub": [
+          { "id": "3a", "text": "Haben Sie Schwierigkeiten, Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien unter Kontrolle zu bringen? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente einnehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "3b", "text": "Haben Sie Herzrhythmusstörungen, die medizinisch behandelt werden müssen? (z.B. Vorhofflimmern, ventrikuläre Extrasystolen)" },
+          { "id": "3c", "text": "Haben Sie eine Herzinsuffizienz (Herzschwäche)?" },
+          { "id": "3d", "text": "Haben Sie eine diagnostizierte koronare Herzkrankheit (KHK) und haben Sie sich in den letzten 2 Monaten nicht regelmäßig bewegt?" }
+        ]
+      },
+      {
+        "id": "4",
+        "text": "Haben Sie Bluthochdruck?",
+        "ifYes": "Wenn ja, beantworten Sie die Fragen 4a-4b.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 5 fort.",
+        "sub": [
+          { "id": "4a", "text": "Haben Sie Schwierigkeiten Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien unter Kontrolle zu bringen? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente nehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "4b", "text": "Ist Ihr Blutdruck in Ruhe höher oder gleich 160 / 90 mmHg (mit oder ohne medikamentöse Therapie)? (Antworten Sie mit JA wenn Sie Ihren Blutdruck in Ruhe nicht kennen)" }
+        ]
+      },
+      {
+        "id": "5",
+        "text": "Haben Sie eine Stoffwechselerkrankung? (z.B. Diabetes mellitus Typ 1, Typ 2 oder Prä-Diabetes oder eine Leber- / Nierenerkrankung)",
+        "ifYes": "Wenn mindestens eine der Erkrankungen vorliegt, beantworten Sie die Fragen 5a-5e.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 6 fort.",
+        "sub": [
+          { "id": "5a", "text": "Haben Sie Schwierigkeiten Ihren Blutzuckerspiegel durch Ernährung, Medikamente oder andere ärztlich verordnete Therapien zu kontrollieren?" },
+          { "id": "5b", "text": "Leiden Sie häufig an Symptomen einer Unterzuckerung (Hypoglykämie) nach Sport und / oder bei alltäglichen Aktivitäten? Mögliche Symptome sind: Zittern, Nervosität, ungewohnte Reizbarkeit, exzessives Schwitzen, Schwindel oder Benommenheit, Verwirrtheit, Sprechstörungen, Schwäche oder Müdigkeit." },
+          { "id": "5c", "text": "Haben Sie Anzeichen oder Symptome, die auf Diabeteskomplikationen zurückzuführen sind, wie Herz- oder Gefäßerkrankungen, Augen- oder Nierenschäden ODER Missempfindungen in den Füßen und Zehen?" },
+          { "id": "5d", "text": "Haben Sie andere Stoffwechselerkrankungen (wie Schwangerschaftsdiabetes, chronische Nierenerkrankung oder Probleme mit der Leber)?" },
+          { "id": "5e", "text": "Planen Sie in nächster Zeit ein Training mit für Sie ungewohnt hoher Intensität durchzuführen?" }
+        ]
+      },
+      {
+        "id": "6",
+        "text": "Haben Sie psychische Erkrankungen oder eine Lernbeeinträchtigung? (z.B. Alzheimer-Krankheit oder eine andere Form von Demenz, Depression, Angststörungen, Essstörungen, Psychosen, geistige Behinderung, Down-Syndrom/Trisomie 21)",
+        "ifYes": "Wenn mindestens eine dieser Erkrankungen / Beschwerden vorliegt, beantworten Sie die Fragen 6a-6b.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 7 fort.",
+        "sub": [
+          { "id": "6a", "text": "Haben Sie Schwierigkeiten Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien unter Kontrolle zu bringen? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente nehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "6b", "text": "Haben Sie ein Down-Syndrom UND Rückenbeschwerden, die Muskeln oder Nerven betreffen?" }
+        ]
+      },
+      {
+        "id": "7",
+        "text": "Haben Sie eine Erkrankung der Atemwege? (z.B. COPD / chronisch obstruktive Lungenerkrankung, Asthma, Lungenhochdruck / pulmonale Hypertonie)",
+        "ifYes": "Wenn mindestens eine der Erkrankungen vorliegt, beantworten Sie die Fragen 7a-7d.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 8 fort.",
+        "sub": [
+          { "id": "7a", "text": "Haben Sie Schwierigkeiten Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien unter Kontrolle zu bringen? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente nehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "7b", "text": "Hat Ihnen jemals eine Ärztin / ein Arzt oder eine qualifizierte Person mit Bewegungsexpertise gesagt, dass die Sauerstoffsättigung Ihres Blutes in Ruhe oder bei Anstrengung zu niedrig ist und / oder dass Sie eine Sauerstoffgabe benötigen?" },
+          { "id": "7c", "text": "Wenn Sie Asthmatiker:in sind: Haben Sie Beschwerden wie Engegefühl in der Brust, Giemen (Pfeifen, Rasseln), erschwerte Atmung, anhaltender Husten (mehr als 2 Tage / Woche) oder mussten Sie Ihre Notfallmedikation mehr als zweimal in der letzten Woche einnehmen?" },
+          { "id": "7d", "text": "Hat eine Ärztin / ein Arzt bei Ihnen jemals einen zu hohen Blutdruck in den Blutgefäßen der Lunge festgestellt (Lungenhochdruck / pulmonale Hypertonie)?" }
+        ]
+      },
+      {
+        "id": "8",
+        "text": "Haben Sie eine Verletzung des Rückenmarks? (z.B. Tetraplegie / Lähmung aller Extremitäten, Paraplegie / Lähmung der Beine)?",
+        "ifYes": "Liegt solch eine Verletzung vor, beantworten Sie die Fragen 8a-8c.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 9 fort.",
+        "sub": [
+          { "id": "8a", "text": "Haben Sie Schwierigkeiten Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien zu kontrollieren? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente einnehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "8b", "text": "Haben Sie typischerweise einen so niedrigen Blutdruck in Ruhe, dass Sie dadurch Schwindel oder Benommenheit empfinden und/oder eine Ohnmacht erleiden?" },
+          { "id": "8c", "text": "Hat Ihre Ärztin / Ihr Arzt Ihnen gesagt, dass Sie manchmal anfallsartig hohe Blutdruckwerte haben (Autonome Dysreflexie)?" }
+        ]
+      },
+      {
+        "id": "9",
+        "text": "Hatten Sie schon einmal einen Schlaganfall? (z.B. transitorische ischämische Attacke / TIA, Hirninfarkt oder Hirnblutung)",
+        "ifYes": "Wenn mindestens eine der Erkrankungen vorliegt, beantworten Sie die Fragen 9a-9c.",
+        "ifNo": "Wenn NEIN fahren Sie mit Frage 10 fort.",
+        "sub": [
+          { "id": "9a", "text": "Haben Sie Schwierigkeiten Ihre Erkrankung mit Medikamenten oder anderen verordneten Therapien unter Kontrolle zu bringen? (Antworten Sie mit NEIN, wenn Sie zurzeit keine Medikamente nehmen bzw. keine anderen verordneten Therapien erhalten)" },
+          { "id": "9b", "text": "Bestehen bei Ihnen Einschränkungen hinsichtlich des Gehens oder Ihrer Mobilität?" },
+          { "id": "9c", "text": "Hatten Sie in den letzten 6 Monaten einen Schlaganfall oder eine Beeinträchtigung der Nerven oder der Muskulatur?" }
+        ]
+      },
+      {
+        "id": "10",
+        "text": "Wurden bei Ihnen mindestens eine andere, hier nicht erwähnte Erkrankung diagnostiziert oder haben Sie mindestens zwei der bereits genannten Erkrankungen (Fragen 1-9)?",
+        "ifYes": "Wenn anderweitige oder mindestens zwei von den bereits genannten Erkrankungen bei Ihnen vorliegen, beantworten Sie die Fragen 10a-10c.",
+        "ifNo": "Wenn NEIN lesen Sie bitte die Empfehlungen auf Seite 4.",
+        "sub": [
+          { "id": "10a", "text": "Hatten Sie in den letzten 12 Monaten infolge einer Kopfverletzung einen Ohnmachtsanfall oder einen Bewusstseinsverlust ODER hatten Sie in den letzten 12 Monaten eine diagnostizierte Gehirnerschütterung?" },
+          { "id": "10b", "text": "Haben Sie eine hier nicht erwähnte, diagnostizierte Erkrankung (z.B. Epilepsie, neurologische Störungen, Probleme mit den Nieren)?" },
+          { "id": "10c", "text": "Haben Sie aktuell zwei oder mehr Erkrankungen?" }
+        ]
+      }
+    ],
+    "medicationPrompt": "BITTE GEBEN SIE HIER IHRE ERKRANKUNGEN UND JEGLICHE DAZU VERORDNETE MEDIKATION AN:"
+  },
+  "resultAllNo": "Bitte lesen Sie die nachfolgenden Empfehlungen bzgl. Ihrer Erkrankung(en) und unterzeichnen Sie die EINVERSTÄNDNISERKLÄRUNG.\nWenn Sie alle ERGÄNZENDEN FRAGEN (Seite 2 und 3) bzgl. Ihrer Erkrankung mit NEIN beantwortet haben, können Sie sich mehr bewegen – Bitte unterzeichnen Sie die untenstehende EINVERSTÄNDNISERKLÄRUNG:\nFür die Entwicklung eines für Sie sicheren, effektiven und auf Ihre Gesundheitsbedürfnisse abgestimmten Bewegungsprogramms wird empfohlen, eine qualifizierte Person mit Bewegungsexpertise oder eine Ärztin / einen Arzt zu konsultieren.\nEs wird empfohlen, langsam zu starten und allmählich zu steigern: 3-5 Mal pro Woche je 20-60 Minuten Bewegung mit leichter bis moderater Intensität, darunter auch Ausdauer- und Kräftigungstraining.\nZur Steigerung sollten Sie eine Gesamtzeit von 150 Minuten Bewegung pro Woche oder mehr mit moderater Intensität anstreben.\nWenn Sie älter als 45 Jahre sind und NICHT an ein regelmäßiges Training mit intensiver bis maximaler Anstrengung gewöhnt sind, konsultieren Sie bitte vor der weiteren Intensitätssteigerung eine Ärztin / einen Arzt oder eine qualifizierte Person mit Bewegungsexpertise.",
+  "resultAnyYes": "Wenn Sie mindestens eine der ergänzenden Fragen (Seite 2 und 3) mit JA beantwortet haben, sollten Sie weitere Informationen einholen, bevor Sie sich mehr bewegen oder einen Fitness- oder Leistungstest durchführen lassen.\nSie sollten das speziell dafür entwickelte Online Instrument ePARmed-X+ (www.eparmedx.com) zum Screening und für Trainingsempfehlungen selbstständig ausfüllen oder dieses zusammen mit einer Ärztin / einem Arzt oder einer qualifizierten Person mit Bewegungsexpertise durchgehen.",
+  "waitPage1": "Bitte warten Sie damit, sich mehr zu bewegen, wenn:\nSie momentan erkältet / krank sind oder Fieber haben. In dem Fall ist es ratsam, die vollständige Genesung abzuwarten.\nSie schwanger sind – sprechen Sie mit Ihrer zuständigen Ärztin / Ihrem zuständigen Arzt, Frauenärztin / Frauenarzt oder Hebamme und / oder nutzen Sie den ePARmed-X+-Fragebogen auf www.eparmedx.com, bevor Sie sich mehr bewegen.\nSich Ihr Gesundheitszustand ändert – Beantworten Sie die Fragen auf Seite 2 bis 3 dieses Fragebogens und / oder sprechen Sie mit Ihrer Ärztin / Ihrem Arzt oder qualifizierte Person mit Bewegungsexpertise, bevor Sie mit Ihrem Bewegungsprogramm fortfahren.",
+  "waitPage4": "Bitte warten Sie damit, sich mehr zu bewegen, wenn:\nSie momentan erkältet / krank sind oder Fieber haben. In dem Fall ist es ratsam, die vollständige Genesung abzuwarten.\nSie schwanger sind – sprechen Sie mit Ihrer zuständigen Ärztin / Ihrem zuständigen Arzt, Frauenärztin / Frauenarzt oder Hebamme und / oder nutzen Sie den ePARmed-X+-Fragebogen auf www.eparmedx.com, bevor Sie sich mehr bewegen.\nSich Ihr Gesundheitszustand ändert – sprechen Sie mit Ihrer Ärztin / Ihrem Arzt oder einer qualifizierten Person mit Bewegungsexpertise bevor Sie mit Ihrem Bewegungsprogramm fortfahren.",
+  "closing": "Sie können den PAR-Q+ gerne kopieren. Bitte nutzen Sie den vollständigen Fragebogen, an dem KEINE Änderungen vorgenommen werden dürfen.\nDie Autor:innen, die PAR-Q+ Kooperationspartner:innen, Partnerorganisationen und deren Vertreter:innen übernehmen keine Haftung für Personen, die Bewegungsaktivitäten durchführen und / oder sich am PAR-Q+ oder dem ePARmed-X+ orientieren.\nWenn Sie nach dem Ausfüllen dieses Fragebogens nicht sicher sind, konsultieren Sie Ihre Ärztin / Ihren Arzt, bevor Sie sich mehr bewegen.",
+  "consent": "Personen, die den PAR-Q+ ausgefüllt haben, lesen und unterzeichnen bitte folgende Einverständniserklärung.\nWenn Sie noch nicht volljährig sind oder die Einwilligung eines gesetzlichen Vertreters (z.B. Eltern, Vormund, Betreuer:in) benötigen, müssen diese ebenfalls unterschreiben.\nHiermit bestätige ich, dass ich den Fragebogen vollständig gelesen, verstanden und ausgefüllt habe. Ich nehme zur Kenntnis, dass diese Freigabe für mehr Bewegung ab Ausfülldatum für maximal 12 Monate gültig ist und ungültig wird, falls mein (gesundheitlicher) Zustand sich verändert. Ich bin damit einverstanden, dass mein Verein, Fitnessstudio, Sport- oder Gesundheitseinrichtung bei Bedarf eine Kopie meines ausgefüllten Fragebogens aufbewahrt. Entsprechend der Europäischen Datenschutz-Grundverordnung (DS-GVO) wird die Vertraulichkeit der Kopie gewahrt."
+}

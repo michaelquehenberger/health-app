@@ -1,6 +1,7 @@
 // Zusammenfassung je Test und Messzeitpunkt (für Testmappe, Ergebnis und Verlauf).
 import { RESTING_PULSE_MIN_MORNINGS, restingPulseBaseline } from './calc';
 import type { TestId, TestRecord, Timepoint } from './types';
+import { TESTS } from './tests';
 
 export interface Summary {
   done: boolean;
@@ -50,7 +51,7 @@ export function summarize(records: TestRecord[], testId: TestId, tp: Timepoint):
       const time = sec === null ? '–' : `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')} min`;
       return idx !== null
         ? { done: true, text: `Index ${fmt(idx, 0)} · ${time}`, value: idx, unit: 'Index', records: all }
-        : { done: true, text: `Gehzeit ${time}`, value: sec, unit: 's', records: all };
+        : { done: true, text: `Gehzeit ${time} · Puls ${fmt(m(last, 'puls_ende'), 0)} bpm`, value: sec, unit: 's', records: all };
     }
     case 'T3': {
       const v = m(last, 'wiederholungen_30s');
@@ -74,12 +75,18 @@ export function summarize(records: TestRecord[], testId: TestId, tp: Timepoint):
   }
 }
 
-/** Vorschlag für den Messzeitpunkt: Baseline, bis es eine gibt; danach nach Tagen seit der Baseline. */
+/**
+ * Vorschlag für den Messzeitpunkt (nur Voreinstellung, in der Testmappe jederzeit änderbar):
+ * Tag 0–19 Baseline · Tag 20–59 „Tag 30“, sobald dort alle Tests erledigt sind „Tag 90“ · ab Tag 60 „Tag 90“.
+ */
 export function suggestTimepoint(records: TestRecord[], daysSinceBaseline: number | null): Timepoint {
-  if (records.length === 0 || daysSinceBaseline === null) return 'baseline';
-  if (daysSinceBaseline >= 60) return 'tag90';
-  if (daysSinceBaseline >= 20) return 'tag30';
-  return 'baseline';
+  if (records.length === 0 || daysSinceBaseline === null || daysSinceBaseline < 20) return 'baseline';
+  if (daysSinceBaseline < 60) return allDone(records, 'tag30') ? 'tag90' : 'tag30';
+  return 'tag90';
+}
+
+export function allDone(records: TestRecord[], tp: Timepoint): boolean {
+  return TESTS.every((t) => summarize(records, t.id, tp).done);
 }
 
 export function baselineDate(records: TestRecord[]): string | null {

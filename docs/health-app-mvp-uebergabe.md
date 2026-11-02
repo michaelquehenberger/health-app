@@ -2,6 +2,19 @@
 
 Stand: 1. November 2026 | Basis: `health-app-livion-konzept.md` (Projekt-Doc) + Prüfung der offenen Punkte
 
+> **Stand im Repo:** Diese Datei ist die Übergabe v0.1. Mit v0.2 (2. November 2026) wurde Abschnitt 5 ersetzt:
+> Der deutsche PAR-Q+ (Fassung 01.07.2024, Hochschule für Gesundheit Bochum) ist als einmalige Anamnese
+> direkt in der App umgesetzt. Die Texte liegen wörtlich in `src/parq-de.json`, die Ablauflogik in `src/parq.ts`.
+> Neue offene Punkte aus v0.2: 3a kommerzielle Nutzung des PAR-Q+ (Erlaubnis einholen),
+> 3b Häkchen statt Unterschrift (für kommerziell rechtlich prüfen).
+>
+> **v0.3 (2. November 2026), umgesetzt:** Einbeinstand mit 3 Versuchen und 60 s Pause (Countdown);
+> UKK-Kandidatenformel für Frauen `304 + 0,4 × Alter − (0,1417 × Zeit_in_Sekunden + 0,32 × Puls + 1,1 × BMI)`
+> hinter dem Schalter „Frauenindex“ (Standard aus, Anzeige „vorläufig“, Rechentest 108,8); Consent-Log mit Text,
+> Fassung, Zeitstempel, Ereignis und Teilnehmer-ID; Abbruchzeichen laut 5.6; Springer-Streuung (SD) wird nie angezeigt.
+> Offen: Prüfung der Frauenformel am Original, 3a, kommerzielle Prüfung von 3b, sportmedizinische Freigabe (7),
+> Zweckbestimmung und DSGVO/DSFA (9), Liegestütz-Tabelle Männer aus dem Konzept.
+
 ## 0. Hinweise an Claude Code
 
 - Der Nutzer (Michael) hat **keine Programmierkenntnisse**. Jeden Schritt einzeln und in einfachen Worten erklären, Befehle zum Kopieren anbieten, nach jedem Schritt prüfen lassen, ob es funktioniert.
