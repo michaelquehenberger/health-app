@@ -5,6 +5,7 @@ import {
 } from '../calc';
 import { Check, Seg } from '../components/ui';
 import { Stopwatch } from '../components/Stopwatch';
+import { KneeToWallGuide } from '../components/KneeToWallGuide';
 import { PROTOCOL_VERSION, STOP_RULES, testDef, timepointLabel } from '../tests';
 import type { InputValue, Measurement, Profile, TestId, TestRecord, Timepoint } from '../types';
 import { formatDate, nowTime, todayIso, uid } from '../store';
@@ -449,6 +450,7 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, mobili
         <p className="small"><strong>Ausgangsposition:</strong> {def.setup}</p>
         <p className="small"><strong>Versuche:</strong> {def.attempts}</p>
         <ol className="steps">{def.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+        {testId === 'T5' && <KneeToWallGuide />}
         <p className="small"><strong>Ende des Versuchs:</strong> {def.stop}</p>
         <p className="small"><strong>Ergebnis:</strong> {def.result}</p>
         <p className="small muted"><strong>Vergleich:</strong> {def.comparison}</p>

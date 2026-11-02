@@ -155,3 +155,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .stepper li { display: flex; flex-direction: column; gap: 6px; font-size: 14px; position: relative; }
 .stepper .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 800 14px var(--font-head); background: var(--surface-2); color: var(--ink); }
 .stepper li.done .dot { background: var(--mint); color: var(--navy); }
+
+.guide { margin: 0; display: grid; gap: 10px; }
+.guide-photo { position: relative; border-radius: 14px; overflow: hidden; }
+.guide-photo img { display: block; width: 100%; height: auto; }
+.guide-photo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.guide-side { width: 100%; height: auto; background: var(--offwhite); border-radius: 14px; }
+.guide figcaption { color: var(--ink-2); }
+.card.dark .guide figcaption { color: #d7e0e6; }
