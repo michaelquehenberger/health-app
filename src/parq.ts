@@ -22,7 +22,16 @@ export interface Anamnesis {
   answersB: Record<string, Answer>; // "1".."10" und "1a".."10c"
   medicationText: string; // Freitext am Ende von Teil B (nur bei Frage 10 = JA)
   /** Einverständnis per Häkchen: Datum, genauer Zeitstempel und Fassung des Einverständnistexts werden protokolliert. */
-  consent: { given: boolean; date: string | null; at?: string; textVersion?: string };
+  consent: {
+    given: boolean;
+    date: string | null;
+    /** Consent-Log (v0.3, 5.4): Zeitstempel, Fassung, genauer Text, Ereignis, Teilnehmer-ID */
+    at?: string;
+    textVersion?: string;
+    text?: string;
+    event?: 'haekchen_bestaetigt';
+    participantId?: string;
+  };
   result: AnamnesisResult | null;
   clearance: { date: string; source: 'eparmedx' | 'fachperson' } | null;
   /** Ersetzt durch eine neuere Anamnese oder wegen Änderung des Gesundheitszustands beendet */

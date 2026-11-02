@@ -4,7 +4,7 @@
 import type { TestId, Timepoint } from './types';
 
 /** Version der Testprotokolle; wird mit jeder Messung gespeichert. Bei Änderungen an Ablauf oder Grenzen erhöhen. */
-export const PROTOCOL_VERSION = 'v0.2';
+export const PROTOCOL_VERSION = 'v0.3';
 
 export interface TestDef {
   id: TestId;
@@ -77,7 +77,7 @@ export const TESTS: TestDef[] = [
     id: 'T4', name: 'Einbeinstand', group: 'Balance',
     short: '3 Versuche je Bein, Augen offen',
     setup: 'Neben einer Wand oder einem Stuhl, um dich bei Bedarf abzustützen. Augen offen.',
-    attempts: '3 Versuche je Bein, links und rechts getrennt. Die beste Zeit je Bein zählt.',
+    attempts: '3 Versuche je Bein, links und rechts getrennt, mit 60 Sekunden Pause zwischen den Versuchen. Die beste Zeit je Bein zählt.',
     steps: [
       'Auf ein Bein stellen und die Stoppuhr starten.',
       'Möglichst ruhig stehen bleiben.',
@@ -85,7 +85,7 @@ export const TESTS: TestDef[] = [
     ],
     stop: 'Ende, wenn der Fuß absetzt, du dich abstützt oder deutlich das Gleichgewicht verlierst. Spätestens nach 45 Sekunden.',
     result: 'Sekunden je Versuch, eine Nachkommastelle; höchstens 45 s.',
-    comparison: 'Für 40–59 Jahre: Mittelwert des besten Versuchs laut Springer 2007, ohne Streuung.',
+    comparison: 'Deine eigene Haltezeit und ihr Verlauf. Für 40–59 Jahre zusätzlich der Mittelwert des besten Versuchs laut Springer 2007, ohne Streuung und ohne Bewertung.',
     needsStopwatch: true,
   },
   {
@@ -130,7 +130,7 @@ export const TESTS: TestDef[] = [
     ],
     stop: 'Ende nach 2 km oder früher bei einem Abbruchgrund.',
     result: 'Gehzeit in Minuten und Sekunden, Puls am Ende in bpm, dazu Größe und Gewicht.',
-    comparison: 'Fitness-Index für Männer von 20–65 Jahren. Bei Frauen vorerst nur die Gehzeit.',
+    comparison: 'Fitness-Index für Männer von 20–65 Jahren. Bei Frauen vorerst Gehzeit und Puls als Verlauf.',
     needsStopwatch: true,
   },
 ];
@@ -157,10 +157,11 @@ export function timepointLabel(t: Timepoint): string {
  */
 export const STOP_RULES = [
   'Brustschmerz oder -druck',
-  'neue oder sich verändernde Schmerzen in Nacken, Kiefer, Rücken oder Armen',
-  'Schwindel oder Gefühl, ohnmächtig zu werden',
-  'Atemnot schon bei geringer Belastung oder neu auftretende starke Atemnot',
-  'ungewöhnliches Herzrasen oder Herzstolpern',
-  'starke, unerwartete Erschöpfung',
+  'Schmerz oder Druck in Hals, Kiefer oder Armen',
+  'Atemnot bei geringer Belastung oder neu auftretende starke Atemnot',
+  'Schwindel oder Ohnmachtsgefühl',
+  'Herzrasen oder ungewöhnliches Herzklopfen',
+  'ungewöhnliche Müdigkeit oder Erschöpfung',
+  'ungeklärte Herzsymptome',
 ];
 

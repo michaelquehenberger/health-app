@@ -226,7 +226,13 @@ export function AnamnesisScreen({ data, update, onDone }: {
       {st.step === 'einverstaendnis' && (
         <ConsentForm
           onConfirm={() => {
-            patch((x) => ({ ...x, consent: { given: true, date: today, at: new Date().toISOString(), textVersion: `PAR-Q+ ${PARQ.version}, Einverständniserklärung` } }));
+            patch((x) => ({
+              ...x,
+              consent: {
+                given: true, date: today, at: new Date().toISOString(), textVersion: PARQ.version, text: PARQ.consent,
+                event: 'haekchen_bestaetigt', participantId: x.participantId,
+              },
+            }));
             onDone();
           }}
         />

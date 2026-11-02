@@ -51,7 +51,7 @@ export function summarize(records: TestRecord[], testId: TestId, tp: Timepoint):
       const time = sec === null ? '–' : `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')} min`;
       return idx !== null
         ? { done: true, text: `Index ${fmt(idx, 0)} · ${time}`, value: idx, unit: 'Index', records: all }
-        : { done: true, text: `Gehzeit ${time}`, value: sec, unit: 's', records: all };
+        : { done: true, text: `Gehzeit ${time} · Puls ${fmt(m(last, 'puls_ende'), 0)} bpm`, value: sec, unit: 's', records: all };
     }
     case 'T3': {
       const v = m(last, 'wiederholungen_30s');

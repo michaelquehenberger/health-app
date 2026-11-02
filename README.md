@@ -30,9 +30,8 @@ npm run build    # fertige Web-App im Ordner dist/
 
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
-- UKK-Formel für Frauen: Bei Frauen werden nur die Rohdaten gespeichert und die Gehzeit angezeigt.
+- UKK-Formel für Frauen: Kandidatenformel hinter dem Schalter „Frauenindex“ in den Einstellungen (Standard aus, Anzeige „vorläufig“); Prüfung am Original fehlt.
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
-- Pausenlänge beim Einbeinstand.
 - PAR-Q+: Erlaubnis für kommerzielle Nutzung (PARQ@hs-gesundheit.de); Häkchen statt Unterschrift rechtlich prüfen.
 - Sportmedizinische Freigabe der Abbruchregeln.
 - Die Testanleitungen sind knapp gehalten und mit dem Konzept abzugleichen.

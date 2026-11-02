@@ -4,7 +4,7 @@ import type { AppData, TestRecord } from './types';
 
 const KEY = 'livion-mvp-v2';
 
-export const EMPTY: AppData = { version: 2, consent: null, profile: null, anamneses: [], records: [] };
+export const EMPTY: AppData = { version: 2, consent: null, profile: null, anamneses: [], records: [], settings: { womenIndex: false } };
 
 export function load(): AppData {
   try {
@@ -24,7 +24,7 @@ export function parseData(raw: string): AppData | null {
     // Ältere Stände hatten statt der Anamnese nur eine Freigabe („gate“); sie wird nicht übernommen.
     const { gate: _old, ...rest } = d;
     void _old;
-    return { ...EMPTY, ...rest, anamneses: Array.isArray(d.anamneses) ? d.anamneses : [] } as AppData;
+    return { ...EMPTY, ...rest, anamneses: Array.isArray(d.anamneses) ? d.anamneses : [], settings: { womenIndex: false, ...d.settings } } as AppData;
   } catch {
     return null;
   }

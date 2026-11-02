@@ -60,6 +60,7 @@ export function App() {
             timepoint={timepoint}
             timepointSource={timepoint === suggested ? 'vorschlag' : 'manuell'}
             profile={profile}
+            womenIndex={data.settings?.womenIndex ?? false}
             onSave={(r) => update((d) => ({ ...d, records: [...d.records, r] }))}
             onBack={() => setTest(null)}
           />
