@@ -44,3 +44,24 @@ describe('Vorschlag Messzeitpunkt', () => {
   it('Tag 20–59 mit erledigtem Tag 30: Tag 90', () => expect(suggestTimepoint([...base, ...fullSet('tag30')], 40)).toBe('tag90'));
   it('ab Tag 60: Tag 90', () => expect(suggestTimepoint(base, 60)).toBe('tag90'));
 });
+
+import { nextStep } from './results';
+
+describe('Nächster Schritt', () => {
+  const today = '2026-11-02';
+  it('ohne Messungen: Ruhepuls', () => {
+    expect(nextStep([], 'baseline', today)).toMatchObject({ kind: 'ruhepuls', measured: 0 });
+  });
+  it('Ruhepuls heute erledigt: erster offener Test (Knie-zur-Wand)', () => {
+    const r = [rec('T1', 'baseline', 'ruhepuls', 60, today)];
+    expect(nextStep(r, 'baseline', today)).toMatchObject({ kind: 'test', testId: 'T5', remaining: 6 });
+  });
+  it('alle Tests erledigt, Ruhepuls fehlt noch', () => {
+    const r = fullSet('baseline').filter((x) => x.testId !== 'T1');
+    r.push(rec('T1', 'baseline', 'ruhepuls', 60, today));
+    expect(nextStep(r, 'baseline', today)).toMatchObject({ kind: 'ruhepulsRest', doneToday: true });
+  });
+  it('alles erledigt: Tag 30 ab Baseline + 30 Tage', () => {
+    expect(nextStep(fullSet('baseline'), 'baseline', today)).toEqual({ kind: 'fertig', next: 'tag30', dueDate: '2026-12-02' });
+  });
+});

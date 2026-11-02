@@ -6,14 +6,13 @@ import { ResultView } from './TestScreen';
 import { formatDate } from '../store';
 
 export function HistoryScreen({ data, profile }: { data: AppData; profile: Profile }) {
-  const womenIndex = data.settings?.womenIndex ?? false;
   const [detail, setDetail] = useState<TestRecord | null>(null);
 
   if (detail) {
     return (
       <>
         <button className="btn ghost" style={{ alignSelf: 'flex-start', minHeight: 40 }} onClick={() => setDetail(null)}>← Verlauf</button>
-        <ResultView record={detail} profile={profile} womenIndex={womenIndex} />
+        <ResultView record={detail} profile={profile} />
       </>
     );
   }

@@ -19,7 +19,7 @@ export function ukkAgeOk(age: number | null | undefined): boolean {
 }
 
 export type UkkResult =
-  | { kind: 'index'; value: number; rating: UkkRating; provisional: boolean }
+  | { kind: 'index'; value: number; rating: UkkRating }
   | { kind: 'nichtBerechnet'; reason: string };
 
 export type UkkRating = 'sehr gut' | 'gut' | 'mittel' | 'schwach' | 'sehr schwach';
@@ -30,21 +30,18 @@ export function ukkIndexMale(age: number, minutes: number, seconds: number, puls
 }
 
 /**
- * Frauen, Kandidatenformel (KIT-Skript, hpcosmos), NICHT am Original geprüft (Übergabe v0.3, Abschnitt 6):
- * Index = 304 + 0,4 × Alter − (0,1417 × Zeit_in_Sekunden + 0,32 × Puls + 1,1 × BMI)
- * Rechnerisch gleich „Version B“, da 8,5 pro Minute 0,1417 pro Sekunde entspricht.
+ * Frauen: Index = 304 + 0,4 × Alter − (0,1417 × Zeit_in_Sekunden + 0,32 × Puls + 1,1 × BMI)
+ * (KIT-Skript, hpcosmos; rechnerisch gleich 304 − (8,5·Min + 0,14·Sek + 0,32·Puls + 1,1·BMI − 0,4·Alter)).
+ * Als geprüft übernommen am 02.11.2026 (Entscheidung Michael, docs/entscheidungen.md).
  */
-export function ukkIndexFemaleCandidate(age: number, totalSeconds: number, pulse: number, bmiValue: number): number {
+export function ukkIndexFemale(age: number, totalSeconds: number, pulse: number, bmiValue: number): number {
   return 304 + 0.4 * age - (0.1417 * totalSeconds + 0.32 * pulse + 1.1 * bmiValue);
 }
 
-/**
- * UKK-Fitness-Index, 20–65 Jahre. Männer immer; Frauen nur mit eingeschaltetem Schalter „Frauenindex“
- * (Standard: aus), dann als vorläufig markiert.
- */
+/** UKK-Fitness-Index für Männer und Frauen von 20–65 Jahren, nicht bei eingeschränktem Gehen. */
 export function ukkIndex(
   args: { sex: Sex; age: number; minutes: number; seconds: number; pulse: number; bmi: number },
-  options: { womenIndex?: boolean; mobilityLimited?: boolean } = {},
+  options: { mobilityLimited?: boolean } = {},
 ): UkkResult {
   const { sex, age, minutes, seconds, pulse } = args;
   if (!ukkAgeOk(age)) {
@@ -55,19 +52,13 @@ export function ukkIndex(
   }
   if (sex === 'maennlich') {
     const value = ukkIndexMale(age, minutes, seconds, pulse, args.bmi);
-    return { kind: 'index', value, rating: ukkRating(value), provisional: false };
-  }
-  if (sex === 'weiblich' && options.womenIndex) {
-    const value = ukkIndexFemaleCandidate(age, minutes * 60 + seconds, pulse, args.bmi);
-    return { kind: 'index', value, rating: ukkRating(value), provisional: true };
+    return { kind: 'index', value, rating: ukkRating(value) };
   }
   if (sex === 'weiblich') {
-    return {
-      kind: 'nichtBerechnet',
-      reason: 'Die Formel für Frauen wird noch am Original geprüft. Gespeichert sind Gehzeit, Puls, BMI und Alter; der Index lässt sich später nachberechnen.',
-    };
+    const value = ukkIndexFemale(age, minutes * 60 + seconds, pulse, args.bmi);
+    return { kind: 'index', value, rating: ukkRating(value) };
   }
-  return { kind: 'nichtBerechnet', reason: 'Für diese Angabe zum Geschlecht gibt es keine geprüfte Formel. Gespeichert sind Gehzeit, Puls, BMI und Alter.' };
+  return { kind: 'nichtBerechnet', reason: 'Für diese Angabe zum Geschlecht gibt es keine Formel. Gespeichert sind Gehzeit, Puls, BMI und Alter.' };
 }
 
 /** Bewertung: über 130 sehr gut, 111–130 gut, 90–110 mittel, 70–89 schwach, unter 70 sehr schwach. */
