@@ -1,5 +1,6 @@
 import type { Sex } from './calc';
 import type { Anamnesis } from './parq';
+import type { HealthState } from './health/types';
 
 export interface Profile {
   /** Pseudonym, keine Namen speichern. */
@@ -59,6 +60,8 @@ export interface AppData {
   anamneses: Anamnesis[];
   records: TestRecord[];
   settings?: Settings;
+  /** Gesundheitsmodul (Beschwerden, Befunde, Tageskarte, Wearables). Fehlt in älteren Sicherungen. */
+  health?: HealthState;
 }
 
 export interface Settings {

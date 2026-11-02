@@ -1,6 +1,7 @@
 // Daten nur lokal im Browser auf diesem Gerät. Kein Server, keine Cloud.
 import { useCallback, useEffect, useState } from 'react';
 import type { AppData, TestRecord } from './types';
+import { EMPTY_HEALTH, type HealthState } from './health/types';
 
 const KEY = 'livion-mvp-v2';
 
@@ -24,10 +25,26 @@ export function parseData(raw: string): AppData | null {
     // Ältere Stände hatten statt der Anamnese nur eine Freigabe („gate“); sie wird nicht übernommen.
     const { gate: _old, ...rest } = d;
     void _old;
-    return { ...EMPTY, ...rest, anamneses: Array.isArray(d.anamneses) ? d.anamneses : [], settings: { womenIndex: false, ...d.settings } } as AppData;
+    return { ...EMPTY, ...rest, anamneses: Array.isArray(d.anamneses) ? d.anamneses : [], settings: { womenIndex: false, ...d.settings }, health: normalizeHealth(d.health) } as AppData;
   } catch {
     return null;
   }
+}
+
+/** Ergänzt fehlende Teile des Gesundheitsmoduls (ältere Sicherungen kennen es nicht). */
+export function normalizeHealth(h: Partial<HealthState> | undefined): HealthState {
+  const arr = <T,>(v: T[] | undefined): T[] => (Array.isArray(v) ? v : []);
+  return {
+    consent: h?.consent ?? null,
+    profile: { ...EMPTY_HEALTH.profile, ...(h?.profile ?? {}) },
+    complaints: arr(h?.complaints),
+    reports: arr(h?.reports),
+    values: arr(h?.values),
+    feedback: arr(h?.feedback),
+    dayCards: arr(h?.dayCards),
+    wearables: arr(h?.wearables),
+    oura: h?.oura ?? null,
+  };
 }
 
 function save(data: AppData): void {
@@ -48,6 +65,8 @@ export function useAppData() {
   const reset = useCallback(() => {
     try {
       localStorage.removeItem(KEY);
+      localStorage.removeItem('livion-oura-client');
+      sessionStorage.removeItem('livion-oura-state');
     } catch {
       /* ignorieren */
     }
@@ -65,8 +84,13 @@ function download(name: string, content: string, type: string): void {
   URL.revokeObjectURL(url);
 }
 
+/** Der Oura-Zugang gehört nicht in die Sicherungsdatei: Wer die Datei hat, hätte sonst Zugriff auf die Oura-Daten. */
+export function dataForExport(data: AppData): AppData {
+  return data.health ? { ...data, health: { ...data.health, oura: null } } : data;
+}
+
 export function exportJson(data: AppData): void {
-  download(`livion-${data.profile?.participantId ?? 'daten'}-${todayIso()}.json`, JSON.stringify(data, null, 2), 'application/json');
+  download(`livion-${data.profile?.participantId ?? 'daten'}-${todayIso()}.json`, JSON.stringify(dataForExport(data), null, 2), 'application/json');
 }
 
 /** Eine Zeile je Messwert mit den Pflichtfeldern aus der Übergabe (Abschnitt 4). */
@@ -97,6 +121,11 @@ export function todayIso(d = new Date()): string {
 
 export function nowTime(d = new Date()): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+export function addDays(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return todayIso(new Date(y, m - 1, d + n));
 }
 
 export function addMonths(iso: string, n: number): string {
