@@ -58,10 +58,4 @@ export interface AppData {
   /** Alle Anamnesen (PAR-Q+), die jüngste gilt. Gesundheitsdaten nach Art. 9 DSGVO. */
   anamneses: Anamnesis[];
   records: TestRecord[];
-  settings?: Settings;
-}
-
-export interface Settings {
-  /** Schalter „Frauenindex“: Kandidatenformel für Frauen anzeigen (vorläufig). Standard: aus. */
-  womenIndex: boolean;
 }

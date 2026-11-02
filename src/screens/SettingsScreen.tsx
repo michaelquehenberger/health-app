@@ -3,7 +3,6 @@ import type { AppData, Profile } from '../types';
 import { exportCsv, exportJson, formatDate, parseData, todayIso } from '../store';
 import { anamnesisValid, latestAnamnesis } from '../parq';
 import { ProfileForm } from './ProfileForm';
-import { Check } from '../components/ui';
 
 export function SettingsScreen({ data, update, replace, reset, openGate }: {
   data: AppData;
@@ -43,13 +42,6 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
         <span className="label">Anamnese (PAR-Q+)</span>
         <p className="small">{anamnesisValid(current, todayIso()) && current ? `Gültig bis ${formatDate(current.validUntil)}.` : 'Keine gültige Freigabe.'}</p>
         <button className="btn ghost" onClick={openGate}>Anamnese ansehen oder erneuern</button>
-      </div>
-
-      <div className="card">
-        <span className="label">Auswertung</span>
-        <Check checked={data.settings?.womenIndex ?? false} onChange={(v) => update((d) => ({ ...d, settings: { ...d.settings, womenIndex: v } }))}>
-          Frauenindex anzeigen (UKK-Gehtest). Die Formel für Frauen ist noch nicht am Original geprüft; der Index wird als „vorläufig“ markiert.
-        </Check>
       </div>
 
       <div className="card">

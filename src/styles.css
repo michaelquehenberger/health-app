@@ -150,3 +150,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .result-big { font-family: var(--font-head); font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.05; }
 .trials { display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 8px; align-items: center; }
 .card.dark .seg button[aria-pressed='true'] { background: var(--mint); border-color: var(--mint); color: var(--navy); }
+
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stepper li { display: flex; flex-direction: column; gap: 6px; font-size: 14px; position: relative; }
+.stepper .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 800 14px var(--font-head); background: var(--surface-2); color: var(--ink); }
+.stepper li.done .dot { background: var(--mint); color: var(--navy); }
