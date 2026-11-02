@@ -103,6 +103,7 @@ export function AnamnesisScreen({ data, update, onDone, goTests }: {
               <ol className="steps">
                 <li><strong>Ruhepuls an 5–7 Morgen:</strong> jeden Morgen in Ruhe messen und eintragen, am besten ab morgen früh.</li>
                 <li><strong>Testtag, etwa 1 Stunde:</strong> die sechs Tests der Reihe nach, den Gehtest zuletzt. Was du brauchst, steht in der Testmappe.</li>
+                <li><strong>Gesundheitsdaten, das Herzstück:</strong> Blutwerte, Beschwerden und deine Oura-Daten. Daraus entsteht dein Übungsplan.</li>
                 <li><strong>Nach 30 und 90 Tagen wiederholen:</strong> Die Testmappe zeigt dir, wann es so weit ist.</li>
               </ol>
               <button className="btn primary block" onClick={goTests}>Zur Testmappe</button>

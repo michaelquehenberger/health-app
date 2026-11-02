@@ -9,6 +9,16 @@ Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push a
 
 Seit Version 0.5 gibt es zusätzlich das **Gesundheitsmodul** (Beschwerden mit roten Flaggen, Blutwerte, Tageskarte mit Übungen und Videos, Ernährung, Trinkmenge, Supplement-Infokarten, Wearable-Daten). Grundlage: Konzept, Auswertungslogik und Übungsdatenbank im Claude-Projekt „Health App“.
 
+## Ablauf der App
+
+1. **Profil** (Teilnehmer-ID, Alter, Geschlecht, Größe, Gewicht)
+2. **Anamnese** (PAR-Q+, einmalig, 12 Monate gültig)
+3. **Testmappe** (Ruhepuls an 5–7 Morgen, Testtag mit sechs Tests)
+4. **Gesundheitsmodul, das Herzstück** (Einwilligung und Blutwerte Pflicht; Oura mit Schlaf, HRV, Ruhepuls, VO2max sowie Beschwerden empfohlen)
+5. **Auswertung und Übungsplan** (derzeit regelbasierter Tagesplan; KI-Auswertung aller Daten geplant)
+
+„Heute“ zeigt den Weg und immer den nächsten Schritt (`src/journey.ts`, Tests in `src/journey.test.ts`).
+
 ## Starten
 
 ```bash
@@ -69,6 +79,9 @@ npm run build    # fertige Web-App im Ordner dist/
 - Der Verlauf zeigt Wearable-Daten noch nicht als Kurve.
 
 ## Offen (nicht erfunden, bewusst ausgelassen)
+
+- **KI-Auswertung (Schritt 5):** braucht einen Server-Baustein (API-Schlüssel darf nicht in die App), einen Auftragsverarbeitungsvertrag mit dem KI-Anbieter und eine Prüfung nach MDR/MDCG 2019-11, weil die App dann aus Blutwerten Empfehlungen ableitet.
+- **Oura VO2max:** Endpunkt `vO2_max` eingebaut, mit echtem Ring noch nicht geprüft; fehlt er, laufen die übrigen Daten weiter.
 
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
 - PAR-Q+: Erlaubnis für kommerzielle Nutzung (PARQ@hs-gesundheit.de, Anfrageinhalt in Übergabe 5.7); Häkchen statt Unterschrift rechtlich prüfen.

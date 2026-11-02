@@ -10,8 +10,8 @@ export function HealthConsent({ onAccept }: { onAccept: (c: Consent) => void }) 
   const [ok, setOk] = useState(false);
   return (
     <div className="card">
-      <span className="label">Gesundheitsmodul</span>
-      <h2>Bevor du Befunde und Beschwerden einträgst</h2>
+      <span className="label">Einwilligung für Gesundheitsdaten</span>
+      <h2>Bevor du Blutwerte, Beschwerden und Oura-Daten einträgst</h2>
       <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
         <li><strong>Keine Diagnose.</strong> Die Hinweise sind allgemeine Information und ersetzen keine ärztliche Beratung.</li>
         <li><strong>Nur auf diesem Gerät.</strong> Blutwerte, Beschwerden, Allergien, Medikamente und Wearable-Daten sind Gesundheitsdaten. Sie bleiben in diesem Browser; es gibt keinen Server.</li>

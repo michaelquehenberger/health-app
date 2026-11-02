@@ -27,9 +27,10 @@ function Stepper({ unlocked, pulseDone, pulseCount, testsDone, testsTotal }: {
   );
 }
 
-export function FolderScreen({ data, update, unlocked, timepoint, suggested, setTimepoint, openTest, openGate, goHistory, goSettings }: {
+export function FolderScreen({ data, update, goHealth, unlocked, timepoint, suggested, setTimepoint, openTest, openGate, goHistory, goSettings }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
+  goHealth: () => void;
   goHistory: () => void;
   goSettings: () => void;
   unlocked: boolean;
@@ -59,7 +60,7 @@ export function FolderScreen({ data, update, unlocked, timepoint, suggested, set
           <button className="btn primary" onClick={openGate}>Zur Anamnese</button>
         </div>
       ) : step.kind === 'fertig' || step.kind === 'ruhepulsRest' ? (
-        <CompletionPanel data={data} update={update} timepoint={timepoint} step={step} openTest={openTest} goHistory={goHistory} goSettings={goSettings} />
+        <CompletionPanel data={data} update={update} timepoint={timepoint} step={step} openTest={openTest} goHealth={goHealth} goHistory={goHistory} goSettings={goSettings} />
       ) : (
         <div className="card dark">
           <span className="label">Dein nächster Schritt · {timepointLabel(timepoint)}</span>

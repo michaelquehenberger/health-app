@@ -13,6 +13,8 @@ export interface WearableSummary {
   avgSleepHours: number | null;
   avgRestingHr: number | null;
   avgHrv: number | null;
+  /** Letzter vorhandener VO2max-Wert im Zeitraum */
+  latestVo2max: number | null;
 }
 
 function avg(values: (number | null)[]): number | null {
@@ -30,5 +32,6 @@ export function summarizeWearables(all: WearableDay[], today: string, days = 7):
     avgSleepHours: avg(inRange.map((x) => x.sleepHours)),
     avgRestingHr: avg(inRange.map((x) => x.restingHr)),
     avgHrv: avg(inRange.map((x) => x.hrv)),
+    latestVo2max: [...inRange].reverse().find((x) => typeof x.vo2max === 'number')?.vo2max ?? null,
   };
 }

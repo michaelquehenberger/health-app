@@ -16,6 +16,8 @@ import { HealthHome, type HealthView } from './health/screens/HealthHome';
 import { HealthConsent } from './health/screens/HealthConsent';
 import { OURA_CLIENT_KEY, OURA_STATE_KEY } from './health/screens/WearablesPanel';
 import { connectionFromToken, parseTokenHash } from './health/wearables/oura';
+import { computeJourney, healthItems, type StepId } from './journey';
+import { JourneyPanel, HealthChecklist } from './screens/JourneyPanel';
 import type { TestId, Timepoint } from './types';
 
 type Tab = 'heute' | 'gesundheit' | 'tests' | 'anamnese' | 'verlauf' | 'einstellungen';
@@ -86,19 +88,48 @@ export function App() {
       <div className="app" style={{ paddingBottom: 32 }}>
         <div className="topbar"><Wordmark /><span className="badge-test">Testphase</span></div>
         <h1>Dein Profil</h1>
-        <ProfileForm initial={null} submitLabel="Weiter" onSave={(profile) => { update((d) => ({ ...d, profile })); setTab('heute'); }} />
+        <ProfileForm initial={null} submitLabel="Weiter zur Anamnese" onSave={(profile) => { update((d) => ({ ...d, profile })); setTab('anamnese'); }} />
       </div>
     );
   }
   const profile = data.profile;
-  const needsHealthConsent = (tab === 'heute' || tab === 'gesundheit') && !health.consent;
+  const needsHealthConsent = tab === 'gesundheit' && !health.consent;
+  const journey = computeJourney(data, todayIso());
+  const healthReady = journey.steps.find((s) => s.id === 'gesundheit')?.status === 'erledigt';
+  const goHealth = () => {
+    const items = healthItems(data);
+    const open = items.find((i) => !i.done && i.id !== 'einwilligung');
+    setHealthView(open?.id === 'wearable' ? 'wearables' : open?.id === 'beschwerden' ? 'beschwerden' : 'befunde');
+    setTab('gesundheit');
+  };
+  const go = (id: StepId) => {
+    setTest(null);
+    if (id === 'profil') setTab('einstellungen');
+    else if (id === 'anamnese') setTab('anamnese');
+    else if (id === 'testmappe') setTab('tests');
+    else if (id === 'gesundheit') goHealth();
+    else {
+      setTab('heute');
+      setTimeout(() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+  };
 
   return (
     <>
       <main className="app">
         <div className="topbar"><Wordmark /><span className="badge-test">{profile.participantId} · Testphase</span></div>
+        {tab === 'heute' && <JourneyPanel journey={journey} go={go} />}
+        {tab === 'gesundheit' && <HealthChecklist items={journey.healthItems} />}
         {needsHealthConsent && <HealthConsent onAccept={(consent) => updateHealth((h) => ({ ...h, consent }))} />}
-        {tab === 'heute' && health.consent && (
+        {tab === 'heute' && health.consent && healthReady && (
+          <div id="plan" className="stack" style={{ gap: 16 }}>
+          <div className="card">
+            <span className="label">Auswertung und Übungsplan</span>
+            <p className="small">
+              Dein Tagesplan unten entsteht aus deiner Anamnese, deinen Beschwerden und deinen Blutwerten.
+              Als Nächstes kommt die KI-Auswertung dazu: Sie bezieht auch deine Testwerte und deine Oura-Daten (Schlaf, HRV, Ruhepuls, VO2max) ein.
+            </p>
+          </div>
           <TodayScreen
             data={healthView4Today}
             update={updateHealth}
@@ -107,6 +138,7 @@ export function App() {
             goComplaint={() => { setHealthView('beschwerden'); setTab('gesundheit'); }}
             goWearables={() => { setHealthView('wearables'); setTab('gesundheit'); }}
           />
+          </div>
         )}
         {tab === 'gesundheit' && health.consent && (
           <HealthHome
@@ -132,7 +164,7 @@ export function App() {
             onBack={() => setTest(null)}
           />
         ) : tab === 'tests' ? (
-          <FolderScreen data={data} update={update} goHistory={() => setTab('verlauf')} goSettings={() => setTab('einstellungen')} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
+          <FolderScreen data={data} update={update} goHealth={goHealth} goHistory={() => setTab('verlauf')} goSettings={() => setTab('einstellungen')} unlocked={unlocked} timepoint={timepoint} suggested={suggested} setTimepoint={setChosen} openTest={setTest} openGate={() => setTab('anamnese')} />
         ) : null}
         {tab === 'anamnese' && <AnamnesisScreen data={data} update={update} onDone={() => window.scrollTo(0, 0)} goTests={() => setTab('tests')} />}
         {tab === 'verlauf' && <HistoryScreen data={data} profile={profile} />}

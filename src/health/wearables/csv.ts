@@ -2,7 +2,7 @@
 // Das Format ist unser eigenes einfaches Tabellenformat; der Garmin-Export selbst wurde nicht geprüft.
 import type { WearableDay } from '../types';
 
-export const CSV_TEMPLATE = 'Datum;Schlaf_Stunden;Schlaf_Score;Bereitschaft;Ruhepuls;HRV\n2026-11-01;7,2;82;76;56;48\n';
+export const CSV_TEMPLATE = 'Datum;Schlaf_Stunden;Schlaf_Score;Bereitschaft;Ruhepuls;HRV;VO2max\n2026-11-01;7,2;82;76;56;48;34\n';
 
 function toNumber(s: string | undefined): number | null {
   if (s === undefined) return null;
@@ -18,6 +18,7 @@ const ALIASES: Record<string, keyof Omit<WearableDay, 'date' | 'source'>> = {
   bereitschaft: 'readiness', readiness: 'readiness',
   ruhepuls: 'restingHr', resting_hr: 'restingHr',
   hrv: 'hrv',
+  vo2max: 'vo2max', vo2_max: 'vo2max',
 };
 
 export interface CsvResult {

@@ -88,6 +88,8 @@ export interface WearableDay {
   readiness: number | null;
   restingHr: number | null;
   hrv: number | null;
+  /** VO2max laut Oura (ml/kg/min); fehlt bei älteren Einträgen */
+  vo2max?: number | null;
 }
 
 export interface OuraConnection {

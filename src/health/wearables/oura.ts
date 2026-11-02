@@ -36,7 +36,7 @@ const num = (x: unknown): number | null => (typeof x === 'number' && Number.isFi
 const str = (x: unknown): string | null => (typeof x === 'string' ? x : null);
 
 /** Fügt die drei Oura-Antworten (Schlaf-Details, Schlaf-Score, Bereitschaft) zu Tagen zusammen. */
-export function mapOura(sleep: Json[], dailySleep: Json[], readiness: Json[]): WearableDay[] {
+export function mapOura(sleep: Json[], dailySleep: Json[], readiness: Json[], vo2: Json[] = []): WearableDay[] {
   const days = new Map<string, WearableDay>();
   const get = (date: string): WearableDay => {
     let d = days.get(date);
@@ -68,6 +68,12 @@ export function mapOura(sleep: Json[], dailySleep: Json[], readiness: Json[]): W
   for (const r of readiness) {
     const date = str(r.day);
     if (date) get(date).readiness = num(r.score);
+  }
+  // VO2max: Endpunkt vO2_max, Feld vo2_max je Tag (laut Oura-API-Schema)
+  for (const v of vo2) {
+    const date = str(v.day);
+    const value = num(v.vo2_max);
+    if (date && value !== null) get(date).vo2max = value;
   }
   return [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -101,10 +107,15 @@ async function fetchAll(endpoint: string, token: string, start: string, end: str
 }
 
 export async function fetchOuraDays(token: string, start: string, end: string, fetchFn: typeof fetch = fetch): Promise<WearableDay[]> {
-  const [sleep, dailySleep, readiness] = await Promise.all([
+  const [sleep, dailySleep, readiness, vo2] = await Promise.all([
     fetchAll('sleep', token, start, end, fetchFn),
     fetchAll('daily_sleep', token, start, end, fetchFn),
     fetchAll('daily_readiness', token, start, end, fetchFn),
+    // VO2max ist nicht für jeden Ring und jede Freigabe verfügbar; fehlt er, laufen die übrigen Daten trotzdem.
+    fetchAll('vO2_max', token, start, end, fetchFn).catch((e: unknown) => {
+      if (e instanceof OuraError && e.kind === 'abgelaufen') throw e;
+      return [] as Json[];
+    }),
   ]);
-  return mapOura(sleep, dailySleep, readiness);
+  return mapOura(sleep, dailySleep, readiness, vo2);
 }
