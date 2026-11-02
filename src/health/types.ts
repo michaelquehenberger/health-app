@@ -121,6 +121,22 @@ export interface HealthState {
   oura: OuraConnection | null;
   /** Einwilligung, dass Befund-Dateien zur Auslesung an den KI-Anbieter gehen (getrennt von der Gesundheits-Einwilligung) */
   aiConsent?: Consent | null;
+  /** Einwilligung, dass Gesundheitsdaten ohne Namen zur Auswertung an den KI-Anbieter gehen */
+  aiAnalysisConsent?: Consent | null;
+  /** Gespeicherte KI-Auswertungen, neueste zuletzt */
+  analyses?: AnalysisRecord[];
+  /** Übungen aus einer KI-Auswertung, die in den Tagesplan übernommen wurden */
+  planChoice?: { analysisId: string; exerciseIds: string[]; date: string } | null;
+}
+
+export interface AnalysisRecord {
+  id: string;
+  createdAt: string;
+  model: string;
+  rulesVersion: string;
+  /** Eingabe, wie sie an die KI ging (zur Nachprüfung) */
+  input: string;
+  result: import('./ai/planAnalysis').PlanAnalysisResult;
 }
 
 export const EMPTY_HEALTH_PROFILE: HealthProfile = {

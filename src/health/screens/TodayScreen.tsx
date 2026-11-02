@@ -48,8 +48,8 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
   const wearable = useMemo(() => summarizeWearables(data.wearables, today), [data.wearables, today]);
 
   const card = useMemo(
-    () => buildDayCard({ date: today, profile, complaints: data.complaints, feedback: data.feedback, values: data.values, reports: data.reports }),
-    [today, profile, data.complaints, data.feedback, data.values, data.reports],
+    () => buildDayCard({ date: today, profile, complaints: data.complaints, feedback: data.feedback, values: data.values, reports: data.reports, preferredIds: data.planChoice?.exerciseIds }),
+    [today, profile, data.complaints, data.feedback, data.values, data.reports, data.planChoice],
   );
 
   const fb = data.feedback.find((f) => f.date === today) ?? emptyFeedback(today);
@@ -135,7 +135,7 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
               <span className="label">Heute · {card.focusLabel}</span>
               <span className="muted num">{doneCount}/{card.exercises.length}</span>
             </div>
-            {card.region && <h2>{regionInfo(card.region).label}</h2>}
+            {card.regions.length > 0 && <h2>{card.regions.map((r) => regionInfo(r).label).join(' · ')}</h2>}
 
             {card.exercises.length === 0 && card.endurance && <p>{card.endurance}</p>}
 
@@ -152,7 +152,7 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
                       </button>
                       <details style={{ flex: 1 }}>
                         <summary>
-                          <div className="kind">{e.kind === 'kraeftigung' ? 'Kräftigung' : 'Beweglichkeit'}</div>
+                          <div className="kind">{card.regions.length > 1 ? `${regionInfo(e.region).label} · ` : ''}{e.kind === 'kraeftigung' ? 'Kräftigung' : 'Beweglichkeit'}</div>
                           {e.name}
                           <div className="dose">{e.dose}</div>
                         </summary>
@@ -163,8 +163,13 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
                   );
                 })}
                 {card.endurance && <p className="small" style={{ borderTop: '1px solid var(--navy-2)', paddingTop: 12 }}>{card.endurance}</p>}
-                {card.region && <VideoList videos={regionInfo(card.region).videos} />}
-                {card.region && <p className="muted" style={{ fontSize: 12 }}>Anleitung nach {regionInfo(card.region).sourceLabel}.</p>}
+                {card.regions.map((r) => (
+                  <div key={r} className="stack" style={{ gap: 6 }}>
+                    {card.regions.length > 1 && <strong className="small">{regionInfo(r).label}</strong>}
+                    <VideoList videos={regionInfo(r).videos} />
+                    <p className="muted" style={{ fontSize: 12 }}>Anleitung nach {regionInfo(r).sourceLabel}.</p>
+                  </div>
+                ))}
               </>
             )}
           </div>
@@ -280,11 +285,11 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
             <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
               {GENERAL_RULES.map((r) => <li key={r}>{r}</li>)}
             </ul>
-            {card.region && (
-              <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
-                {regionInfo(card.region).notes.map((r) => <li key={r}>{r}</li>)}
+            {card.regions.map((reg) => (
+              <ul key={reg} className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
+                {regionInfo(reg).notes.map((r) => <li key={r}>{r}</li>)}
               </ul>
-            )}
+            ))}
           </details>
           <p className="footer-note">Regeln {card.rulesVersion} · Stufe {card.level} · Entwurf, nicht fachlich freigegeben</p>
         </>

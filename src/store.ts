@@ -45,6 +45,10 @@ export function normalizeHealth(h: Partial<HealthState> | undefined): HealthStat
     dayCards: arr(h?.dayCards),
     wearables: arr(h?.wearables),
     oura: h?.oura ?? null,
+    aiConsent: h?.aiConsent ?? null,
+    aiAnalysisConsent: h?.aiAnalysisConsent ?? null,
+    analyses: arr(h?.analyses),
+    planChoice: h?.planChoice ?? null,
   };
 }
 

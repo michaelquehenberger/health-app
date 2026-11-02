@@ -13,6 +13,7 @@ import { baselineDate, nextStep, suggestTimepoint } from './results';
 import { EMPTY_HEALTH, type HealthState } from './health/types';
 import { TodayScreen } from './health/screens/TodayScreen';
 import { HealthHome, type HealthView } from './health/screens/HealthHome';
+import { AnalysisPanel } from './health/screens/AnalysisPanel';
 import { HealthConsent } from './health/screens/HealthConsent';
 import { OURA_CLIENT_KEY, OURA_STATE_KEY } from './health/screens/WearablesPanel';
 import { connectionFromToken, parseTokenHash } from './health/wearables/oura';
@@ -123,13 +124,7 @@ export function App() {
         {needsHealthConsent && <HealthConsent onAccept={(consent) => updateHealth((h) => ({ ...h, consent }))} />}
         {tab === 'heute' && health.consent && healthReady && (
           <div id="plan" className="stack" style={{ gap: 16 }}>
-          <div className="card">
-            <span className="label">Auswertung und Übungsplan</span>
-            <p className="small">
-              Dein Tagesplan unten entsteht aus deiner Anamnese, deinen Beschwerden und deinen Blutwerten.
-              Als Nächstes kommt die KI-Auswertung dazu: Sie bezieht auch deine Testwerte und deine Oura-Daten (Schlaf, HRV, Ruhepuls, VO2max) ein.
-            </p>
-          </div>
+          <AnalysisPanel data={data} update={updateHealth} />
           <TodayScreen
             data={healthView4Today}
             update={updateHealth}
