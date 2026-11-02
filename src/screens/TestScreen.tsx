@@ -4,7 +4,7 @@ import {
 } from '../calc';
 import { Check, Seg } from '../components/ui';
 import { Stopwatch } from '../components/Stopwatch';
-import { STOP_RULES, testDef, timepointLabel } from '../tests';
+import { PROTOCOL_VERSION, STOP_RULES, testDef, timepointLabel } from '../tests';
 import type { InputValue, Measurement, Profile, TestId, TestRecord, Timepoint } from '../types';
 import { formatDate, nowTime, todayIso, uid } from '../store';
 
@@ -292,7 +292,7 @@ export function ResultView({ record, profile }: { record: TestRecord; profile: P
       break;
     case 'T8':
       main = <><span className="result-big">{formatNum(m('wiederholungen'), 0)}</span> <span className="muted">Wiederholungen ({record.inputs.variante === 'zehen' ? 'Zehen' : 'Knie'})</span></>;
-      comparison = <p className="small">Kein Vergleichswert, nur dein Verlauf.</p>;
+      comparison = <p className="small">Vergleichswert derzeit nicht verfügbar. Die Anzahl der korrekt ausgeführten Liegestütze wird gespeichert.</p>;
       break;
   }
 
@@ -301,15 +301,20 @@ export function ResultView({ record, profile }: { record: TestRecord; profile: P
       <span className="label">Ergebnis · {timepointLabel(record.timepoint)} · {formatDate(record.date)}</span>
       <div>{main}</div>
       {comparison}
-      <p className="muted">Datenqualität {record.quality} · {record.method}{record.comment ? ` · ${record.comment}` : ''}</p>
+      <p className="muted">
+        Datenqualität {record.quality} · {record.method} · Protokoll {record.protocolVersion ?? 'v0.1'}
+        {record.timepointSource === 'manuell' ? ' · Messzeitpunkt manuell gewählt' : ''}
+        {record.comment ? ` · ${record.comment}` : ''}
+      </p>
     </div>
   );
 }
 
 // ---------- Test-Screen ----------
-export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
+export function TestScreen({ testId, timepoint, timepointSource, profile, onSave, onBack }: {
   testId: TestId;
   timepoint: Timepoint;
+  timepointSource: 'vorschlag' | 'manuell';
   profile: Profile;
   onSave: (r: TestRecord) => void;
   onBack: () => void;
@@ -325,7 +330,7 @@ export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
   const [abortReason, setAbortReason] = useState<string | null>(null);
 
   const base = (): Omit<TestRecord, 'inputs' | 'measurements' | 'method' | 'aborted'> => ({
-    id: uid(), testId, timepoint, date, time, quality: deviated ? 'C' : 'B', comment: comment.trim(),
+    id: uid(), testId, timepoint, timepointSource, protocolVersion: PROTOCOL_VERSION, date, time, quality: deviated ? 'C' : 'B', comment: comment.trim(),
   });
 
   function save() {
@@ -376,7 +381,12 @@ export function TestScreen({ testId, timepoint, profile, onSave, onBack }: {
       <div className="card dark">
         <span className="label">{def.id} · {def.group} · {timepointLabel(timepoint)}</span>
         <h1>{def.name}</h1>
+        <p className="small"><strong>Ausgangsposition:</strong> {def.setup}</p>
+        <p className="small"><strong>Versuche:</strong> {def.attempts}</p>
         <ol className="steps">{def.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+        <p className="small"><strong>Ende des Versuchs:</strong> {def.stop}</p>
+        <p className="small"><strong>Ergebnis:</strong> {def.result}</p>
+        <p className="small muted"><strong>Vergleich:</strong> {def.comparison}</p>
       </div>
 
       <div className="card note">

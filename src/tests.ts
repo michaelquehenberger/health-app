@@ -1,13 +1,26 @@
 // Testkatalog laut MVP-Übergabe v0.1, Abschnitt 4.
-// Die Anleitungen sind knapp gehalten und vor dem Einsatz mit dem Konzept-Dokument abzugleichen.
+// Jede Anleitung nennt Ausgangsposition, Versuche, Start und Abbruch, Ergebnisformat und Vergleichswert.
+// Vor dem Einsatz mit dem Konzept-Dokument (health-app-livion-konzept.md) abgleichen.
 import type { TestId, Timepoint } from './types';
+
+/** Version der Testprotokolle; wird mit jeder Messung gespeichert. Bei Änderungen an Ablauf oder Grenzen erhöhen. */
+export const PROTOCOL_VERSION = 'v0.2';
 
 export interface TestDef {
   id: TestId;
   name: string;
   group: string;
   short: string;
+  /** Ausgangsposition und erlaubte Hilfe */
+  setup: string;
+  /** Versuche bzw. Seiten */
+  attempts: string;
+  /** Ablauf in Schritten */
   steps: string[];
+  /** Wann der Versuch endet */
+  stop: string;
+  /** Einheit und Format des Ergebnisses */
+  result: string;
   /** Was die App als Vergleich zeigt */
   comparison: string;
   needsStopwatch: boolean;
@@ -18,81 +31,105 @@ export const TESTS: TestDef[] = [
   {
     id: 'T1', name: 'Ruhepuls', group: 'Ruhepuls',
     short: 'Morgens, an 5–7 Tagen',
+    setup: 'Morgens in Ruhe, immer in derselben Position (liegend oder sitzend) und mit derselben Methode.',
+    attempts: 'Eine Messung pro Morgen, an 5–7 Morgen.',
     steps: [
-      'Morgens messen, in Ruhe und immer in derselben Position.',
-      'Puls zählen oder vom Gerät ablesen und in Schlägen pro Minute eintragen.',
-      'Wiederhole das an 5–7 Morgen. Die Baseline ist der mittlere Wert (Median).',
+      'Ruhig liegen oder sitzen bleiben.',
+      'Puls zählen oder vom Gerät ablesen.',
+      'Wert, Position und Methode eintragen.',
     ],
+    stop: 'Bei unregelmäßigem Rhythmus trotzdem eintragen und das Häkchen setzen.',
+    result: 'Schläge pro Minute (bpm), ganze Zahl. Die Baseline ist der Median aus 5–7 Morgen.',
     comparison: 'Kein Vergleichswert, nur dein Verlauf.',
     needsStopwatch: false,
   },
   {
     id: 'T5', name: 'Knie-zur-Wand', group: 'Beweglichkeit',
     short: 'Abstand Zehen zur Wand, je Seite',
+    setup: 'Barfuß vor einer Wand, ein Fuß vorn. Mit den Händen an der Wand abstützen ist erlaubt.',
+    attempts: 'Je Seite einmal den größten Abstand bestimmen; links und rechts getrennt.',
     steps: [
-      'Barfuß vor eine Wand stellen, ein Fuß vorn.',
-      'Knie zur Wand bringen, die Ferse bleibt am Boden.',
+      'Knie Richtung Wand bringen, die Ferse bleibt am Boden.',
+      'Fuß schrittweise weiter von der Wand wegsetzen.',
       'Den größten Abstand Zehen zur Wand messen, bei dem das Knie die Wand noch berührt.',
-      'Beide Seiten messen.',
     ],
-    comparison: 'Ab ca. 1,5 cm Seitenunterschied zeigt die App einen Hinweis, keine Bewertung.',
+    stop: 'Ende, wenn die Ferse abhebt oder das Knie die Wand nicht mehr erreicht. Hebt die Ferse ab, Häkchen setzen.',
+    result: 'Zentimeter je Seite, eine Nachkommastelle.',
+    comparison: 'Kein Vergleichswert. Ab ca. 1,5 cm Seitenunterschied zeigt die App einen Hinweis, keine Bewertung.',
     needsStopwatch: false,
   },
   {
     id: 'T7', name: 'Chair Sit-and-Reach', group: 'Beweglichkeit',
     short: 'Abstand Finger zu Zehen im Sitzen, je Seite',
+    setup: 'Vorn auf einem stabilen Stuhl sitzen, ein Bein gestreckt, Ferse am Boden, das andere Bein angewinkelt.',
+    attempts: 'Je Seite einmal; links und rechts getrennt.',
     steps: [
-      'Vorn auf einen stabilen Stuhl setzen, ein Bein gestreckt, Ferse am Boden.',
-      'Mit den Händen langsam Richtung Zehen reichen, ohne zu wippen.',
-      'Abstand Fingerspitzen zu Zehen messen: Lücke = negativ, darüber hinaus = positiv.',
-      'Beide Seiten messen.',
+      'Hände übereinander legen.',
+      'Langsam Richtung Zehen reichen, ohne zu wippen, und kurz halten.',
+      'Abstand Fingerspitzen zu Zehen messen.',
     ],
+    stop: 'Ende bei Schmerz oder wenn das gestreckte Knie sich beugt. Schmerz bitte ankreuzen.',
+    result: 'Zentimeter je Seite: Lücke = negativ (z. B. −5), über die Zehen hinaus = positiv.',
     comparison: 'Kein Vergleichswert, nur dein Verlauf.',
     needsStopwatch: false,
   },
   {
     id: 'T4', name: 'Einbeinstand', group: 'Balance',
     short: '3 Versuche je Bein, Augen offen',
+    setup: 'Neben einer Wand oder einem Stuhl, um dich bei Bedarf abzustützen. Augen offen.',
+    attempts: '3 Versuche je Bein, links und rechts getrennt. Die beste Zeit je Bein zählt.',
     steps: [
-      'Neben eine Wand oder einen Stuhl stellen, um dich bei Bedarf abzustützen.',
-      'Augen offen, auf ein Bein stellen und die Stoppuhr starten.',
-      'Stoppen, wenn der Fuß den Boden berührt oder du dich abstützt. Höchstens 45 Sekunden.',
-      'Je Bein 3 Versuche. Die beste Zeit zählt.',
+      'Auf ein Bein stellen und die Stoppuhr starten.',
+      'Möglichst ruhig stehen bleiben.',
+      'Stoppen und die gehaltene Zeit eintragen.',
     ],
+    stop: 'Ende, wenn der Fuß absetzt, du dich abstützt oder deutlich das Gleichgewicht verlierst. Spätestens nach 45 Sekunden.',
+    result: 'Sekunden je Versuch, eine Nachkommastelle; höchstens 45 s.',
     comparison: 'Für 40–59 Jahre: Mittelwert des besten Versuchs laut Springer 2007, ohne Streuung.',
     needsStopwatch: true,
   },
   {
     id: 'T3', name: '30-s-Sit-to-Stand', group: 'Kraft',
     short: 'Aufstehen in 30 Sekunden',
+    setup: 'Stabiler Stuhl ohne Rollen, an eine Wand gestellt. Arme vor der Brust verschränkt.',
+    attempts: 'Ein Versuch.',
     steps: [
-      'Auf einen stabilen Stuhl ohne Rollen setzen, Arme vor der Brust verschränkt.',
-      'Stoppuhr starten und 30 Sekunden lang so oft wie möglich ganz aufstehen und wieder hinsetzen.',
-      'Anzahl eintragen. Wer die Arme zu Hilfe nimmt, bekommt den Wert 0.',
+      'Stoppuhr starten.',
+      '30 Sekunden lang so oft wie möglich ganz aufstehen und wieder hinsetzen.',
+      'Vollständige Wiederholungen zählen.',
     ],
+    stop: 'Ende nach 30 Sekunden oder früher bei einem Abbruchgrund. Wer die Arme zu Hilfe nimmt, bekommt den Wert 0.',
+    result: 'Anzahl vollständiger Wiederholungen, ganze Zahl.',
     comparison: 'Kein Vergleichswert (Normen gibt es erst ab 60 Jahren).',
     needsStopwatch: true,
   },
   {
     id: 'T8', name: 'Liegestütz', group: 'Kraft',
     short: 'Wiederholungen, Zehen oder Knie',
+    setup: 'Variante wählen: auf den Zehen oder auf den Knien. Körper bildet eine gerade Linie.',
+    attempts: 'Ein Versuch, ohne Pause.',
     steps: [
-      'Variante wählen: auf den Zehen oder auf den Knien.',
-      'Sauber ausgeführte Wiederholungen zählen, bis du aufhörst.',
-      'Anzahl und Abbruchgrund eintragen.',
+      'Hände etwa schulterbreit aufsetzen.',
+      'Brust kontrolliert Richtung Boden senken und wieder hochdrücken.',
+      'Korrekt ausgeführte Wiederholungen zählen.',
     ],
-    comparison: 'Vergleichswert noch offen; bei Frauen wird keiner angezeigt.',
+    stop: 'Ende bei Erschöpfung, wenn die Technik nicht mehr sauber ist oder bei Schmerz. Grund bitte auswählen.',
+    result: 'Anzahl korrekt ausgeführter Wiederholungen, ganze Zahl, mit Variante.',
+    comparison: 'Vergleichswert derzeit nicht verfügbar. Die Anzahl der korrekt ausgeführten Liegestütze wird gespeichert.',
     needsStopwatch: false,
   },
   {
     id: 'T2', name: 'UKK-2-km-Gehtest', group: 'Gehtest',
     short: '2 km zügig gehen, zuletzt',
+    setup: 'Flache, abgemessene Strecke von 2 km. Gehen, nicht laufen.',
+    attempts: 'Ein Versuch, als letzter Test des Tages.',
     steps: [
-      'Auf einer flachen, abgemessenen Strecke von 2 km gehen, so zügig wie gleichmäßig möglich. Nicht laufen.',
-      'Zeit stoppen.',
-      'Direkt am Ende den Puls messen.',
-      'Minuten, Sekunden und Puls eintragen.',
+      'Stoppuhr starten und so zügig wie gleichmäßig möglich gehen.',
+      'Am Ende die Zeit stoppen.',
+      'Direkt danach den Puls messen.',
     ],
+    stop: 'Ende nach 2 km oder früher bei einem Abbruchgrund.',
+    result: 'Gehzeit in Minuten und Sekunden, Puls am Ende in bpm, dazu Größe und Gewicht.',
     comparison: 'Fitness-Index für Männer von 20–65 Jahren. Bei Frauen vorerst nur die Gehzeit.',
     needsStopwatch: true,
   },
@@ -116,13 +153,9 @@ export function timepointLabel(t: Timepoint): string {
 
 /** Abbruchregeln für jeden Test. [OFFEN] sportmedizinische Freigabe. */
 export const STOP_RULES = [
-  'Brustschmerz',
+  'Brustschmerz oder -druck',
   'Schwindel oder Gefühl, ohnmächtig zu werden',
   'neu auftretende starke Atemnot',
   'ungeklärte Herzbeschwerden (z. B. Herzstolpern, Herzrasen)',
 ];
 
-export const PARQ_URL = 'https://eparmedx.com/';
-export const PARQ_ATTRIBUTION =
-  'PAR-Q+ © PAR-Q+ Collaboration, lizenziert unter CC BY-NC-ND 4.0. Verwendung nur im privaten, nicht-kommerziellen Test.';
-export const GATE_VALID_MONTHS = 12;

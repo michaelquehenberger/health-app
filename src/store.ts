@@ -1,11 +1,10 @@
 // Daten nur lokal im Browser auf diesem Gerät. Kein Server, keine Cloud.
 import { useCallback, useEffect, useState } from 'react';
-import type { AppData, Gate, TestRecord } from './types';
-import { GATE_VALID_MONTHS } from './tests';
+import type { AppData, TestRecord } from './types';
 
 const KEY = 'livion-mvp-v2';
 
-export const EMPTY: AppData = { version: 2, consent: null, profile: null, gate: null, records: [] };
+export const EMPTY: AppData = { version: 2, consent: null, profile: null, anamneses: [], records: [] };
 
 export function load(): AppData {
   try {
@@ -20,9 +19,12 @@ export function load(): AppData {
 /** Prüft eine Datei (Import oder Speicher) grob auf das erwartete Format. */
 export function parseData(raw: string): AppData | null {
   try {
-    const d = JSON.parse(raw) as Partial<AppData>;
+    const d = JSON.parse(raw) as Partial<AppData> & { gate?: unknown };
     if (d.version !== 2 || !Array.isArray(d.records)) return null;
-    return { ...EMPTY, ...d } as AppData;
+    // Ältere Stände hatten statt der Anamnese nur eine Freigabe („gate“); sie wird nicht übernommen.
+    const { gate: _old, ...rest } = d;
+    void _old;
+    return { ...EMPTY, ...rest, anamneses: Array.isArray(d.anamneses) ? d.anamneses : [] } as AppData;
   } catch {
     return null;
   }
@@ -69,14 +71,14 @@ export function exportJson(data: AppData): void {
 
 /** Eine Zeile je Messwert mit den Pflichtfeldern aus der Übergabe (Abschnitt 4). */
 export function measurementsCsv(data: AppData): string {
-  const head = ['Teilnehmer-ID', 'Test', 'Messzeitpunkt', 'Metrik', 'Einheit', 'Wert', 'Datum', 'Uhrzeit', 'Methode', 'Datenqualität', 'Kommentar', 'Abgebrochen'];
+  const head = ['Teilnehmer-ID', 'Test', 'Messzeitpunkt', 'Zeitpunkt gewählt', 'Protokoll', 'Metrik', 'Einheit', 'Wert', 'Datum', 'Uhrzeit', 'Methode', 'Datenqualität', 'Kommentar', 'Abgebrochen'];
   const esc = (v: unknown) => {
     const s = v === null || v === undefined ? '' : String(v);
     return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const rows = data.records.flatMap((r: TestRecord) =>
     r.measurements.map((m) => [
-      data.profile?.participantId ?? '', r.testId, r.timepoint, m.metric, m.unit,
+      data.profile?.participantId ?? '', r.testId, r.timepoint, r.timepointSource ?? '', r.protocolVersion ?? '', m.metric, m.unit,
       m.value === null ? '' : String(m.value).replace('.', ','), r.date, r.time, r.method, r.quality, r.comment, r.aborted ?? '',
     ]),
   );
@@ -86,11 +88,6 @@ export function measurementsCsv(data: AppData): string {
 export function exportCsv(data: AppData): void {
   // BOM, damit Excel die Umlaute richtig liest
   download(`livion-messwerte-${data.profile?.participantId ?? ''}-${todayIso()}.csv`, '﻿' + measurementsCsv(data), 'text/csv');
-}
-
-export function gateValid(gate: Gate | null, today = todayIso()): boolean {
-  if (!gate || gate.status !== 'freigegeben') return false;
-  return today < addMonths(gate.date, GATE_VALID_MONTHS);
 }
 
 export function todayIso(d = new Date()): string {

@@ -1,4 +1,5 @@
 import type { Sex } from './calc';
+import type { Anamnesis } from './parq';
 
 export interface Profile {
   /** Pseudonym, keine Namen speichern. */
@@ -13,14 +14,6 @@ export interface Profile {
 export interface Consent {
   acceptedAt: string;
   textVersion: string;
-}
-
-/** Sicherheits-Gate nach PAR-Q+ (Bestätigung, das Formular selbst wird offiziell ausgefüllt). */
-export interface Gate {
-  status: 'freigegeben' | 'gesperrt';
-  /** Wie die Freigabe zustande kam */
-  via: 'parq-alle-nein' | 'folgefragen-alle-nein' | 'eparmedx-oder-fachperson' | null;
-  date: string; // ISO-Datum
 }
 
 export type Timepoint = 'baseline' | 'tag30' | 'tag90';
@@ -39,6 +32,10 @@ export interface TestRecord {
   id: string;
   testId: TestId;
   timepoint: Timepoint;
+  /** Ob der Messzeitpunkt dem Vorschlag der App folgte oder manuell gewählt wurde */
+  timepointSource?: 'vorschlag' | 'manuell';
+  /** Version des Testprotokolls (PROTOCOL_VERSION) */
+  protocolVersion?: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
   method: string;
@@ -54,6 +51,7 @@ export interface AppData {
   version: 2;
   consent: Consent | null;
   profile: Profile | null;
-  gate: Gate | null;
+  /** Alle Anamnesen (PAR-Q+), die jüngste gilt. Gesundheitsdaten nach Art. 9 DSGVO. */
+  anamneses: Anamnesis[];
   records: TestRecord[];
 }
