@@ -1,0 +1,59 @@
+import { TESTS, TIMEPOINTS } from '../tests';
+import { Icon, Seg } from '../components/ui';
+import { baselineDate, summarize } from '../results';
+import type { AppData, TestId, Timepoint } from '../types';
+import { daysBetween, formatDate, gateValid, todayIso } from '../store';
+
+export function FolderScreen({ data, timepoint, setTimepoint, openTest, openGate }: {
+  data: AppData;
+  timepoint: Timepoint;
+  setTimepoint: (t: Timepoint) => void;
+  openTest: (id: TestId) => void;
+  openGate: () => void;
+}) {
+  const unlocked = gateValid(data.gate);
+  const base = baselineDate(data.records);
+  const day = base ? daysBetween(base, todayIso()) : null;
+  const doneCount = TESTS.filter((t) => summarize(data.records, t.id, timepoint).done).length;
+
+  return (
+    <>
+      <div className="card dark">
+        <span className="label">Testmappe</span>
+        <h1>{doneCount} von {TESTS.length} Tests</h1>
+        <p className="muted">
+          {base ? `Baseline begonnen am ${formatDate(base)} · heute ist Tag ${day}` : 'Noch keine Messung. Starte mit der Baseline.'}
+        </p>
+        <Seg label="Messzeitpunkt" value={timepoint} onChange={setTimepoint} options={TIMEPOINTS.map((t) => ({ value: t.id, label: t.label }))} />
+      </div>
+
+      {!unlocked && (
+        <div className="card alert">
+          <span className="label">Gesperrt</span>
+          <h2>Erst der Sicherheitscheck.</h2>
+          <p className="small">Ohne abgeschlossenen Fragebogen PAR-Q+ bleiben die Tests gesperrt.</p>
+          <button className="btn dark" onClick={openGate}>Zum Sicherheitscheck</button>
+        </div>
+      )}
+
+      <div className="card">
+        <span className="label">Reihenfolge am Testtag</span>
+        <p className="muted">Ruhepuls am Morgen, dann Beweglichkeit, Balance, Kraft und den Gehtest zuletzt.</p>
+        {TESTS.map((t) => {
+          const s = summarize(data.records, t.id, timepoint);
+          return (
+            <button key={t.id} className={`test-row ${s.done ? 'done' : ''}`} disabled={!unlocked} onClick={() => openTest(t.id)}>
+              <span className="test-code">{s.done ? <Icon.check /> : t.id}</span>
+              <span style={{ flex: 1 }}>
+                <strong>{t.name}</strong>
+                <span className="muted" style={{ display: 'block' }}>{s.done || s.text !== 'offen' ? s.text : t.short}</span>
+              </span>
+              <span aria-hidden="true" className="muted">›</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="footer-note">Nicht im MVP: Back-Scratch-Test (T6), 6-Minuten-Gehtest, Handkraft.</p>
+    </>
+  );
+}
