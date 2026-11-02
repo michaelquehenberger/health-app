@@ -151,11 +151,16 @@ export function timepointLabel(t: Timepoint): string {
   return TIMEPOINTS.find((x) => x.id === t)!.label;
 }
 
-/** Abbruchregeln für jeden Test. [OFFEN] sportmedizinische Freigabe. */
+/**
+ * Abbruchregeln für jeden Test (LIVION-Handbuch, ACSM-Warnzeichen).
+ * [OFFEN] sportmedizinische Freigabe.
+ */
 export const STOP_RULES = [
   'Brustschmerz oder -druck',
+  'neue oder sich verändernde Schmerzen in Nacken, Kiefer, Rücken oder Armen',
   'Schwindel oder Gefühl, ohnmächtig zu werden',
-  'neu auftretende starke Atemnot',
-  'ungeklärte Herzbeschwerden (z. B. Herzstolpern, Herzrasen)',
+  'Atemnot schon bei geringer Belastung oder neu auftretende starke Atemnot',
+  'ungewöhnliches Herzrasen oder Herzstolpern',
+  'starke, unerwartete Erschöpfung',
 ];
 

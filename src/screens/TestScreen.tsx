@@ -391,7 +391,8 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, onSave
 
       <div className="card note">
         <strong>Sofort aufhören bei:</strong>
-        <p className="small">{STOP_RULES.join(', ')}.</p>
+        <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 4 }}>{STOP_RULES.map((r) => <li key={r}>{r}</li>)}</ul>
+        <p className="small">Dann den Test über „Test abbrechen“ beenden und ärztlich abklären lassen.</p>
       </div>
 
       <div className="card">

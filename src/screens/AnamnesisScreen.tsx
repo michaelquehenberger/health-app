@@ -226,7 +226,7 @@ export function AnamnesisScreen({ data, update, onDone }: {
       {st.step === 'einverstaendnis' && (
         <ConsentForm
           onConfirm={() => {
-            patch((x) => ({ ...x, consent: { given: true, date: today } }));
+            patch((x) => ({ ...x, consent: { given: true, date: today, at: new Date().toISOString(), textVersion: `PAR-Q+ ${PARQ.version}, Einverständniserklärung` } }));
             onDone();
           }}
         />
@@ -296,7 +296,7 @@ function AnswersView({ a }: { a: Anamnesis }) {
         </>
       )}
       {a.clearance && <p className="small">Abklärung am {formatDate(a.clearance.date)}: {a.clearance.source === 'eparmedx' ? 'ePARmed-X+' : 'Fachperson'}</p>}
-      <p className="small muted">Fassung {a.formVersion} · Einverständnis {a.consent.date ? formatDate(a.consent.date) : '–'}</p>
+      <p className="small muted">Fassung {a.formVersion} · Einverständnis {a.consent.at ? new Date(a.consent.at).toLocaleString('de-AT') : a.consent.date ? formatDate(a.consent.date) : '–'}</p>
     </div>
   );
 }

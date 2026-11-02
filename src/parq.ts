@@ -21,7 +21,8 @@ export interface Anamnesis {
   textsA: Record<string, string>; // Freitexte zu 4, 5, 6
   answersB: Record<string, Answer>; // "1".."10" und "1a".."10c"
   medicationText: string; // Freitext am Ende von Teil B (nur bei Frage 10 = JA)
-  consent: { given: boolean; date: string | null };
+  /** Einverständnis per Häkchen: Datum, genauer Zeitstempel und Fassung des Einverständnistexts werden protokolliert. */
+  consent: { given: boolean; date: string | null; at?: string; textVersion?: string };
   result: AnamnesisResult | null;
   clearance: { date: string; source: 'eparmedx' | 'fachperson' } | null;
   /** Ersetzt durch eine neuere Anamnese oder wegen Änderung des Gesundheitszustands beendet */
