@@ -48,8 +48,8 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
   const wearable = useMemo(() => summarizeWearables(data.wearables, today), [data.wearables, today]);
 
   const card = useMemo(
-    () => buildDayCard({ date: today, profile, complaints: data.complaints, feedback: data.feedback, values: data.values, reports: data.reports }),
-    [today, profile, data.complaints, data.feedback, data.values, data.reports],
+    () => buildDayCard({ date: today, profile, complaints: data.complaints, feedback: data.feedback, values: data.values, reports: data.reports, preferredIds: data.planChoice?.exerciseIds }),
+    [today, profile, data.complaints, data.feedback, data.values, data.reports, data.planChoice],
   );
 
   const fb = data.feedback.find((f) => f.date === today) ?? emptyFeedback(today);

@@ -15,7 +15,7 @@ Seit Version 0.5 gibt es zusätzlich das **Gesundheitsmodul** (Beschwerden mit r
 2. **Anamnese** (PAR-Q+, einmalig, 12 Monate gültig)
 3. **Testmappe** (Ruhepuls an 5–7 Morgen, Testtag mit sechs Tests)
 4. **Gesundheitsmodul, das Herzstück** (Einwilligung und Blutwerte Pflicht; Oura mit Schlaf, HRV, Ruhepuls, VO2max sowie Beschwerden empfohlen)
-5. **Auswertung und Übungsplan** (derzeit regelbasierter Tagesplan; KI-Auswertung aller Daten geplant)
+5. **Auswertung und Übungsplan**: KI-Auswertung aller Daten (Tests, Blutwerte, Beschwerden, Oura) plus regelbasierter Tagesplan
 
 „Heute“ zeigt den Weg und immer den nächsten Schritt (`src/journey.ts`, Tests in `src/journey.test.ts`).
 
@@ -81,7 +81,7 @@ npm run build    # fertige Web-App im Ordner dist/
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
 - **KI-Auslesung der Befunde (nur privater Test):** Der Aufruf geht direkt aus dem Browser mit einem eigenen API-Schlüssel, der nur auf dem Gerät liegt (nie in der Sicherungsdatei). Eigene KI-Einwilligung, widerrufbar. Für jede Weitergabe: Server-Baustein (Proxy), Auftragsverarbeitungsvertrag mit Anthropic, Datenstandort klären. Nicht mit echten Befunden getestet.
-- **KI-Auswertung (Schritt 5):** braucht einen Server-Baustein (API-Schlüssel darf nicht in die App), einen Auftragsverarbeitungsvertrag mit dem KI-Anbieter und eine Prüfung nach MDR/MDCG 2019-11, weil die App dann aus Blutwerten Empfehlungen ableitet.
+- **KI-Auswertung (Schritt 5, nur privater Test):** eigene, widerrufbare Einwilligung; Eingabe ohne Namen und Kennung, Medikamente und Allergien nur als „angegeben“. Die KI wählt ausschließlich Übungs-IDs aus der Übungsdatenbank (feste Liste im Antwortschema); rote Flaggen sperren den Aufruf; Stufe und Wochenmuster der Schmerzregel begrenzen die Auswahl; Sätze mit Dosisangaben werden entfernt. Die Eingabe wird mit gespeichert („Was an die KI ging“). Vor jeder Weitergabe offen: Server-Baustein, AV-Vertrag, Prüfung nach MDR/MDCG 2019-11, Evidenz-Anbindung (PubMed) laut Konzept.
 - **Oura VO2max:** Endpunkt `vO2_max` eingebaut, mit echtem Ring noch nicht geprüft; fehlt er, laufen die übrigen Daten weiter.
 
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.

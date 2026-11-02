@@ -121,8 +121,10 @@ export function buildDayCard(args: {
   feedback: Feedback[];
   values: LabValue[];
   reports: LabReport[];
+  /** Übungen aus der KI-Auswertung; werden bevorzugt, aber nur im Rahmen der Regeln des Tages */
+  preferredIds?: string[];
 }): DayCard {
-  const { date, profile, complaints, feedback, values, reports } = args;
+  const { date, profile, complaints, feedback, values, reports, preferredIds } = args;
   const pattern = WEEK_PATTERN[dayOfWeek(date)];
   const complaint = primaryComplaint(complaints);
   const prog = computeProgression(feedback, date);
@@ -167,6 +169,17 @@ export function buildDayCard(args: {
     const fill = mild ? 0 : nMob - mob.length;
     const str = rotate(strength, Math.min(nStr + fill, strength.length), seed);
     exercises = [...mob, ...str].slice(0, maxCount);
+    if (preferredIds?.length) {
+      const strengthToday = !mild && nStr + fill > 0;
+      const pref = preferredIds
+        .map((id) => pool.find((e) => e.id === id))
+        .filter((e): e is Exercise => !!e && (e.kind === 'beweglichkeit' || strengthToday));
+      if (pref.length) {
+        const ids = new Set(pref.map((e) => e.id));
+        exercises = [...pref, ...exercises.filter((e) => !ids.has(e.id))].slice(0, maxCount);
+        notes.push('Die Übungen sind nach deiner KI-Auswertung ausgewählt, im Rahmen von Wochenmuster und Schmerzregel.');
+      }
+    }
   }
 
   const endurance =
