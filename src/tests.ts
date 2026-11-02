@@ -77,6 +77,7 @@ export const TESTS: TestDef[] = [
     id: 'T4', name: 'Einbeinstand', group: 'Balance',
     short: '3 Versuche je Bein, Augen offen',
     setup: 'Neben einer Wand oder einem Stuhl, um dich bei Bedarf abzustützen. Augen offen.',
+    // Entschieden 02.11.2026: 3 Versuche (Springer-Vergleich beruht auf „beste von 3“), siehe docs/entscheidungen.md
     attempts: '3 Versuche je Bein, links und rechts getrennt, mit 60 Sekunden Pause zwischen den Versuchen. Die beste Zeit je Bein zählt.',
     steps: [
       'Auf ein Bein stellen und die Stoppuhr starten.',
