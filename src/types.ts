@@ -14,6 +14,8 @@ export interface Profile {
 export interface Consent {
   acceptedAt: string;
   textVersion: string;
+  appVersion?: string;
+  language?: string;
 }
 
 export type Timepoint = 'baseline' | 'tag30' | 'tag90';
@@ -43,6 +45,8 @@ export interface TestRecord {
   comment: string;
   /** Abbruchgrund, wenn der Test abgebrochen wurde */
   aborted: string | null;
+  /** Zeitstempel des Abbruchs (ISO) */
+  abortedAt?: string;
   inputs: Record<string, InputValue>;
   measurements: Measurement[];
 }

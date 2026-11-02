@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  UKK_MAX_AGE, UKK_MIN_AGE, ukkAgeOk,
   BALANCE_MAX_SECONDS, BALANCE_PAUSE_SECONDS, KNEE_WALL_SIDE_DIFF_CM, balanceReference, bestBalance, bmi, formatNum, sideDifference, sitToStandValue, ukkIndex,
 } from '../calc';
 import { Check, Seg } from '../components/ui';
@@ -30,7 +31,7 @@ interface FormOutput {
   method: string;
 }
 
-type FormProps = { profile: Profile; onOutput: (o: FormOutput | null) => void };
+type FormProps = { profile: Profile; mobilityLimited?: boolean; onOutput: (o: FormOutput | null) => void };
 
 // ---------- T1 Ruhepuls ----------
 function T1Form({ onOutput }: FormProps) {
@@ -57,7 +58,8 @@ function T1Form({ onOutput }: FormProps) {
 }
 
 // ---------- T2 UKK-Gehtest ----------
-function T2Form({ profile, onOutput }: FormProps) {
+function T2Form({ profile, mobilityLimited = false, onOutput }: FormProps) {
+  const [limited, setLimited] = useState(mobilityLimited);
   const [min, setMin] = useState('');
   const [sec, setSec] = useState('');
   const [pulse, setPulse] = useState('');
@@ -70,7 +72,7 @@ function T2Form({ profile, onOutput }: FormProps) {
   const b = hc && wk ? bmi(wk, hc) : null;
   const ok = mi !== null && mi >= 5 && mi <= 60 && se !== null && se >= 0 && se < 60 && pu !== null && pu >= 40 && pu <= 220 && b !== null;
   onOutputIf(onOutput, ok, () => {
-    const r = ukkIndex({ sex: profile.sex, age: profile.age ?? 0, minutes: mi!, seconds: se!, pulse: pu!, bmi: b! });
+    const r = ukkIndex({ sex: profile.sex, age: profile.age ?? 0, minutes: mi!, seconds: se!, pulse: pu!, bmi: b! }, { mobilityLimited: limited });
     const ms: Measurement[] = [
       { metric: 'gehzeit', unit: 's', value: mi! * 60 + se! },
       { metric: 'puls_ende', unit: 'bpm', value: pu },
@@ -79,8 +81,8 @@ function T2Form({ profile, onOutput }: FormProps) {
     ];
     if (r.kind === 'index') ms.push({ metric: 'fitness_index', unit: 'Index', value: Math.round(r.value * 10) / 10 });
     const trackLabel = { laufbahn: 'Laufbahn', weg: 'flacher Weg', sonstiges: 'sonstige Strecke' }[track];
-    return { inputs: { minuten: mi, sekunden: se, puls: pu, groesse: hc, gewicht: wk, strecke: track }, measurements: ms, method: `UKK 2 km, ${trackLabel}` };
-  }, [mi, se, pu, hc, wk, track]);
+    return { inputs: { minuten: mi, sekunden: se, puls: pu, groesse: hc, gewicht: wk, strecke: track, gehen_eingeschraenkt: limited }, measurements: ms, method: `UKK 2 km, ${trackLabel}` };
+  }, [mi, se, pu, hc, wk, track, limited]);
 
   return (
     <>
@@ -96,6 +98,8 @@ function T2Form({ profile, onOutput }: FormProps) {
         <NumField label="Gewicht (kg)" value={w} onChange={setW} />
       </div>
       <p className="small">BMI: <strong>{formatNum(b)}</strong></p>
+      <Check checked={limited} onChange={setLimited}>Mein zügiges Gehen ist durch eine Erkrankung oder Behinderung eingeschränkt.</Check>
+      {limited && <p className="small muted">Dann gibt es keine Bewertung, nur Gehzeit und Puls als Verlauf.</p>}
     </>
   );
 }
@@ -305,7 +309,7 @@ export function ResultView({ record, profile, womenIndex = false }: { record: Te
       main = <><span className="result-big">{Math.floor(s / 60)}:{String(Math.round(s % 60)).padStart(2, '0')}</span> <span className="muted">min für 2 km</span></>;
       const r = ukkIndex(
         { sex: profile.sex, age: m('alter') ?? age, minutes: Math.floor(s / 60), seconds: s % 60, pulse: m('puls_ende') ?? 0, bmi: m('bmi') ?? 0 },
-        { womenIndex },
+        { womenIndex, mobilityLimited: record.inputs.gehen_eingeschraenkt === true },
       );
       comparison = r.kind === 'index'
         ? <><p className="small">Fitness-Index: <strong className="big-num">{formatNum(r.value, 1)}</strong> · Bewertung: <strong>{r.rating}</strong></p>
@@ -320,7 +324,11 @@ export function ResultView({ record, profile, womenIndex = false }: { record: Te
       break;
     case 'T4': {
       const ref = balanceReference(age);
-      main = <><span className="result-big">{formatNum(m('bester_versuch_links'))} / {formatNum(m('bester_versuch_rechts'))}</span> <span className="muted">s links / rechts</span></>;
+      const tr = (side: 'links' | 'rechts') => [1, 2, 3].map((i) => record.inputs[`${side}_${i}`]).map((v) => (typeof v === 'number' ? formatNum(v) : '–')).join(' · ');
+      main = <>
+        <span className="result-big">{formatNum(m('bester_versuch_links'))} / {formatNum(m('bester_versuch_rechts'))}</span> <span className="muted">s, bester Versuch links / rechts</span>
+        <p className="small muted">Versuche links: {tr('links')} s · rechts: {tr('rechts')} s</p>
+      </>;
       comparison = ref
         ? <p className="small">Zum Vergleich: Mittelwert des besten Versuchs bei Menschen von {ref.group}: <strong>{formatNum(ref.mean)} s</strong> (Springer 2007, Augen offen).</p>
         : <p className="small">Für dein Alter zeigt die App keinen Vergleichswert.</p>;
@@ -359,8 +367,9 @@ export function ResultView({ record, profile, womenIndex = false }: { record: Te
 }
 
 // ---------- Test-Screen ----------
-export function TestScreen({ testId, timepoint, timepointSource, profile, womenIndex = false, onSave, onBack }: {
+export function TestScreen({ testId, timepoint, timepointSource, profile, womenIndex = false, mobilityLimited = false, onSave, onBack }: {
   womenIndex?: boolean;
+  mobilityLimited?: boolean;
   testId: TestId;
   timepoint: Timepoint;
   timepointSource: 'vorschlag' | 'manuell';
@@ -391,14 +400,14 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, womenI
   }
 
   function abort(reason: string) {
-    const r: TestRecord = { ...base(), inputs: {}, measurements: [], method: def.name, aborted: reason };
+    const r: TestRecord = { ...base(), inputs: {}, measurements: [], method: def.name, aborted: reason, abortedAt: new Date().toISOString() };
     onSave(r);
     setAbortReason(reason);
     window.scrollTo(0, 0);
   }
 
   if (abortReason) {
-    const medical = STOP_RULES.includes(abortReason);
+    const medical = (STOP_RULES as readonly string[]).includes(abortReason);
     return (
       <>
         <div className={`card alert ${medical ? 'notfall' : ''}`} role="alert">
@@ -438,6 +447,16 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, womenI
         <p className="small muted"><strong>Vergleich:</strong> {def.comparison}</p>
       </div>
 
+      {testId === 'T2' && !ukkAgeOk(profile.age) && (
+        <div className="card alert">
+          <span className="label">Altersprüfung</span>
+          <p className="small">
+            Der UKK-Gehtest ist für Erwachsene von {UKK_MIN_AGE} bis {UKK_MAX_AGE} Jahren gedacht. Für dein Alter zeigt die App keinen Fitness-Index
+            und keine Bewertung. Du kannst Gehzeit und Puls trotzdem als Verlauf festhalten.
+          </p>
+        </div>
+      )}
+
       <div className="card note">
         <strong>Sofort aufhören bei:</strong>
         <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 4 }}>{STOP_RULES.map((r) => <li key={r}>{r}</li>)}</ul>
@@ -448,7 +467,7 @@ export function TestScreen({ testId, timepoint, timepointSource, profile, womenI
         <span className="label">Eingabe</span>
         {testId === 'T5' || testId === 'T7'
           ? <SidesForm kind={testId} profile={profile} onOutput={setOutput} />
-          : <Form profile={profile} onOutput={setOutput} />}
+          : <Form profile={profile} mobilityLimited={mobilityLimited} onOutput={setOutput} />}
         <div className="grid2">
           <label className="field">Datum<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
           <label className="field">Uhrzeit<input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></label>

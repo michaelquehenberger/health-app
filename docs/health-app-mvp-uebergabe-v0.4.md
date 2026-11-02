@@ -1,8 +1,10 @@
-# Health App × LIVION – MVP-Übergabe für Claude Code (v0.3)
+# Health App × LIVION – MVP-Übergabe für Claude Code (v0.4)
 
-Stand: 2. November 2026 | Basis: `health-app-livion-konzept.md` (Projekt-Doc) + Prüfung der offenen Punkte
+Stand: 2. November 2026 | Basis: `health-app-livion-konzept.md` (Projekt-Doc) + Prüfung der offenen Punkte + konsolidierte Punktliste „LIVION Health & Fitness App – Offene Punkte, Validierung und Weiterarbeit“ (Stand 02.11.2026, 08:39)
 
-**Änderungen in v0.3 (geklärte Punkte eingearbeitet):** UKK-Frauenformel als Kandidat mit Testfall (nicht produktiv), Einbeinstand-Pause festgelegt, Consent-Log für das Häkchen, erweiterte Abbruchzeichen, Status der offenen Punkte (Abschnitt 7) aktualisiert. Der PAR-Q+-Wortlaut (Abschnitt 5.2 bis 5.4) ist unverändert.
+**Änderungen in v0.4:** Altersprüfung 20–65 vor dem UKK-Test, Prüfplan und Akzeptanzkriterium für die Frauenformel, Anfrageinhalt für die PAR-Q+-Erlaubnis, Consent-Log um App-Version und Sprache erweitert, Abbruchliste vervollständigt (zentrale Konstante, Protokollierung des Abbruchs), Claims-Liste als To-do, Arbeitsplan (Abschnitt 9), Definition of Done (Abschnitt 10), offene Entscheidungen (Abschnitt 11).
+
+**Änderungen in v0.3:** UKK-Frauenformel als Kandidat, Einbeinstand-Pause, Consent-Log, Statusliste.
 **Änderungen in v0.2:** Abschnitt 5 enthält den vollständigen deutschen PAR-Q+ (Version 01.07.2024, Hochschule für Gesundheit Bochum) im Originalwortlaut als **einmalige Anamnese**.
 
 ## 0. Hinweise an Claude Code
@@ -46,18 +48,20 @@ Pflichtfelder je Messwert: Teilnehmer-ID, Metrik, Einheit, Wert, Datum (ggf. Tag
 | Test | Eingabe | Vergleichswert anzeigen? |
 |---|---|---|
 | T1 Ruhepuls | bpm, Position, Uhrzeit, Methode, Rhythmus unregelmäßig? Baseline = Median von 5–7 Morgen | nein, nur Trend |
-| T2 UKK-2-km-Gehtest | Min, Sek, Puls am Ende, Streckenart, Größe, Gewicht | Männer: Fitness-Index mit Bewertung (siehe 6). Frauen: vorerst nur Zeit und Puls als Verlauf |
+| T2 UKK-2-km-Gehtest | Min, Sek, Puls am Ende, Streckenart, Größe, Gewicht. **Vor Teststart Altersprüfung 20–65** (siehe unten) | Männer: Fitness-Index mit Bewertung (siehe 6). Frauen: vorerst nur Zeit und Puls als Verlauf |
 | T3 30-s-Sit-to-Stand | Anzahl, Armeinsatz ja/nein → dann 0 | nein (Normen nur ab 60) |
-| T4 Einbeinstand | 3 Versuche je Bein (s), **60 Sekunden Pause** zwischen den Versuchen, beste Zeit zählt, max. 45 s, nur Augen offen | eigene Haltezeit und Verlauf. Optional als reiner Vergleich die Mittelwerte Springer 2007 (40–49: 41,9 s bester Versuch; 50–59: 41,2 s). **Streuung nie anzeigen**, keine Bewertung |
+| T4 Einbeinstand | 3 Versuche je Bein (s), **60 Sekunden Pause** zwischen den Versuchen, beste Zeit zählt, max. 45 s, nur Augen offen | angezeigt: Haltezeit je Versuch, bester Versuch, persönliche Entwicklung. Optional als reiner Vergleich die Mittelwerte Springer 2007 (40–49: 41,9 s bester Versuch; 50–59: 41,2 s). **Streuung (SE/SD) nie anzeigen**, keine Normwert-Einordnung |
 | T5 Knie-zur-Wand | Abstand links/rechts (cm), Ferse abgehoben, Schmerz | Seitendifferenz ab ca. 1,5 cm als Hinweis, keine Bewertung |
 | T7 Chair Sit-and-Reach | Abstand je Seite (cm, negativ bei Lücke), Schmerz | nein |
-| T8 Liegestütz | Wiederholungen, Variante (Zehen/Knie), Abbruchgrund | Männer (Zehen) 40–49 und 50–59 laut Tabelle im Konzept. **Frauen: keine Norm und keine Bewertung**, nur Wiederholungen und persönliche Entwicklung |
+| T8 Liegestütz | Wiederholungen, Variante (Zehen/Knie), Abbruchgrund | Männer (Zehen) 40–49 und 50–59 laut Tabelle im Konzept. **Frauen: keine Norm und keine Kategorie** (z. B. „unterdurchschnittlich“), nur Wiederholungen und Verlauf |
 
-**Nicht im MVP:** T6 Back-Scratch, T2b 6-Minuten-Gehtest, Handkraft.
+**Nicht im MVP:** T6 Back-Scratch (später nur mit validierter Primärquelle, exaktem Protokoll und klarer Nicht-Diagnose-Aussage), T2b 6-Minuten-Gehtest, Handkraft.
 
 Normen ab 60 (Sit-to-Stand usw.) bei unter 60-Jährigen nie anzeigen. Hauptaussage der App ist der persönliche Verlauf.
 
-**Einbeinstand, Entscheidungen:** Die Streuungswerte der Springer-Tabelle sind Standardabweichungen (SD), keine Standardfehler. Für eine individuelle Einordnung sind sie nicht belastbar genug und werden deshalb nicht angezeigt. Die Pause von 60 Sekunden ist eine Produktentscheidung (die Studie legt nur die Pause zwischen Serien fest, keine feste Pause zwischen einzelnen Versuchen). Die Zahl der Versuche bleibt bei **3 je Bein**, weil die Springer-Vergleichswerte auf „beste von 3“ beruhen. Zwei Versuche wären ein anderes Protokoll und nicht mit der Tabelle vergleichbar.
+**Altersprüfung UKK (Produktregel):** Der UKK-2-km-Gehtest gilt für gesunde Erwachsene von 20 bis 65 Jahren. Vor Teststart wird das Alter geprüft. Liegt es außerhalb des Bereichs, wird keine UKK-Bewertung angezeigt und stattdessen eine nicht-normative Aktivitätsdokumentation angeboten (z. B. Gehzeit und Puls als reiner Verlauf). Das Gleiche gilt für Personen, deren zügiges Gehen durch Erkrankung oder Behinderung eingeschränkt ist: nicht ohne weitere Prüfung bewerten.
+
+**Einbeinstand, Entscheidungen:** Die Streuungswerte der Springer-Tabelle sind Standardabweichungen (SD), keine Standardfehler. Für eine individuelle Einordnung sind sie nicht belastbar genug und werden deshalb nicht angezeigt. Die Pause von 60 Sekunden ist eine Produktentscheidung (die Studie legt nur die Pause zwischen Serien fest). **Versuchszahl [OFFEN]:** Dieses Dokument bleibt bei **3 je Bein**, weil die Springer-Vergleichswerte auf „beste von 3“ beruhen. Die konsolidierte Punktliste schlägt 2 Versuche vor („oder nach finaler Produktentscheidung“). Bei 2 Versuchen darf der Springer-Vergleich nicht mehr angezeigt werden. Die Entscheidung steht in Abschnitt 11. Das Protokoll (Versuche, Pause, Abbruchgründe) in Anleitung, UI-Text und Datenmodell festschreiben.
 
 ## 5. Anamnese und Sicherheits-Gate (PAR-Q+, einmalig)
 
@@ -204,8 +208,9 @@ Hiermit bestätige ich, dass ich den Fragebogen vollständig gelesen, verstanden
 NAME: / DATUM: / UNTERSCHRIFT: / UNTERSCHRIFT GESETZLICHE VERTRETUNG (FALLS NÖTIG):“
 
 **Umsetzung im MVP (Entscheidung):** Statt Unterschrift ein bewusstes Häkchen „Ich bestätige das“ plus automatisches Datum. Kein Name (Pseudonym-Regel). Der Text selbst bleibt unverändert. Minderjährige sind im MVP ausgeschlossen (App ab 18).
-**Consent-Log (neu):** Bei jedem Häkchen speichern: genauer Einwilligungstext, Version des Textes („DE 01.07.2024“), Zeitstempel, das Häkchen-Ereignis selbst und die Teilnehmer-ID.
-Für den privaten Test mit Gabi reicht das. Für den kommerziellen Betrieb muss ein Anwalt die Wirksamkeit der Einwilligung, die Informationspflichten und die Speicherung des Consent-Logs prüfen **[OFFEN]**.
+**Consent-Log:** Bei jedem Häkchen speichern: genauer Einwilligungstext, Version des Textes („DE 01.07.2024“), Zeitstempel, das Häkchen-Ereignis selbst, pseudonyme Teilnehmer-ID, **App-Version und Sprache**.
+**UI-Anforderung:** Pflichtinformation, optionale Einwilligungen und Nutzungsbedingungen klar voneinander trennen (nicht in einem Häkchen bündeln).
+Für den privaten Test mit Gabi reicht das. Für den kommerziellen Betrieb müssen Wirksamkeit der Einwilligung, Informationspflichten, Speicherfristen und Betroffenenrechte rechtlich geprüft werden **[OFFEN]**.
 
 ### 5.5 Datenmodell der Anamnese (lokal gespeichert)
 
@@ -216,16 +221,30 @@ Für den privaten Test mit Gabi reicht das. Für den kommerziellen Betrieb muss 
 
 ### 5.6 Abbruchregeln bei jedem Test (zusätzlich zur Anamnese)
 
-**Sofort stoppen** bei: Brustschmerz oder -druck, Schmerz oder Druck in Hals, Kiefer oder Armen, Atemnot bei geringer Belastung oder neu auftretender starker Atemnot, Schwindel oder Ohnmachtsgefühl, Herzrasen oder ungewöhnlichem Herzklopfen, ungewöhnlicher Müdigkeit oder Erschöpfung, ungeklärten Herzsymptomen.
-Dann: klare Sicherheitsmeldung und Hinweis auf ärztliche Abklärung. **Keine Diagnose**, die App überwacht nicht in Echtzeit und behauptet keine medizinische Einschätzung.
-Die Zeichen stammen nicht aus dem PAR-Q+, sondern aus dem LIVION-Handbuch und den ACSM-Warnzeichen (siehe Konzept, Abschnitt 4). Rückenschmerzen als eigenes Abbruchzeichen habe ich nicht in den geprüften Quellen gefunden und deshalb nicht aufgenommen. Das kann die Sportmedizin ergänzen. **[OFFEN]** sportmedizinische Freigabe der Abbruchregeln.
+**Ein Test oder eine Übung wird sofort beendet**, wenn eines dieser Warnzeichen auftritt:
+- Brustschmerz, Brustdruck oder Engegefühl
+- Atemnot, die außer Verhältnis zur Belastung steht
+- Schwindel, Benommenheit, Gefühl kurz vor der Ohnmacht oder Ohnmacht
+- Ungewöhnliches Herzrasen, Herzklopfen oder unregelmäßiger Puls
+- Neue oder sich verändernde Schmerzen in Brust, Nacken, Kiefer, Rücken oder Armen
+- Starke unerwartete Erschöpfung, Übelkeit oder kalter, klebriger Schweiß
+- Ungeklärte Herzsymptome
+
+**Danach:** Test beenden, klare Sicherheitsmeldung anzeigen, keine weitere Belastung empfehlen, bei Warnzeichen ärztliche Abklärung nahelegen. **Keine Diagnose**: Die App überwacht nicht in Echtzeit und leitet nichts Medizinisches ab.
+
+**Umsetzung:**
+- Die Liste liegt als **eine zentrale Konstante** im Code (nicht in jedem Test einzeln).
+- Jeder Abbruch wird protokolliert: Grund, Zeitstempel, Testkontext.
+- Die UI-Texte und der Eskalationshinweis brauchen einen medizinischen bzw. rechtlichen Review.
+
+**Herkunft und Prüfstand:** Die Liste stammt aus dem LIVION-Handbuch, den ACSM-Warnzeichen (siehe Konzept, Abschnitt 4) und der konsolidierten Punktliste. Brust-, Hals-, Kiefer- und Armschmerz, Atemnot, Schwindel und Herzrasen sind in den von mir geprüften Quellen belegt. **Rückenschmerz, Übelkeit und kalter Schweiß konnte ich in diesen Quellen nicht bestätigen.** Sie bleiben trotzdem in der Liste, weil mehr Abbruchzeichen die sichere Richtung sind. Die Sportmedizin soll die Liste prüfen. **[OFFEN]** sportmedizinische Freigabe.
 
 ### 5.7 Lizenz
 
 - Die offizielle englische PAR-Q+-Fassung 2023 steht unter CC BY-NC-ND 4.0 (Namensnennung, nicht kommerziell, keine Bearbeitung). Die deutsche Fassung (Version 01.07.2024) trägt im Dokument selbst nur die Copyright-Zeile und den Hinweis, dass der vollständige Fragebogen ohne Änderungen kopiert werden darf. Eine ausdrückliche Lizenz für kommerzielle Nutzung steht **nicht** darin.
 - Für den privaten Test mit Gabi: unveränderter Text mit Quellenangabe, in Ordnung.
-- **Bis die schriftliche Erlaubnis vorliegt:** den PAR-Q+ nicht kommerziell ausliefern und nicht als verändertes oder umgestaltetes Formular einsetzen.
-- **Aktion vor jeder kommerziellen Nutzung:** schriftliche Nutzungserlaubnis der PAR-Q+ Collaboration einholen (Kontakt: PARQ@hs-gesundheit.de bzw. eparmedx.com). Keine Rechtsberatung, im Zweifel rechtlich prüfen lassen.
+- **Blocker-Regel:** Ohne schriftliche Freigabe keine kommerzielle Auslieferung des PAR-Q+, schon gar nicht als verändertes oder eigenes Formular.
+- **Aktion vor jeder kommerziellen Nutzung:** PAR-Q+ Collaboration schriftlich anschreiben (PARQ@hs-gesundheit.de bzw. eparmedx.com). **Inhalt der Anfrage:** kommerzielle Nutzung in einer mobilen oder Web-App; unveränderte deutsche Fassung 01.07.2024; digitale Anzeige; Speicherung der Antworten; Nutzerkonto ohne Namen möglich; gegebenenfalls Weitergabe an Trainer oder Coaches. Antwort, Lizenzbedingungen und erlaubte Änderungen dokumentieren. Keine Rechtsberatung, im Zweifel rechtlich prüfen lassen.
 
 ## 6. UKK-Fitness-Index
 
@@ -240,13 +259,17 @@ Kandidatenformel (KIT-Skript, hpcosmos):
 - Das ist rechnerisch dieselbe Formel wie die frühere „Version B“ (304 − (8,5·Min + 0,14·Sek + 0,32·Puls + 1,1·BMI − 0,4·Alter)), denn 8,5 pro Minute entspricht 0,1417 pro Sekunde. Die Formel ist also in sich stimmig.
 - Das ist **keine unabhängige Bestätigung**: Es bleibt dieselbe Sekundärquelle. Die abweichende „Version A“ (305 − (8,1·Min + 0,14·Sek + 0,36·Puls + 1,0·BMI − 0,3·Alter), jumk.de / TK-Testkarte) widerspricht in allen Koeffizienten und ist damit weiter ungeklärt.
 - Das Original (Oja et al. 1991, Int J Sports Med 12:356–362) war nicht frei zugänglich, das UKK-Institut veröffentlicht die Formel nicht im Tester's Guide (nur in seiner Software).
-- **Vor dem produktiven Einsatz** gegen das Original oder die UKK-Software prüfen.
+- **Prüfplan vor dem produktiven Einsatz:**
+  1. Originalquelle, UKK-Software oder eine zuverlässige Primärpublikation beschaffen.
+  2. Die Formel mit **mindestens 10 repräsentativen Beispielprofilen** gegen die Referenz prüfen.
+  3. Unit-Tests für Rundung, Grenzfälle, fehlende Werte und den Altersbereich 20–65 schreiben.
+  4. **Akzeptanzkriterium:** identisches Ergebnis gegenüber der Referenzquelle bei identischen Eingabewerten.
 - **Umsetzung:** Die Funktion für Frauen darf im Code stehen, ist aber hinter einem Schalter „Frauenindex“ **standardmäßig aus**. Solange der Schalter aus ist: Rohdaten speichern (Zeit, Puls, BMI, Alter) und im Verlauf die Gehzeit zeigen. Die Rohdaten reichen für eine nachträgliche Berechnung.
 - **Rechentest (nur Prüfung der Programmlogik, keine Bestätigung der Formel):** Frau, 50 J., BMI 25, 17:00 min (1020 s), Puls 135 → 304 + 20 − (144,534 + 43,2 + 27,5) = 324 − 215,234 = **108,8**.
 
 **Bewertung:** über 130 sehr gut, 111–130 gut, 90–110 mittel, 70–89 schwach, unter 70 sehr schwach. In der App „Fitness-Index“, nicht „dein VO2max“. Der Test eignet sich besser für Veränderungen als für Absolutwerte (Schätzfehler etwa 4 ml/kg/min).
 
-**Altersbereich:** 20–65 Jahre (Angabe des UKK-Instituts, Oja 1991). Außerhalb davon keinen Index berechnen.
+**Altersbereich:** 20–65 Jahre (UKK-Institut, Oja 1991). Außerhalb davon keinen Index berechnen und keine Bewertung zeigen (Altersprüfung siehe Abschnitt 4).
 
 **Testfall (Mann):** 50 J., BMI 25, 15:30 min, Puls 135 → 420 − 310,6 = **109,4** (mittel). Als automatischen Test einbauen.
 
@@ -254,18 +277,18 @@ Kandidatenformel (KIT-Skript, hpcosmos):
 
 | # | Punkt | Status |
 |---|---|---|
-| 1 | UKK-Frauenformel | **teilweise geklärt:** Kandidatenformel in Abschnitt 6, Schalter aus. Prüfung am Original oder an der UKK-Software fehlt noch |
-| 2 | UKK-Altersbereich | **geklärt:** 20–65 |
-| 3 | PAR-Q+ deutsche Fassung | **geklärt:** Fassung 01.07.2024 (Hochschule für Gesundheit Bochum) liegt vor, Wortlaut in Abschnitt 5 übernommen |
-| 3a | PAR-Q+ kommerzielle Nutzung | **weiter offen:** keine klare Lizenz für eine kommerzielle App. Schriftliche Erlaubnis der PAR-Q+ Collaboration einholen, bis dahin nicht kommerziell ausliefern (5.7) |
+| 1 | UKK-Frauenformel | **teilweise geklärt:** Kandidatenformel und Prüfplan in Abschnitt 6, Schalter aus. Verifikation am Original oder an der UKK-Software fehlt noch (P0) |
+| 2 | UKK-Altersbereich | **geklärt:** 20–65, Altersprüfung vor Teststart (Abschnitt 4) |
+| 3 | PAR-Q+ deutsche Fassung | **geklärt:** Fassung 01.07.2024 (Hochschule für Gesundheit Bochum), Wortlaut in Abschnitt 5 übernommen |
+| 3a | PAR-Q+ kommerzielle Nutzung | **weiter offen (P0):** schriftliche Erlaubnis der PAR-Q+ Collaboration einholen, Anfrageinhalt in 5.7. Bis dahin keine kommerzielle Auslieferung |
 | 3b | Häkchen statt Unterschrift, kein Name | **entschieden für das MVP:** Häkchen plus Consent-Log (5.4). Für den kommerziellen Betrieb rechtlich prüfen |
-| 4 | Einbeinstand: SE oder SD, Pausenlänge | **größtenteils geklärt:** Werte sind SD und werden nicht angezeigt, Pause 60 s als Produktentscheidung, 3 Versuche bleiben (Abschnitt 4) |
-| 5 | Back-Scratch-Details | **geklärt für das MVP:** T6 ist entfernt, kein Handlungsbedarf |
-| 6 | Liegestütz Frauentabelle | **weiter offen, aber MVP-sicher:** für Frauen keine Normwerte, nur Wiederholungen und Entwicklung. Für spätere Normwerte eine Primärquelle verwenden |
-| 7 | Abbruchregeln sportmedizinisch | **Kern klar, Freigabe offen:** Zeichen in 5.6, Freigabe durch die Sportmedizin fehlt |
-| 8 | Supplement-Empfehlungen (Health App) vs. LIVION-Claims | **nicht im MVP.** Erst nach Klärung von Claim, Rechtslage und Datenquelle wieder aufnehmen (Entscheidung des Nutzers) |
-| 9 | Medizinprodukte-Software (EU/MDCG 2019-11), Datenschutz (DSGVO Art. 9, DSFA) | **weiter offen, Zeitpunkt korrekt:** vor Blutwerte-Modul und vor Veröffentlichung klären. **Aktion:** Verwendungszweck (Intended Purpose) schriftlich festlegen, dann rechtliche Bewertung. Die Anamnese enthält schon Gesundheitsdaten (5.5) |
-| 10 | Garmin-/Oura-Zugang | **Phase 3, kein MVP-Blocker.** Der Garmin-Zugang bleibt unsicher (siehe Konzept, Abschnitt 7) |
+| 4 | Einbeinstand: SE oder SD, Pausenlänge | **größtenteils geklärt:** keine SE/SD-Anzeige, Pause 60 s. **Versuchszahl offen** (3 laut Springer, 2 laut Punktliste), siehe Abschnitt 11 |
+| 5 | Back-Scratch-Details | **geklärt für das MVP:** T6 ist entfernt |
+| 6 | Liegestütz Frauentabelle | **weiter offen, aber MVP-sicher:** für Frauen keine Norm und keine Kategorie, nur Wiederholungen und Verlauf. Spätere Norm nur mit Primärquelle (Geschlecht, Altersgruppe, Position, Abbruchkriterium exakt abbilden) |
+| 7 | Abbruchregeln sportmedizinisch | **Kern geklärt, Umsetzung offen (P0):** Liste und Umsetzung in 5.6, medizinischer Review fehlt |
+| 8 | Supplement-Empfehlungen (Health App) vs. LIVION-Claims | **nicht im MVP:** keine Empfehlungen, keine Dosierung, keine Kaufempfehlung. **To-do vor Wiederaufnahme:** Liste zulässiger und unzulässiger Health-Claims, Claim-Review, Datenquellenprüfung, rechtliche Freigabe |
+| 9 | Medizinprodukte-Software (EU/MDCG 2019-11), Datenschutz (DSGVO Art. 9, DSFA) | **weiter offen, Zeitpunkt korrekt:** vor Blutwerte-Modul und vor Veröffentlichung. Maßnahmen in Abschnitt 9 (P1/P2) |
+| 10 | Garmin-/Oura-Zugang | **Phase 3, kein MVP-Blocker.** Der Garmin-Zugang bleibt unsicher (siehe Konzept, Abschnitt 7). To-dos für Phase 3 in Abschnitt 9 |
 
 ## 8. Startablauf in Claude Code
 
@@ -273,6 +296,46 @@ Kandidatenformel (KIT-Skript, hpcosmos):
 2. Projektordner anlegen und Grundgerüst der PWA bauen (Profil + Navigation).
 3. Berechnungsfunktionen (BMI, Index Männer, Index Frauen hinter Schalter) mit Tests.
 4. **Anamnese-Screen (PAR-Q+) bauen:** Texte aus Abschnitt 5.2–5.4 in `parq-de.json` übernehmen (wörtlich), Ablauflogik aus 5.1, Speicherung nach 5.5. Test: Alle Antworten NEIN → freigegeben; eine JA in Teil A → Teil B erscheint; eine JA in Teil B → nicht freigegeben, Tests gesperrt.
-5. Testmappe und Test-Screens, Speichern lokal.
-6. Verlaufsansicht, Export, Löschen.
-7. Probelauf mit Gabi, Rückmeldungen sammeln.
+5. Abbruchregeln (5.6) als zentrale Konstante und Altersprüfung (Abschnitt 4) einbauen.
+6. Testmappe und Test-Screens, Speichern lokal.
+7. Verlaufsansicht, Export, Löschen.
+8. Probelauf mit Gabi, Rückmeldungen sammeln.
+
+## 9. Arbeitsplan (aus der konsolidierten Punktliste)
+
+| Priorität | Arbeitspaket | Verantwortlich | Ergebnis |
+|---|---|---|---|
+| P0 | UKK-Frauenformel aus Originalquelle verifizieren | Produkt / Entwicklung | Freigegebene Formel und Unit-Tests |
+| P0 | PAR-Q+ Collaboration um kommerzielle Nutzungserlaubnis bitten | Produkt / Recht | Schriftliche Lizenzantwort |
+| P0 | Abbruchregeln implementieren | Entwicklung / Medizin | Sicherheitslogik und UI-Meldungen |
+| P1 | Einbeinstand-Protokoll finalisieren | Produkt | Versuchszahl, 60 s Pause, bester Versuch |
+| P1 | Consent-Log und Häkchen-Flow definieren | Produkt / Entwicklung / Datenschutz | Dokumentierter Consent-Prozess |
+| P1 | Intended Purpose schreiben | Produkt / Recht | Kontrolliertes Dokument: Was tut die App, für wen, mit welchem Ergebnis, ohne welche Ansprüche |
+| P2 | MDR-/MDCG-Check je Funktion (Anamnese, Risikobewertung, Trainingsplanung, Blutwerte, Garmin-/Oura-Integration) | Recht / Regulatory | Qualifizierungsentscheidung je Funktion |
+| P2 | DSGVO Art. 9 und DSFA vorbereiten (Rechtsgrundlage, Einwilligung, Informationspflichten, Auftragsverarbeitung, Löschkonzept) | Datenschutz / Recht | Verarbeitungsverzeichnis, DSFA-Bericht. Externe Bewertung durch Datenschutz- und Medizinprodukterecht einholen |
+| P3 | Garmin-/Oura-Integration planen (OAuth-Flows, Scopes, Datenminimierung, Widerruf durch Nutzer, Datenherkunft, Anzeige-Kontext; prüfen, ob zusätzliche Gesundheitsdaten den MDR-/DSGVO-Status ändern) | Produkt / Entwicklung | Integrations- und Datenschutzkonzept |
+
+Die Spalte „Verantwortlich“ stammt aus der Punktliste. Michael ist bisher die einzige Person im Projekt, die Zuordnung zu Rollen ist ein Vorschlag.
+
+## 10. Definition of Done für das MVP
+
+- [ ] UKK-Formel ist gegen eine verifizierte Quelle geprüft und automatisiert getestet.
+- [ ] UKK-Test ist auf 20–65 Jahre beschränkt.
+- [ ] PAR-Q+ wird unverändert verwendet, oder es liegt eine schriftliche Nutzungsfreigabe vor.
+- [ ] Consent wird per Häkchen erteilt, protokolliert und ist ohne Name möglich.
+- [ ] Einbeinstand zeigt keine SE-/SD-Normwert-Streuung.
+- [ ] Back-Scratch-Test ist nicht enthalten.
+- [ ] Liegestütz zeigt für Frauen keine Normwert-Einstufung.
+- [ ] Abbruchregeln sind implementiert, getestet und in der UI verständlich kommuniziert.
+- [ ] Keine Supplement-Empfehlungen im MVP.
+- [ ] Vor Release: Intended Purpose, MDR-Check, DSGVO Art. 9 und DSFA sind geprüft.
+
+Für den **privaten Test mit Gabi** gelten nur die Punkte, die den Test selbst betreffen (Formel für Männer, Altersprüfung, unveränderter PAR-Q+, Häkchen, Abbruchregeln, keine Supplements). Die Punkte zur Frauenformel, zur PAR-Q+-Lizenz und zu Release-Prüfungen betreffen die kommerzielle Version.
+
+## 11. Offene Entscheidungen
+
+- **PAR-Q+ Collaboration:** kommerzielle Nutzung und digitale Speicherung schriftlich klären.
+- **Einbeinstand:** Versuchszahl bestätigen. Dieses Dokument: 3 je Bein (Springer-Vergleich möglich). Punktliste: 2 Versuche (dann kein Springer-Vergleich). Pause 60 s ist gesetzt. **Bitte entscheiden.**
+- **Liegestütz Frauen:** später entscheiden, ob eine validierte Normwertquelle eingeführt wird.
+- **Supplement-Empfehlungen:** später entscheiden, ob und in welcher Form sie angeboten werden.
+- **Medizinprodukt-Status:** nach Fixierung des Intended Purpose endgültig klären.

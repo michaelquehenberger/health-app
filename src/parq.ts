@@ -31,6 +31,8 @@ export interface Anamnesis {
     text?: string;
     event?: 'haekchen_bestaetigt';
     participantId?: string;
+    appVersion?: string;
+    language?: string;
   };
   result: AnamnesisResult | null;
   clearance: { date: string; source: 'eparmedx' | 'fachperson' } | null;

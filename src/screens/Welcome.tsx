@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, Wordmark } from '../components/ui';
 import type { Consent } from '../types';
+import { APP_LANGUAGE, APP_VERSION } from '../version';
 
 export const CONSENT_VERSION = '2026-11-01-mvp';
 
@@ -30,7 +31,7 @@ export function Welcome({ onAccept }: { onAccept: (c: Consent) => void }) {
           Ich willige ein, dass meine Angaben (Profil, Fragebogen-Ergebnis, Testwerte) auf diesem Gerät gespeichert werden. Ich kann die
           Einwilligung jederzeit widerrufen, indem ich alle Daten lösche.
         </Check>
-        <button className="btn primary block" disabled={!info || !data} onClick={() => onAccept({ acceptedAt: new Date().toISOString(), textVersion: CONSENT_VERSION })}>
+        <button className="btn primary block" disabled={!info || !data} onClick={() => onAccept({ acceptedAt: new Date().toISOString(), textVersion: CONSENT_VERSION, appVersion: APP_VERSION, language: APP_LANGUAGE })}>
           Weiter zum Profil
         </button>
       </div>

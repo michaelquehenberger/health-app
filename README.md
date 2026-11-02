@@ -1,7 +1,7 @@
 # LIVION – MVP Fitnesstests (Testphase)
 
 Web-App für das Handy: einmalige Anamnese (PAR-Q+), sieben Basis-Tests und der persönliche Verlauf
-Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.3 ([`docs/health-app-mvp-uebergabe-v0.3.md`](docs/health-app-mvp-uebergabe-v0.3.md)); frühere Fassung v0.1 in [`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md).
+Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.4 ([`docs/health-app-mvp-uebergabe-v0.4.md`](docs/health-app-mvp-uebergabe-v0.4.md)); erste Fassung v0.1 in [`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md).
 
 Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push auf `main` neu veröffentlicht).
 
@@ -28,11 +28,27 @@ npm run build    # fertige Web-App im Ordner dist/
 | Verlauf | je Test Baseline, Tag 30, Tag 90 |
 | Einstellungen | Profil, Einwilligung, Export (JSON und CSV mit den Pflichtfeldern), Import, alles löschen |
 
+## Definition of Done (Übergabe v0.4, Abschnitt 10)
+
+| Punkt | Stand in der App |
+| --- | --- |
+| UKK-Formel gegen verifizierte Quelle geprüft und getestet | Männer: Testfall 109,4 automatisch getestet. Frauen: Kandidat hinter Schalter, **Verifikation offen** |
+| UKK-Test auf 20–65 Jahre beschränkt | erledigt: Altersprüfung vor Teststart, außerhalb nur Gehzeit und Puls |
+| PAR-Q+ unverändert | erledigt: automatischer Wortlaut-Test gegen `docs/health-app-mvp-uebergabe-v0.4.md` |
+| Consent per Häkchen, protokolliert, ohne Name | erledigt: Text, Fassung, Zeitstempel, Ereignis, Teilnehmer-ID, App-Version, Sprache |
+| Einbeinstand ohne SE/SD-Streuung | erledigt |
+| Kein Back-Scratch-Test | erledigt |
+| Liegestütz Frauen ohne Normwert | erledigt |
+| Abbruchregeln implementiert, getestet, verständlich | erledigt: zentrale Liste (7 Warnzeichen), Abbruch mit Grund, Zeitstempel, Test und Messzeitpunkt; **medizinischer Review offen** |
+| Keine Supplement-Empfehlungen | erledigt |
+| Vor Release: Intended Purpose, MDR, DSGVO Art. 9, DSFA | offen (nicht für Gabis privaten Test nötig) |
+
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
 - UKK-Formel für Frauen: Kandidatenformel hinter dem Schalter „Frauenindex“ in den Einstellungen (Standard aus, Anzeige „vorläufig“); Prüfung am Original fehlt.
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
-- PAR-Q+: Erlaubnis für kommerzielle Nutzung (PARQ@hs-gesundheit.de); Häkchen statt Unterschrift rechtlich prüfen.
+- PAR-Q+: Erlaubnis für kommerzielle Nutzung (PARQ@hs-gesundheit.de, Anfrageinhalt in Übergabe 5.7); Häkchen statt Unterschrift rechtlich prüfen.
+- Einbeinstand: Versuchszahl (3 laut Übergabe, 2 laut Punktliste); umgesetzt sind 3 mit Springer-Vergleich.
 - Sportmedizinische Freigabe der Abbruchregeln.
 - Die Testanleitungen sind knapp gehalten und mit dem Konzept abzugleichen.
 - Vorschlag des Messzeitpunkts: Tag 0–19 Baseline, Tag 20–59 „Tag 30“ (sobald dort alles erledigt ist „Tag 90“), ab Tag 60 „Tag 90“. Nur Voreinstellung, in der Testmappe änderbar.

@@ -61,6 +61,7 @@ export function App() {
             timepointSource={timepoint === suggested ? 'vorschlag' : 'manuell'}
             profile={profile}
             womenIndex={data.settings?.womenIndex ?? false}
+            mobilityLimited={latestAnamnesis(data.anamneses)?.answersB['9b'] === 'ja'}
             onSave={(r) => update((d) => ({ ...d, records: [...d.records, r] }))}
             onBack={() => setTest(null)}
           />

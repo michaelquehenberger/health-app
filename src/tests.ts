@@ -4,7 +4,7 @@
 import type { TestId, Timepoint } from './types';
 
 /** Version der Testprotokolle; wird mit jeder Messung gespeichert. Bei Änderungen an Ablauf oder Grenzen erhöhen. */
-export const PROTOCOL_VERSION = 'v0.3';
+export const PROTOCOL_VERSION = 'v0.4';
 
 export interface TestDef {
   id: TestId;
@@ -152,16 +152,16 @@ export function timepointLabel(t: Timepoint): string {
 }
 
 /**
- * Abbruchregeln für jeden Test (LIVION-Handbuch, ACSM-Warnzeichen).
- * [OFFEN] sportmedizinische Freigabe.
+ * Abbruchregeln für jeden Test (Übergabe v0.4, Abschnitt 5.6). Zentrale Konstante, nur hier pflegen.
+ * Quellen: LIVION-Handbuch, ACSM-Warnzeichen, konsolidierte Punktliste. [OFFEN] sportmedizinische Freigabe.
  */
 export const STOP_RULES = [
-  'Brustschmerz oder -druck',
-  'Schmerz oder Druck in Hals, Kiefer oder Armen',
-  'Atemnot bei geringer Belastung oder neu auftretende starke Atemnot',
-  'Schwindel oder Ohnmachtsgefühl',
-  'Herzrasen oder ungewöhnliches Herzklopfen',
-  'ungewöhnliche Müdigkeit oder Erschöpfung',
-  'ungeklärte Herzsymptome',
-];
+  'Brustschmerz, Brustdruck oder Engegefühl',
+  'Atemnot, die außer Verhältnis zur Belastung steht',
+  'Schwindel, Benommenheit, Gefühl kurz vor der Ohnmacht oder Ohnmacht',
+  'Ungewöhnliches Herzrasen, Herzklopfen oder unregelmäßiger Puls',
+  'Neue oder sich verändernde Schmerzen in Brust, Nacken, Kiefer, Rücken oder Armen',
+  'Starke unerwartete Erschöpfung, Übelkeit oder kalter, klebriger Schweiß',
+  'Ungeklärte Herzsymptome',
+] as const;
 

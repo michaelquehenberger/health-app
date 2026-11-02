@@ -71,7 +71,7 @@ export function exportJson(data: AppData): void {
 
 /** Eine Zeile je Messwert mit den Pflichtfeldern aus der Übergabe (Abschnitt 4). */
 export function measurementsCsv(data: AppData): string {
-  const head = ['Teilnehmer-ID', 'Test', 'Messzeitpunkt', 'Zeitpunkt gewählt', 'Protokoll', 'Metrik', 'Einheit', 'Wert', 'Datum', 'Uhrzeit', 'Methode', 'Datenqualität', 'Kommentar', 'Abgebrochen'];
+  const head = ['Teilnehmer-ID', 'Test', 'Messzeitpunkt', 'Zeitpunkt gewählt', 'Protokoll', 'Metrik', 'Einheit', 'Wert', 'Datum', 'Uhrzeit', 'Methode', 'Datenqualität', 'Kommentar', 'Abgebrochen', 'Abbruch-Zeitpunkt'];
   const esc = (v: unknown) => {
     const s = v === null || v === undefined ? '' : String(v);
     return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -79,7 +79,7 @@ export function measurementsCsv(data: AppData): string {
   const rows = data.records.flatMap((r: TestRecord) =>
     r.measurements.map((m) => [
       data.profile?.participantId ?? '', r.testId, r.timepoint, r.timepointSource ?? '', r.protocolVersion ?? '', m.metric, m.unit,
-      m.value === null ? '' : String(m.value).replace('.', ','), r.date, r.time, r.method, r.quality, r.comment, r.aborted ?? '',
+      m.value === null ? '' : String(m.value).replace('.', ','), r.date, r.time, r.method, r.quality, r.comment, r.aborted ?? '', r.abortedAt ?? '',
     ]),
   );
   return [head, ...rows].map((row) => row.map(esc).join(';')).join('\n');

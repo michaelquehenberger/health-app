@@ -82,9 +82,9 @@ describe('Ablauf', () => {
 });
 
 describe('PAR-Q+ Wortlaut', () => {
-  it('jede Textzeile steht wörtlich in der Übergabe v0.3 (docs/)', async () => {
+  it('jede Textzeile steht wörtlich in der Übergabe v0.4 (docs/)', async () => {
     const { readFileSync } = await import('node:fs');
-    const doc = readFileSync(new URL('../docs/health-app-mvp-uebergabe-v0.3.md', import.meta.url), 'utf8')
+    const doc = readFileSync(new URL('../docs/health-app-mvp-uebergabe-v0.4.md', import.meta.url), 'utf8')
       .replace(/\[(www\.[^\]]+)\]\([^)]+\)/g, '$1');
     const lines: string[] = [];
     const walk = (x: unknown, key = ''): void => {
