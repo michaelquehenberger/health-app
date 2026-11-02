@@ -9,6 +9,7 @@ import {
 import { Check } from '../components/ui';
 import type { AppData } from '../types';
 import { formatDate, todayIso, uid } from '../store';
+import { APP_LANGUAGE, APP_VERSION } from '../version';
 
 /** Text mit Zeilenumbrüchen als Absätze; www-Adressen werden zu Links. */
 function Paragraphs({ text, className }: { text: string; className?: string }) {
@@ -230,7 +231,7 @@ export function AnamnesisScreen({ data, update, onDone }: {
               ...x,
               consent: {
                 given: true, date: today, at: new Date().toISOString(), textVersion: PARQ.version, text: PARQ.consent,
-                event: 'haekchen_bestaetigt', participantId: x.participantId,
+                event: 'haekchen_bestaetigt', participantId: x.participantId, appVersion: APP_VERSION, language: APP_LANGUAGE,
               },
             }));
             onDone();

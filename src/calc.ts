@@ -13,6 +13,11 @@ export function bmi(weightKg: number, heightCm: number): number | null {
 export const UKK_MIN_AGE = 20;
 export const UKK_MAX_AGE = 65;
 
+/** Altersprüfung vor dem UKK-Test (v0.4): nur 20–65 Jahre werden bewertet. */
+export function ukkAgeOk(age: number | null | undefined): boolean {
+  return typeof age === 'number' && age >= UKK_MIN_AGE && age <= UKK_MAX_AGE;
+}
+
 export type UkkResult =
   | { kind: 'index'; value: number; rating: UkkRating; provisional: boolean }
   | { kind: 'nichtBerechnet'; reason: string };
@@ -39,11 +44,14 @@ export function ukkIndexFemaleCandidate(age: number, totalSeconds: number, pulse
  */
 export function ukkIndex(
   args: { sex: Sex; age: number; minutes: number; seconds: number; pulse: number; bmi: number },
-  options: { womenIndex?: boolean } = {},
+  options: { womenIndex?: boolean; mobilityLimited?: boolean } = {},
 ): UkkResult {
   const { sex, age, minutes, seconds, pulse } = args;
-  if (age < UKK_MIN_AGE || age > UKK_MAX_AGE) {
-    return { kind: 'nichtBerechnet', reason: `Der Fitness-Index gilt nur von ${UKK_MIN_AGE} bis ${UKK_MAX_AGE} Jahren.` };
+  if (!ukkAgeOk(age)) {
+    return { kind: 'nichtBerechnet', reason: `Der Fitness-Index gilt nur von ${UKK_MIN_AGE} bis ${UKK_MAX_AGE} Jahren. Gehzeit und Puls werden als Verlauf gespeichert, ohne Bewertung.` };
+  }
+  if (options.mobilityLimited) {
+    return { kind: 'nichtBerechnet', reason: 'Zügiges Gehen ist eingeschränkt. Ohne weitere Prüfung gibt es keine Bewertung; Gehzeit und Puls werden als Verlauf gespeichert.' };
   }
   if (sex === 'maennlich') {
     const value = ukkIndexMale(age, minutes, seconds, pulse, args.bmi);

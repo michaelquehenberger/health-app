@@ -8,6 +8,8 @@ Stand: 1. November 2026 | Basis: `health-app-livion-konzept.md` (Projekt-Doc) + 
 > Neue offene Punkte aus v0.2: 3a kommerzielle Nutzung des PAR-Q+ (Erlaubnis einholen),
 > 3b Häkchen statt Unterschrift (für kommerziell rechtlich prüfen).
 >
+> Die aktuelle vollständige Übergabe ist v0.4: [`health-app-mvp-uebergabe-v0.4.md`](health-app-mvp-uebergabe-v0.4.md).
+>
 > **v0.3 (2. November 2026), umgesetzt:** Einbeinstand mit 3 Versuchen und 60 s Pause (Countdown);
 > UKK-Kandidatenformel für Frauen `304 + 0,4 × Alter − (0,1417 × Zeit_in_Sekunden + 0,32 × Puls + 1,1 × BMI)`
 > hinter dem Schalter „Frauenindex“ (Standard aus, Anzeige „vorläufig“, Rechentest 108,8); Consent-Log mit Text,

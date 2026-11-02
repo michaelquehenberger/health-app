@@ -44,6 +44,10 @@ describe('UKK-Fitness-Index', () => {
     expect(ukkIndex({ sex: 'maennlich', age: 66, minutes: 15, seconds: 0, pulse: 130, bmi: 25 }).kind).toBe('nichtBerechnet');
     expect(ukkIndex({ sex: 'maennlich', age: 19, minutes: 15, seconds: 0, pulse: 130, bmi: 25 }).kind).toBe('nichtBerechnet');
     expect(ukkIndex({ sex: 'maennlich', age: 65, minutes: 15, seconds: 0, pulse: 130, bmi: 25 }).kind).toBe('index');
+    expect(ukkIndex({ sex: 'maennlich', age: 20, minutes: 15, seconds: 0, pulse: 130, bmi: 25 }).kind).toBe('index');
+  });
+  it('keine Bewertung bei eingeschränktem Gehen', () => {
+    expect(ukkIndex({ sex: 'maennlich', age: 50, minutes: 15, seconds: 30, pulse: 135, bmi: 25 }, { mobilityLimited: true }).kind).toBe('nichtBerechnet');
   });
   it('Bewertungsgrenzen', () => {
     expect(ukkRating(131)).toBe('sehr gut');
