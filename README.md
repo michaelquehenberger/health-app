@@ -60,8 +60,8 @@ npm run build    # fertige Web-App im Ordner dist/
 | Bereich | Stand |
 | --- | --- |
 | Heute | Tageskarte mit 3–4 Übungen je Körperregion, Schmerzregel (5/10 und Rückfrage am Morgen), Stufen, Wochenmuster, Trinkmenge-Zähler |
-| Beschwerden | Körperkarte, Art, Intensität, rote Flaggen (Notfall, ärztlich abklären, Hinweis); bei Notfall oder ärztlicher Abklärung kein Übungsplan |
-| Befunde | 24 Blutwerte mit Referenzbereich aus dem Befund; ohne Bereich bewertet die App nicht; Hormone nur anzeigen |
+| Beschwerden | Körperkarte, Seite, Art (mehrere möglich: Steifigkeit, Schwäche, Schmerz bei Belastung/in Ruhe, Druck, Stechen, Ziehen, Brennen, Kribbeln), Wann, Was verstärkt es, Seit wann, Verlauf, Intensität; Kribbeln setzt die Rückfrage zu Nervenzeichen; rote Flaggen (Notfall, ärztlich abklären, Hinweis); bei Notfall oder ärztlicher Abklärung kein Übungsplan |
+| Befunde | Upload als PDF oder Foto mit KI-Auslesung (Claude); jede erkannte Zeile wird vor dem Übernehmen geprüft und kann korrigiert oder abgewählt werden; die Datei wird nicht gespeichert. Daneben Eingabe von Hand. 24 Blutwerte mit Referenzbereich aus dem Befund; ohne Bereich bewertet die App nicht; Hormone nur anzeigen |
 | Videos | Je Region deutsche (Apotheken Umschau, Rheuma-Liga) und englische Quellen (Arthritis UK) als gepflegte Liste, keine freie YouTube-Suche; alle mit „noch nicht fachlich gesichtet“. Einbettung per YouTube-ID ist vorbereitet, aber keine ID gesetzt |
 | Ernährung | Ein Hinweis pro Tag mit Quelle; Allergien schließen Hinweise aus, die das Lebensmittel nennen; keine Diätpläne |
 | Trinkmenge | Richtwert 1,5 Liter Getränke (DGE) mit Sperre bei Herz- oder Nierenvorgabe und auffälligen Nierenwerten |
@@ -80,6 +80,7 @@ npm run build    # fertige Web-App im Ordner dist/
 
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
+- **KI-Auslesung der Befunde (nur privater Test):** Der Aufruf geht direkt aus dem Browser mit einem eigenen API-Schlüssel, der nur auf dem Gerät liegt (nie in der Sicherungsdatei). Eigene KI-Einwilligung, widerrufbar. Für jede Weitergabe: Server-Baustein (Proxy), Auftragsverarbeitungsvertrag mit Anthropic, Datenstandort klären. Nicht mit echten Befunden getestet.
 - **KI-Auswertung (Schritt 5):** braucht einen Server-Baustein (API-Schlüssel darf nicht in die App), einen Auftragsverarbeitungsvertrag mit dem KI-Anbieter und eine Prüfung nach MDR/MDCG 2019-11, weil die App dann aus Blutwerten Empfehlungen ableitet.
 - **Oura VO2max:** Endpunkt `vO2_max` eingebaut, mit echtem Ring noch nicht geprüft; fehlt er, laufen die übrigen Daten weiter.
 

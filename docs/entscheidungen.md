@@ -4,6 +4,7 @@ Getroffene Produktentscheidungen zu offenen Punkten der MVP-Übergabe. Neueste o
 
 | Datum | Punkt | Entscheidung | Von |
 |---|---|---|---|
+| 02.11.2026 | Blutwerte und Beschwerden | Befund als **PDF oder Foto hochladen**, KI liest die Werte aus, die Nutzerin prüft vor dem Übernehmen. Beschwerden mit **Mehrfachauswahl** (Art, Wann, Was verstärkt es) für genauere Angaben. Für den privaten Test direkter KI-Aufruf mit eigenem Schlüssel; Proxy, AVV und MDR-Prüfung vor jeder Weitergabe offen. | Michael |
 | 02.11.2026 | Ablauf und Kern der App | Reihenfolge **Profil → Anamnese → Testmappe → Gesundheitsmodul → Auswertung und Übungsplan**. Das Gesundheitsmodul (Blutwerte, Beschwerden, Oura inkl. VO2max) ist das Herzstück und Pflichtschritt, kein Zusatz. Pflicht in Schritt 4: Einwilligung und Blutwerte; Oura und Beschwerden empfohlen. Ziel: Übungen und Anwendungen per KI aus allen Daten ableiten (Umsetzung offen, siehe README). | Michael |
 | 02.11.2026 | Umfang nächster Schritt | Gesundheitsmodul, Videos, Ernährung, Supplements und Oura in einem Zug (Version 0.5) | Michael |
 | 02.11.2026 | Supplement-Hinweise für Gabis privaten Test | Infokarten ohne Dosis, nur nach niedrigem Laborwert, mit Quellen und Hinweis auf Arzt oder Apotheke. Die Sperre „keine Supplement-Empfehlungen“ aus Übergabe v0.4 gilt für den privaten Test nicht mehr; vor einer Weitergabe bleiben Claims-Prüfung und rechtliche Freigabe offen | Michael |
