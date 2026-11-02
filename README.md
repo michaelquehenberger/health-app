@@ -1,4 +1,4 @@
-# LIVION – MVP Fitnesstests (Testphase)
+# LIVION – Fitnesstests und Gesundheitsmodul (Testphase)
 
 Web-App für das Handy: einmalige Anamnese (PAR-Q+), sieben Basis-Tests und der persönliche Verlauf
 Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.4 ([`docs/health-app-mvp-uebergabe-v0.4.md`](docs/health-app-mvp-uebergabe-v0.4.md)); erste Fassung v0.1 in [`docs/health-app-mvp-uebergabe.md`](docs/health-app-mvp-uebergabe.md).
@@ -6,6 +6,8 @@ Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.4 ([`docs/health-app
 Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push auf `main` neu veröffentlicht).
 
 **Keine Diagnose.** Daten bleiben nur im Browser des Geräts, gespeichert wird eine Teilnehmer-ID, kein Name.
+
+Seit Version 0.5 gibt es zusätzlich das **Gesundheitsmodul** (Beschwerden mit roten Flaggen, Blutwerte, Tageskarte mit Übungen und Videos, Ernährung, Trinkmenge, Supplement-Infokarten, Wearable-Daten). Grundlage: Konzept, Auswertungslogik und Übungsdatenbank im Claude-Projekt „Health App“.
 
 ## Starten
 
@@ -43,6 +45,29 @@ npm run build    # fertige Web-App im Ordner dist/
 | Keine Supplement-Empfehlungen | erledigt |
 | Vor Release: Intended Purpose, MDR, DSGVO Art. 9, DSFA | offen (nicht für Gabis privaten Test nötig) |
 
+## Gesundheitsmodul (Version 0.5)
+
+| Bereich | Stand |
+| --- | --- |
+| Heute | Tageskarte mit 3–4 Übungen je Körperregion, Schmerzregel (5/10 und Rückfrage am Morgen), Stufen, Wochenmuster, Trinkmenge-Zähler |
+| Beschwerden | Körperkarte, Art, Intensität, rote Flaggen (Notfall, ärztlich abklären, Hinweis); bei Notfall oder ärztlicher Abklärung kein Übungsplan |
+| Befunde | 24 Blutwerte mit Referenzbereich aus dem Befund; ohne Bereich bewertet die App nicht; Hormone nur anzeigen |
+| Videos | Je Region deutsche (Apotheken Umschau, Rheuma-Liga) und englische Quellen (Arthritis UK) als gepflegte Liste, keine freie YouTube-Suche; alle mit „noch nicht fachlich gesichtet“. Einbettung per YouTube-ID ist vorbereitet, aber keine ID gesetzt |
+| Ernährung | Ein Hinweis pro Tag mit Quelle; Allergien schließen Hinweise aus, die das Lebensmittel nennen; keine Diätpläne |
+| Trinkmenge | Richtwert 1,5 Liter Getränke (DGE) mit Sperre bei Herz- oder Nierenvorgabe und auffälligen Nierenwerten |
+| Supplements | Infokarten ohne Dosis nur nach niedrigem Laborwert (Vitamin D, Eisen, B12) mit PubMed-Belegen (PMID, DOI); Glucosamin als „nicht empfohlen“ (NICE); gesperrt bei Medikamenten im Profil oder auffälligen Leber- und Nierenwerten |
+| Wearables | Oura per Client-Login (ohne Server, Zugang etwa 30 Tage), Datei-Import (CSV) für Garmin und andere; Durchschnitt der letzten 7 Tage, ohne Bewertung und ohne Einfluss auf den Plan |
+| Sicherheit | Übungsplan nur mit gültiger PAR-Q+-Freigabe; eigene Einwilligung für Gesundheitsdaten (getrennt von der Grund-Einwilligung); Oura-Zugang steht nie in der Sicherungsdatei |
+
+### Offen im Gesundheitsmodul
+
+- **Oura nicht gegen echte Daten getestet.** Login-Art (Client-Login), Feldnamen und die Browser-Freigabe der Oura-Schnittstelle müssen mit Gabis Ring geprüft werden. Ohne eigene Oura-App (Client-ID und Weiterleitungsadresse) geht der Login nicht. Die API-Vereinbarung von Oura ist nicht gelesen.
+- **Garmin:** kein direkter Zugang für Privatpersonen; das Exportformat aus dem Garmin-Konto ist nicht geprüft (die CSV-Vorlage ist unser eigenes Format).
+- **Videos:** noch von keiner Fachperson gesichtet; YouTube-IDs für die Einbettung fehlen.
+- **Fachprüfung** der roten Flaggen, der Schmerzgrenze, der Übungsauswahl und der Supplement-Karten (Claims-Liste) steht aus; rechtliche Prüfung vor jeder Weitergabe.
+- Die Ernährungshinweise sind bewusst knapp (sechs Hinweise mit Quelle); mehr braucht belegte Quellen.
+- Der Verlauf zeigt Wearable-Daten noch nicht als Kurve.
+
 ## Offen (nicht erfunden, bewusst ausgelassen)
 
 - Liegestütz-Vergleich für Männer: Die Tabelle aus dem Konzept liegt noch nicht vor.
@@ -57,4 +82,5 @@ npm run build    # fertige Web-App im Ordner dist/
 - `src/tests.ts` – Testkatalog mit Protokollversion, Abbruchregeln
 - `src/parq-de.json`, `src/parq.ts` – PAR-Q+-Texte (unverändert) und Ablauflogik (Tests in `src/parq.test.ts`)
 - `src/results.ts` – Zusammenfassung je Test und Messzeitpunkt
+- `src/health/` – Gesundheitsmodul: `logic/` (Blutwerte, rote Flaggen, Tageskarte, Ernährung, Supplements), `data/exercises.ts` (Übungen und Videolisten), `wearables/` (Oura, Datei-Import, Zusammenfassung), `screens/`
 - `src/screens/` – Bildschirme
