@@ -8,7 +8,8 @@ import { Icon } from '../components/ui';
 
 const ORDER: Timepoint[] = ['baseline', 'tag30', 'tag90'];
 
-export function CompletionPanel({ data, update, timepoint, step, openTest, goHistory, goSettings }: {
+export function CompletionPanel({ data, update, timepoint, step, openTest, goHealth, goHistory, goSettings }: {
+  goHealth: () => void;
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   timepoint: Timepoint;
@@ -55,6 +56,13 @@ export function CompletionPanel({ data, update, timepoint, step, openTest, goHis
       <div className="card">
         <span className="label">So geht es weiter</span>
         <ol className="todo">
+          {timepoint === 'baseline' && (
+            <li>
+              <strong>Weiter zum Gesundheitsmodul</strong>
+              <span className="muted small">Das Herzstück: Blutwerte, Beschwerden und Oura. Daraus entsteht dein Übungsplan.</span>
+              <button className="btn primary" onClick={goHealth}>Gesundheitsdaten eintragen</button>
+            </li>
+          )}
           {pulseOpen && (
             <li>
               <strong>Ruhepuls fertig messen</strong>

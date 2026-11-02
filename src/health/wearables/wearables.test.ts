@@ -82,9 +82,13 @@ describe('Oura', () => {
       return new Response(JSON.stringify({ data: [], next_token: null }), { status: 200 });
     }) as unknown as typeof fetch;
     await fetchOuraDays('tok', '2026-10-01', '2026-10-30', ok);
-    expect(calls).toHaveLength(3);
+    expect(calls).toHaveLength(4);
     expect(calls.every((c) => c.endsWith('|Bearer tok'))).toBe(true);
     expect(calls.some((c) => c.includes('/daily_readiness?'))).toBe(true);
+    expect(calls.some((c) => c.includes('/vO2_max?'))).toBe(true);
+    // Fehlt VO2max (z. B. 403), kommen die übrigen Daten trotzdem
+    const noVo2 = (async (url: string) => new Response(JSON.stringify({ data: [], next_token: null }), { status: String(url).includes('vO2_max') ? 403 : 200 })) as unknown as typeof fetch;
+    await expect(fetchOuraDays('tok', '2026-10-01', '2026-10-30', noVo2)).resolves.toEqual([]);
     const expired = (async () => new Response('', { status: 401 })) as unknown as typeof fetch;
     await expect(fetchOuraDays('tok', '2026-10-01', '2026-10-30', expired)).rejects.toMatchObject({ kind: 'abgelaufen' });
   });
@@ -108,5 +112,29 @@ describe('Sicherungsdatei', () => {
     const withOura = { ...EMPTY, health: { ...EMPTY_HEALTH, oura: connectionFromToken('id', 'geheim', 100) } };
     expect(JSON.stringify(dataForExport(withOura))).not.toContain('geheim');
     expect(withOura.health.oura?.accessToken).toBe('geheim');
+  });
+});
+
+import { mapOura as mapOura2 } from './oura';
+import { parseWearableCsv as parseCsv2 } from './csv';
+import { summarizeWearables as summarize2 } from './days';
+import { describe as d2, expect as e2, it as i2 } from 'vitest';
+
+d2('VO2max', () => {
+  i2('übernimmt vo2_max aus Oura je Tag', () => {
+    const days = mapOura2([], [], [], [{ day: '2026-11-01', vo2_max: 34.5 }, { day: '2026-11-02', vo2_max: null }]);
+    e2(days.find((x) => x.date === '2026-11-01')?.vo2max).toBe(34.5);
+    e2(days.find((x) => x.date === '2026-11-02')).toBeUndefined();
+  });
+  i2('liest VO2max aus der Datei', () => {
+    const r = parseCsv2('Datum;VO2max\n2026-11-01;33,5\n');
+    e2(r.days[0].vo2max).toBe(33.5);
+  });
+  i2('Zusammenfassung zeigt den letzten VO2max', () => {
+    const s = summarize2([
+      { date: '2026-10-30', source: 'oura', sleepHours: null, sleepScore: null, readiness: null, restingHr: null, hrv: null, vo2max: 33 },
+      { date: '2026-11-01', source: 'oura', sleepHours: null, sleepScore: null, readiness: null, restingHr: null, hrv: null, vo2max: 34 },
+    ], '2026-11-02');
+    e2(s.latestVo2max).toBe(34);
   });
 });

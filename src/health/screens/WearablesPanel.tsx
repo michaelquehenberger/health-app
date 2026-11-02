@@ -118,7 +118,7 @@ export function WearablesPanel({ data, update }: { data: HealthState; update: (f
 
       <div className="card">
         <span className="label">Garmin und andere: Datei einlesen</span>
-        <p className="small">Garmin gibt privaten Entwicklern derzeit keinen direkten Zugang. Ersatz: Tabelle mit Datum, Schlaf, Ruhepuls und HRV einlesen. Wie der Export aus dem Garmin-Konto in dieses Format kommt, ist noch nicht geprüft.</p>
+        <p className="small">Garmin gibt privaten Entwicklern derzeit keinen direkten Zugang. Ersatz: Tabelle mit Datum, Schlaf, Ruhepuls, HRV und VO2max einlesen. Wie der Export aus dem Garmin-Konto in dieses Format kommt, ist noch nicht geprüft.</p>
         <div className="row">
           <button className="btn ghost" onClick={downloadTemplate}>Vorlage laden</button>
           <button className="btn dark" onClick={() => file.current?.click()}>Datei einlesen (CSV)</button>
@@ -132,7 +132,7 @@ export function WearablesPanel({ data, update }: { data: HealthState; update: (f
         <div className="card">
           <span className="label">Letzte Tage</span>
           <table className="table">
-            <thead><tr><th>Tag</th><th>Schlaf h</th><th>Ruhepuls</th><th>HRV</th><th>Quelle</th></tr></thead>
+            <thead><tr><th>Tag</th><th>Schlaf h</th><th>Ruhepuls</th><th>HRV</th><th>VO2max</th><th>Quelle</th></tr></thead>
             <tbody>
               {recent.map((d) => (
                 <tr key={d.date + d.source}>
@@ -140,6 +140,7 @@ export function WearablesPanel({ data, update }: { data: HealthState; update: (f
                   <td className="num">{fmt(d.sleepHours, 1)}</td>
                   <td className="num">{fmt(d.restingHr)}</td>
                   <td className="num">{fmt(d.hrv)}</td>
+                  <td className="num">{fmt(d.vo2max ?? null)}</td>
                   <td>{d.source === 'oura' ? 'Oura' : 'Datei'}</td>
                 </tr>
               ))}

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { MARKERS, evaluateValue, marker, validateValue, type ValueEvaluation } from '../logic/labs';
 import type { HealthState, LabValue } from '../types';
 import { formatDate, todayIso, uid } from '../../store';
+import { LabUpload } from './LabUpload';
 
 function StatusChip({ ev }: { ev: ValueEvaluation }) {
   if (ev.status === 'imBereich') return <span className="chip ok">Im Bereich</span>;
@@ -66,13 +67,10 @@ export function LabsScreen({ data, update }: { data: HealthState; update: (fn: (
         <p className="muted">Normbereiche unterscheiden sich je Labor, Alter und Geschlecht. Trag deshalb den Referenzbereich aus dem Befund mit ein.</p>
       </div>
 
-      <div className="card note">
-        <strong>Befund-Upload mit Auslesung folgt.</strong>
-        <p className="small">Im nächsten Schritt liest die App PDF oder Foto aus und zeigt dir die Werte zur Kontrolle. Bis dahin trägst du sie hier von Hand ein.</p>
-      </div>
+      <LabUpload data={data} update={update} onSaved={(id) => setReportId(id)} />
 
       <div className="card">
-        <span className="label">1 · Befund anlegen</span>
+        <span className="label">Oder von Hand eintragen · 1 · Befund anlegen</span>
         <div className="grid2">
           <label className="field">Datum<input type="date" value={rDate} onChange={(e) => setRDate(e.target.value)} /></label>
           <label className="field">Labor<input type="text" placeholder="Name des Labors" value={rLab} onChange={(e) => setRLab(e.target.value)} /></label>

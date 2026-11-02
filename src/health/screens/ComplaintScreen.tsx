@@ -1,17 +1,30 @@
 import { useState } from 'react';
 import { REGIONS, regionInfo, type Region } from '../data/exercises';
 import { Check, PainScale, Seg } from '../../components/ui';
-import type { HealthState, Complaint, ComplaintType, RedFlagAnswers } from '../types';
+import type { HealthState, Complaint, RedFlagAnswers } from '../types';
+import {
+  COURSES, DURATIONS, QUALITIES, SIDES, TIMINGS, TRIGGERS, describe, primaryType,
+  type Course, type DurationKey, type Quality, type Side,
+} from '../logic/complaints';
+
+/** Mehrfachauswahl als antippbare Felder */
+function Multi<T extends string>({ label, options, value, onChange }: { label: string; options: readonly { value: T; label: string }[]; value: T[]; onChange: (v: T[]) => void }) {
+  return (
+    <div className="stack" role="group" aria-label={label}>
+      <span className="small" style={{ fontWeight: 500 }}>{label} <span className="muted">(mehrere möglich)</span></span>
+      <div className="seg">
+        {options.map((o) => (
+          <button key={o.value} type="button" aria-pressed={value.includes(o.value)}
+            onClick={() => onChange(value.includes(o.value) ? value.filter((x) => x !== o.value) : [...value, o.value])}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 import { formatDate, todayIso, uid } from '../../store';
 
-const TYPES: { value: ComplaintType; label: string }[] = [
-  { value: 'steifigkeit', label: 'Steifigkeit' },
-  { value: 'schwaeche', label: 'Schwäche, Unsicherheit' },
-  { value: 'belastungsschmerz', label: 'Schmerz bei Belastung' },
-  { value: 'druck', label: 'Druck' },
-  { value: 'stechen', label: 'Stechen' },
-  { value: 'misch', label: 'gemischt, unklar' },
-];
 
 const NO_FLAGS: RedFlagAnswers = {
   acuteHotJoint: false, fever: false, injury: false, systemic: false, neuro: false,
@@ -64,21 +77,29 @@ function BodyMap({ value, onChange }: { value: Region | null; onChange: (r: Regi
 
 export function ComplaintScreen({ data, update, onDone }: { data: HealthState; update: (fn: (d: HealthState) => HealthState) => void; onDone: () => void }) {
   const [region, setRegion] = useState<Region | null>(null);
-  const [type, setType] = useState<ComplaintType>('steifigkeit');
-  const [since, setSince] = useState('');
+  const [side, setSide] = useState<Side | null>(null);
+  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [timing, setTiming] = useState<string[]>([]);
+  const [triggers, setTriggers] = useState<string[]>([]);
+  const [duration, setDuration] = useState<DurationKey | null>(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [intensity, setIntensity] = useState<number | null>(null);
   const [swelling, setSwelling] = useState(false);
   const [flags, setFlags] = useState<RedFlagAnswers>(NO_FLAGS);
   const setFlag = (k: keyof RedFlagAnswers, v: boolean) => setFlags((f) => ({ ...f, [k]: v }));
 
   const active = data.complaints.filter((c) => c.active);
-  const valid = region !== null && intensity !== null;
+  const valid = region !== null && intensity !== null && qualities.length > 0 && duration !== null;
+  // Kribbeln oder Taubheit ist zugleich eine Sicherheitsfrage
+  const neuro = flags.neuro || qualities.includes('kribbeln');
 
   function save() {
     if (!valid || region === null || intensity === null) return;
     const c: Complaint = {
-      id: uid(), date: todayIso(), region, type, since: since.trim(), intensity, swellingOrWarmth: swelling,
-      redFlags: { ...flags, caudaEquina: region === 'ruecken' ? flags.caudaEquina : false }, active: true,
+      id: uid(), date: todayIso(), region, type: primaryType(qualities),
+      since: DURATIONS.find((x) => x.value === duration)?.label ?? '', intensity, swellingOrWarmth: swelling,
+      redFlags: { ...flags, neuro, caudaEquina: region === 'ruecken' ? flags.caudaEquina : false }, active: true,
+      side: side ?? undefined, qualities, timing, triggers, duration: duration ?? undefined, course: course ?? undefined,
     };
     // Eine neue Angabe zur selben Region ersetzt die alte (die alte bleibt im Verlauf).
     update((d) => ({ ...d, complaints: [...d.complaints.map((x) => (x.region === region ? { ...x, active: false } : x)), c] }));
@@ -94,7 +115,7 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
             <div key={c.id} className="row between">
               <div>
                 <strong>{regionInfo(c.region).label}</strong>
-                <div className="muted">{TYPES.find((t) => t.value === c.type)?.label} · Intensität {c.intensity}/10 · seit {formatDate(c.date)}</div>
+                <div className="muted">{describe(c) || c.since} · Stärke {c.intensity}/10 · eingetragen {formatDate(c.date)}</div>
               </div>
               <button className="btn ghost" style={{ minHeight: 40 }}
                 onClick={() => update((d) => ({ ...d, complaints: d.complaints.map((x) => (x.id === c.id ? { ...x, active: false } : x)) }))}>
@@ -106,7 +127,7 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
       )}
 
       <div className="card">
-        <span className="label">Beschwerde eintragen · ca. 30 Sekunden</span>
+        <span className="label">Beschwerde eintragen · ca. 1 Minute</span>
         <h2>Wo spürst du es?</h2>
         <BodyMap value={region} onChange={setRegion} />
         <div className="seg" aria-label="Region als Liste">
@@ -114,10 +135,13 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
             <button key={r.id} type="button" aria-pressed={region === r.id} onClick={() => setRegion(r.id)}>{r.label}</button>
           ))}
         </div>
-        <Seg label="Wie fühlt es sich an?" value={type} onChange={setType} options={TYPES} />
-        <label className="field">Seit wann?
-          <input type="text" placeholder="z. B. 3 Wochen, seit dem Frühjahr" value={since} onChange={(e) => setSince(e.target.value)} />
-        </label>
+        {region && <Seg label="Welche Seite?" value={(side ?? '') as Side} onChange={setSide} options={SIDES} />}
+        <Multi label="Wie fühlt es sich an?" options={QUALITIES} value={qualities} onChange={setQualities} />
+        {qualities.includes('kribbeln') && <p className="small muted">Kribbeln oder Taubheit wird auch bei den Sicherheitsfragen berücksichtigt.</p>}
+        <Multi label="Wann tritt es auf?" options={TIMINGS} value={timing} onChange={setTiming} />
+        <Multi label="Was verstärkt es?" options={TRIGGERS} value={triggers} onChange={setTriggers} />
+        <Seg label="Seit wann?" value={(duration ?? '') as DurationKey} onChange={setDuration} options={DURATIONS} />
+        <Seg label="Wie entwickelt es sich?" value={(course ?? '') as Course} onChange={setCourse} options={COURSES} />
         <PainScale label="Wie stark im Moment?" value={intensity} onChange={setIntensity} />
         <Check checked={swelling} onChange={setSwelling}>Das Gelenk ist geschwollen oder fühlt sich warm an.</Check>
       </div>
@@ -129,7 +153,7 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
         <Check checked={flags.fever} onChange={(v) => setFlag('fever', v)}>Ich habe Fieber.</Check>
         <Check checked={flags.injury} onChange={(v) => setFlag('injury', v)}>Vor den Beschwerden gab es einen Sturz oder eine Verletzung.</Check>
         <Check checked={flags.systemic} onChange={(v) => setFlag('systemic', v)}>Schüttelfrost, ungewollter Gewichtsverlust oder Nachtschweiß.</Check>
-        <Check checked={flags.neuro} onChange={(v) => setFlag('neuro', v)}>Taubheit, Kribbeln oder Kraftverlust in Arm oder Bein.</Check>
+        <Check checked={neuro} onChange={(v) => setFlag('neuro', v)}>Taubheit, Kribbeln oder Kraftverlust in Arm oder Bein.</Check>
         <Check checked={flags.suddenOnset} onChange={(v) => setFlag('suddenOnset', v)}>Die Beschwerden kamen plötzlich und ohne erkennbaren Grund.</Check>
         {region === 'ruecken' && (
           <Check checked={flags.caudaEquina} onChange={(v) => setFlag('caudaEquina', v)}>Lähmung, Probleme beim Wasserlassen oder Stuhlgang.</Check>
@@ -138,7 +162,7 @@ export function ComplaintScreen({ data, update, onDone }: { data: HealthState; u
         <Check checked={flags.multipleSwollenJoints} onChange={(v) => setFlag('multipleSwollenJoints', v)}>Mehrere Gelenke sind geschwollen.</Check>
         <Check checked={flags.longMorningStiffness} onChange={(v) => setFlag('longMorningStiffness', v)}>Die Steifigkeit am Morgen hält länger als 30 Minuten an.</Check>
         <button className="btn primary block" disabled={!valid} onClick={save}>Speichern und Plan ansehen</button>
-        {!valid && <p className="muted">Bitte Region und Stärke angeben.</p>}
+        {!valid && <p className="muted">Bitte Region, Art der Beschwerde, Dauer und Stärke angeben.</p>}
       </div>
     </>
   );

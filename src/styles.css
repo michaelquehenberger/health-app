@@ -169,3 +169,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--focus); outline:
 .todo > li::before { content: counter(todo); position: absolute; left: 0; top: -2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font: 800 13px var(--font-head); color: var(--ink); }
 .todo > li.done::before { background: var(--mint); }
 .todo > li .btn { align-self: flex-start; }
+
+.journey { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.journey li { display: flex; gap: 12px; align-items: center; }
+.journey .dot { width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center; font: 800 13px var(--font-head); background: var(--surface-2); color: var(--ink); }
+.journey .journey-erledigt .dot { background: var(--mint); color: var(--navy); }
+.journey .journey-offen .dot { background: var(--navy); color: var(--offwhite); }
+.journey .journey-wartet .dot { background: var(--lime); color: var(--navy); }
+.journey-row { appearance: none; background: none; border: 0; padding: 8px 0; text-align: left; display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; font: inherit; color: inherit; cursor: pointer; }
+.journey-row:disabled { cursor: default; opacity: 0.5; }
+.journey li + li { border-top: 1px solid var(--line); }

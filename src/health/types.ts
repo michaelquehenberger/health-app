@@ -1,4 +1,5 @@
 import type { Region } from './data/exercises';
+import type { Course, DurationKey, Quality, Side } from './logic/complaints';
 import type { Consent } from '../types';
 
 /** Profil für das Gesundheitsmodul. Kein Name: Die App arbeitet mit der Teilnehmer-ID aus dem Fitness-Profil. */
@@ -44,6 +45,13 @@ export interface Complaint {
   swellingOrWarmth: boolean;
   redFlags: RedFlagAnswers;
   active: boolean;
+  /** Genauere Angaben (seit Version 0.6, bei älteren Einträgen leer) */
+  side?: Side;
+  qualities?: Quality[];
+  timing?: string[];
+  triggers?: string[];
+  duration?: DurationKey;
+  course?: Course;
 }
 
 export interface LabReport {
@@ -88,6 +96,8 @@ export interface WearableDay {
   readiness: number | null;
   restingHr: number | null;
   hrv: number | null;
+  /** VO2max laut Oura (ml/kg/min); fehlt bei älteren Einträgen */
+  vo2max?: number | null;
 }
 
 export interface OuraConnection {
@@ -109,6 +119,8 @@ export interface HealthState {
   dayCards: DayCardRecord[];
   wearables: WearableDay[];
   oura: OuraConnection | null;
+  /** Einwilligung, dass Befund-Dateien zur Auslesung an den KI-Anbieter gehen (getrennt von der Gesundheits-Einwilligung) */
+  aiConsent?: Consent | null;
 }
 
 export const EMPTY_HEALTH_PROFILE: HealthProfile = {
