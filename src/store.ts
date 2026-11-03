@@ -52,6 +52,8 @@ export function normalizeHealth(h: Partial<HealthState> | undefined): HealthStat
     planChoice: h?.planChoice ?? null,
     coachDays: arr(h?.coachDays),
     coachChat: arr(h?.coachChat),
+    coachPlan: h?.coachPlan ?? null,
+    todoDone: h?.todoDone && typeof h.todoDone === 'object' ? h.todoDone : {},
   };
 }
 
@@ -69,14 +71,14 @@ type Parts = Record<string, unknown>;
 function toParts(d: AppData): Parts {
   const { health, ...app } = d;
   const h = health ?? EMPTY_HEALTH;
-  const { wearables, analyses, coachDays, coachChat, ...core } = h;
-  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [], coach: { coachDays: coachDays ?? [], coachChat: coachChat ?? [] } };
+  const { wearables, analyses, coachDays, coachChat, coachPlan, todoDone, ...core } = h;
+  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [], coach: { coachDays: coachDays ?? [], coachChat: coachChat ?? [], coachPlan: coachPlan ?? null, todoDone: todoDone ?? {} } };
 }
 function fromParts(p: Parts): AppData | null {
   if (!p.app) return null;
   const core = (p.health ?? {}) as Partial<HealthState>;
   const coach = (p.coach ?? {}) as Partial<HealthState>;
-  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [], coachDays: coach.coachDays ?? [], coachChat: coach.coachChat ?? [] } as Partial<HealthState>;
+  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [], coachDays: coach.coachDays ?? [], coachChat: coach.coachChat ?? [], coachPlan: coach.coachPlan ?? null, todoDone: coach.todoDone ?? {} } as Partial<HealthState>;
   return parseData(JSON.stringify({ ...(p.app as object), health }));
 }
 

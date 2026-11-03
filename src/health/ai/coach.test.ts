@@ -60,3 +60,19 @@ describe('Coach', () => {
     await expect(dailyImpulse('ctx', null)).rejects.toMatchObject({ kind: 'nicht_verfuegbar' });
   });
 });
+
+describe('Coach-Plan', () => {
+  it('filtert Übungen, Dosen und ordnet die Tage', async () => {
+    const { createCoachPlan } = await import('./coach');
+    const plan = await createCoachPlan('ctx', ['knie-beugen'], fake({
+      ziel: { titel: 'Treppen leichter', beschreibung: 'Schritt für Schritt.', messgroessen: [{ name: 'Aufstehtest', ausgangswert: '12', ziel: 'mehr als 12', wie_messen: 'Tag 30 und Tag 90' }] },
+      phasen: [{ wochen: '1–4', schwerpunkt: 'Start', inhalt: 'Ruhig beginnen.' }],
+      woche: { schwerpunkt: 'Routine', tage: [{ tag: 'Mi', todos: [{ bereich: 'Ernährung', text: 'Nimm 2000 IE Vitamin D.' }, { bereich: 'Schlaf', text: 'Früher ins Bett.' }] }] },
+      uebungen: [{ id: 'knie-beugen', grund: 'a' }, { id: 'erfunden', grund: 'b' }],
+      hinweise: [],
+    }));
+    expect(plan.woche.tage).toHaveLength(7);
+    expect(plan.woche.tage.find((t) => t.tag === 'Mi')?.todos.map((t) => t.text)).toEqual(['Früher ins Bett.']);
+    expect(plan.uebungen.map((u) => u.id)).toEqual(['knie-beugen']);
+  });
+});
