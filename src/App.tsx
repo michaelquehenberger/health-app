@@ -14,6 +14,7 @@ import { EMPTY_HEALTH, type HealthState } from './health/types';
 import { TodayScreen } from './health/screens/TodayScreen';
 import { HealthHome, type HealthView } from './health/screens/HealthHome';
 import { AnalysisPanel } from './health/screens/AnalysisPanel';
+import { CoachScreen } from './health/screens/CoachScreen';
 import { HealthConsent } from './health/screens/HealthConsent';
 import { OURA_CLIENT_KEY, OURA_STATE_KEY } from './health/screens/WearablesPanel';
 import { connectionFromToken, parseTokenHash } from './health/wearables/oura';
@@ -21,10 +22,11 @@ import { computeJourney, healthItems, type StepId } from './journey';
 import { JourneyPanel, HealthChecklist } from './screens/JourneyPanel';
 import type { TestId, Timepoint } from './types';
 
-type Tab = 'heute' | 'gesundheit' | 'tests' | 'anamnese' | 'verlauf' | 'einstellungen';
+type Tab = 'heute' | 'coach' | 'gesundheit' | 'tests' | 'anamnese' | 'verlauf' | 'einstellungen';
 
 const TABS: { id: Tab; label: string; icon: () => ReactNode }[] = [
   { id: 'heute', label: 'Heute', icon: Icon.today },
+  { id: 'coach', label: 'Coach', icon: Icon.chat },
   { id: 'gesundheit', label: 'Gesundheit', icon: Icon.drop },
   { id: 'tests', label: 'Tests', icon: Icon.body },
   { id: 'verlauf', label: 'Verlauf', icon: Icon.pulse },
@@ -143,6 +145,15 @@ export function App() {
           />
           </div>
         )}
+        {tab === 'coach' && (health.consent ? (
+          <CoachScreen data={data} update={updateHealth} goPlan={() => go('auswertung')} />
+        ) : (
+          <>
+            <h1>Coach</h1>
+            <div className="card note"><p className="small">Der Coach braucht deine Einwilligung für Gesundheitsdaten. Du findest sie unter Gesundheit.</p>
+              <button className="btn primary" onClick={() => setTab('gesundheit')}>Zur Einwilligung</button></div>
+          </>
+        ))}
         {tab === 'gesundheit' && health.consent && (
           <HealthHome
             data={health}

@@ -8,7 +8,7 @@ import type { HealthState, LabValue } from '../types';
 import { todayIso, uid } from '../../store';
 import { APP_LANGUAGE, APP_VERSION } from '../../version';
 
-export const AI_CONSENT_VERSION = '2026-11-02-ki-befund-claude-konto';
+export const AI_CONSENT_VERSION = '2026-11-03-ki-befund-pdf-foto';
 
 interface Row {
   include: boolean;
@@ -53,14 +53,14 @@ export function LabUpload({ data, update, onSaved }: { data: HealthState; update
     return (
       <div className="card">
         <span className="label">Befund hochladen · KI-Auslesung</span>
-        <h3>Foto statt Abtippen</h3>
+        <h3>PDF oder Foto statt Abtippen</h3>
         <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
-          <li>Das Foto wird zur Auslesung an <strong>Claude (Anthropic)</strong> geschickt, über dein eigenes Claude-Konto. Dein Name wird von der App nicht mitgeschickt; steht er im Befund, ist er auf dem Foto.</li>
-          <li>Die App speichert danach nur die Werte, nicht das Foto.</li>
+          <li>Der Befund (PDF-Seiten als Bilder oder das Foto) wird zur Auslesung an <strong>Claude (Anthropic)</strong> geschickt, über dein eigenes Claude-Konto. Dein Name wird von der App nicht mitgeschickt; steht er im Befund, ist er Teil davon.</li>
+          <li>Die App speichert danach nur die Werte, nicht die Datei.</li>
           <li>Du prüfst jeden erkannten Wert, bevor er übernommen wird.</li>
         </ul>
         <Check checked={consentOk} onChange={setConsentOk}>
-          Ich willige ein, dass Fotos meiner Befunde zur Auslesung an Claude geschickt werden. Ich kann das jederzeit widerrufen; Werte kann ich auch von Hand eintragen.
+          Ich willige ein, dass meine Befunde (PDF oder Foto) zur Auslesung an Claude geschickt werden. Ich kann das jederzeit widerrufen; Werte kann ich auch von Hand eintragen.
         </Check>
         <button className="btn primary" disabled={!consentOk}
           onClick={() => update((d) => ({ ...d, aiConsent: { acceptedAt: new Date().toISOString(), textVersion: AI_CONSENT_VERSION, appVersion: APP_VERSION, language: APP_LANGUAGE } }))}>
@@ -115,11 +115,11 @@ export function LabUpload({ data, update, onSaved }: { data: HealthState; update
       <span className="label">Befund hochladen · KI-Auslesung</span>
       {rows === null ? (
         <>
-          <h3>Befund als Foto</h3>
-          <p className="small">Fotografiere den Befund gerade und gut beleuchtet, eine Seite pro Foto. Hast du ein PDF, mach einen Screenshot davon. Die erkannten Werte prüfst du danach.</p>
-          <button className="btn primary" disabled={busy} onClick={() => file.current?.click()}>{busy ? 'Befund wird gelesen …' : 'Foto aufnehmen oder wählen'}</button>
+          <h3>Befund als PDF oder Foto</h3>
+          <p className="small">Wähle das PDF vom Labor, oder fotografiere den Befund gerade und gut beleuchtet. Die erkannten Werte prüfst du danach.</p>
+          <button className="btn primary" disabled={busy} onClick={() => file.current?.click()}>{busy ? 'Befund wird gelesen …' : 'PDF oder Foto wählen'}</button>
           {busy && <p className="muted small" role="status">Das dauert meist unter einer Minute. Beim ersten Mal fragt Claude, ob die Seite die KI nutzen darf.</p>}
-          <input ref={file} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ''; }} />
+          <input ref={file} type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ''; }} />
           <button className="btn ghost" style={{ minHeight: 36, fontSize: 13 }} onClick={() => update((d) => ({ ...d, aiConsent: null }))}>KI-Einwilligung widerrufen</button>
         </>      ) : (
         <>

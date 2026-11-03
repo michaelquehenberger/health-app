@@ -34,10 +34,19 @@ describe('KI-Auslesung Befund', () => {
     expect(seen.prompt).toContain('Referenzbereich');
     expect((seen.options?.images as File[])[0]).toBe(jpg);
   });
-  it('PDF und andere Formate werden abgelehnt, ohne etwas zu senden', async () => {
+  it('PDF: Seiten werden als Bilder geschickt, mit Text zur Kontrolle', async () => {
+    const seen: { prompt?: string; options?: Record<string, unknown> } = {};
+    const pdf = new File([new Uint8Array([37, 80, 68, 70])], 'b.pdf', { type: 'application/pdf' });
+    const pages = [new Blob(['a']), new Blob(['b'])];
+    const fs = fakeSample(sample, seen);
+    fs.limits = async () => ({ images: { maxCount: 2, maxInputBytes: 1e7, mediaTypes: ['image/jpeg'] } });
+    const r = await extractLabReport(pdf, fs, async (_f, max) => ({ images: pages.slice(0, max), text: 'Ferritin 12 ng/mL', pageCount: 3 }));
+    expect(seen.options?.images).toEqual(pages);
+    expect(seen.prompt).toContain('Ferritin 12 ng/mL');
+    expect(r.notes).toContain('Nur die ersten 2 Seiten');
+  });
+  it('andere Formate werden abgelehnt, ohne etwas zu senden', async () => {
     const seen: { prompt?: string } = {};
-    const pdf = new File([new Uint8Array([1])], 'b.pdf', { type: 'application/pdf' });
-    await expect(extractLabReport(pdf, fakeSample(sample, seen))).rejects.toMatchObject({ kind: 'format' });
     const doc = new File(['x'], 'befund.docx', { type: 'application/msword' });
     await expect(extractLabReport(doc, fakeSample(sample, seen))).rejects.toBeInstanceOf(LabExtractError);
     expect(seen.prompt).toBeUndefined();

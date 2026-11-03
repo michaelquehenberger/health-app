@@ -2,8 +2,9 @@
 // KI über das Claude-Konto der Person (sample), privater Speicher (db), Dateien speichern (downloads).
 // Auf GitHub Pages gibt es das nicht; dann arbeitet die App lokal und ohne KI.
 
+export type SampleInput = string | { role: 'user' | 'assistant'; content: string }[];
 export interface SampleFn {
-  (input: string, options?: Record<string, unknown>): Promise<{ text: string; truncated: boolean }>;
+  (input: SampleInput, options?: Record<string, unknown>): Promise<{ text: string; truncated: boolean }>;
   json<T = unknown>(input: string, options?: Record<string, unknown>): Promise<T>;
   limits(): Promise<{ images?: { maxCount: number; maxInputBytes: number; mediaTypes: string[] } }>;
 }
