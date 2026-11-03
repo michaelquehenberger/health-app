@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import Anthropic from '@anthropic-ai/sdk';
 import { extractLabReport, isIsoDate, LabExtractError, markerKeyFor } from './labExtract';
+import type { SampleFn } from '../../platform';
 
 const sample = {
   lab: 'Testlabor', date: '2026-10-20', notes: null,
@@ -10,47 +10,49 @@ const sample = {
   ],
 };
 
-function fakeClient(reply: object, seen: { body?: Record<string, unknown> }) {
-  const fetchFn = (async (_url: string, init?: RequestInit) => {
-    seen.body = JSON.parse(String(init?.body));
-    return new Response(JSON.stringify(reply), { status: 200, headers: { 'content-type': 'application/json' } });
-  }) as unknown as typeof fetch;
-  return new Anthropic({ apiKey: 'test', dangerouslyAllowBrowser: true, fetch: fetchFn, maxRetries: 0 });
+/** Nachgestellte KI der Claude-Seite: merkt sich die Anfrage und liefert die vorgegebene Antwort. */
+function fakeSample(reply: unknown, seen: { prompt?: string; options?: Record<string, unknown> } = {}): SampleFn {
+  const fn = (async () => ({ text: '', truncated: false })) as unknown as SampleFn;
+  fn.json = (async (prompt: string, options?: Record<string, unknown>) => {
+    seen.prompt = prompt;
+    seen.options = options;
+    if (reply instanceof Error || (typeof reply === 'object' && reply !== null && 'code' in reply)) throw reply;
+    return reply;
+  }) as SampleFn['json'];
+  fn.limits = async () => ({});
+  return fn;
 }
-const message = (text: string, stop = 'end_turn') => ({
-  id: 'msg_1', type: 'message', role: 'assistant', model: 'claude-opus-5-5', stop_reason: stop, stop_sequence: null,
-  content: [{ type: 'text', text }], usage: { input_tokens: 1, output_tokens: 1 },
-});
 
 describe('KI-Auslesung Befund', () => {
-  it('schickt das PDF als Dokument und liest die strukturierte Antwort', async () => {
-    const seen: { body?: Record<string, unknown> } = {};
-    const pdf = new File([new Uint8Array([37, 80, 68, 70])], 'befund.pdf', { type: 'application/pdf' });
-    const r = await extractLabReport(pdf, 'test', fakeClient(message(JSON.stringify(sample)), seen));
+  it('schickt das Foto mit Anweisung und Schema und liest die Antwort', async () => {
+    const seen: { prompt?: string; options?: Record<string, unknown> } = {};
+    const jpg = new File([new Uint8Array([1, 2, 3])], 'foto.jpg', { type: 'image/jpeg' });
+    const r = await extractLabReport(jpg, fakeSample(sample, seen));
     expect(r.values).toHaveLength(2);
     expect(r.values[0]).toMatchObject({ marker_key: 'ferritin', value: 12, ref_low: 15 });
-    expect(seen.body?.model).toBe('claude-opus-5-5');
-    expect(seen.body?.fallbacks).toBe('default');
-    const content = (seen.body?.messages as { content: { type: string; source?: { media_type: string } }[] }[])[0].content;
-    expect(content[0]).toMatchObject({ type: 'document', source: { media_type: 'application/pdf' } });
-    expect((seen.body?.output_config as { format: { type: string } }).format.type).toBe('json_schema');
+    expect(seen.prompt).toContain('JSON-Schema');
+    expect(seen.prompt).toContain('Referenzbereich');
+    expect((seen.options?.images as File[])[0]).toBe(jpg);
   });
-  it('schickt Fotos als Bild', async () => {
-    const seen: { body?: Record<string, unknown> } = {};
-    const jpg = new File([new Uint8Array([1, 2, 3])], 'foto.jpg', { type: 'image/jpeg' });
-    await extractLabReport(jpg, 'test', fakeClient(message(JSON.stringify(sample)), seen));
-    const content = (seen.body?.messages as { content: { type: string }[] }[])[0].content;
-    expect(content[0].type).toBe('image');
+  it('PDF und andere Formate werden abgelehnt, ohne etwas zu senden', async () => {
+    const seen: { prompt?: string } = {};
+    const pdf = new File([new Uint8Array([1])], 'b.pdf', { type: 'application/pdf' });
+    await expect(extractLabReport(pdf, fakeSample(sample, seen))).rejects.toMatchObject({ kind: 'format' });
+    const doc = new File(['x'], 'befund.docx', { type: 'application/msword' });
+    await expect(extractLabReport(doc, fakeSample(sample, seen))).rejects.toBeInstanceOf(LabExtractError);
+    expect(seen.prompt).toBeUndefined();
   });
-  it('lehnt andere Dateiformate ab, ohne etwas zu senden', async () => {
-    const seen: { body?: Record<string, unknown> } = {};
-    const doc = new File(['x'], 'befund.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    await expect(extractLabReport(doc, 'test', fakeClient(message('{}'), seen))).rejects.toBeInstanceOf(LabExtractError);
-    expect(seen.body).toBeUndefined();
+  it('ohne Claude-Seite: verständlicher Hinweis', async () => {
+    const jpg = new File([new Uint8Array([1])], 'foto.jpg', { type: 'image/jpeg' });
+    await expect(extractLabReport(jpg, null)).rejects.toMatchObject({ kind: 'nicht_verfuegbar' });
   });
   it('meldet eine Ablehnung verständlich', async () => {
-    const pdf = new File([new Uint8Array([1])], 'b.pdf', { type: 'application/pdf' });
-    await expect(extractLabReport(pdf, 'test', fakeClient(message('', 'refusal'), {}))).rejects.toMatchObject({ kind: 'abgelehnt' });
+    const jpg = new File([new Uint8Array([1])], 'foto.jpg', { type: 'image/jpeg' });
+    await expect(extractLabReport(jpg, fakeSample({ code: 'refused', message: 'x' }))).rejects.toMatchObject({ kind: 'abgelehnt' });
+  });
+  it('falsches Antwortformat wird erkannt', async () => {
+    const jpg = new File([new Uint8Array([1])], 'foto.jpg', { type: 'image/jpeg' });
+    await expect(extractLabReport(jpg, fakeSample({ foo: 1 }))).rejects.toMatchObject({ kind: 'antwort' });
   });
   it('unbekannte Werte behalten ihren Namen', () => {
     expect(markerKeyFor({ name: 'Natrium', marker_key: 'andere' })).toBe('Natrium');

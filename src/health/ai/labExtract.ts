@@ -1,15 +1,9 @@
-// KI-Auslesung von Laborbefunden (PDF oder Foto) mit Claude.
-// Testphase: direkter Aufruf aus dem Browser mit einem eigenen API-Schlüssel auf diesem Gerät.
-// Für den Betrieb gehört der Schlüssel auf einen Server (Proxy); dann ändert sich nur createClient().
-import Anthropic from '@anthropic-ai/sdk';
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
+// KI-Auslesung von Laborbefunden (Foto) mit Claude.
+// Läuft nur, wenn die App als Seite auf claude.ai geöffnet ist: dann über das Claude-Konto der Person,
+// ohne API-Schlüssel. Auf GitHub Pages gibt es keine KI; Werte werden dort von Hand eingetragen.
 import { z } from 'zod';
 import { MARKERS } from '../logic/labs';
-
-export const LAB_MODEL = 'claude-opus-5-5';
-
-/** Gespeicherter Schlüssel nur in diesem Browser, nie in der Sicherungsdatei. */
-export const AI_KEY_STORAGE = 'livion-ai-key';
+import { isSampleError, sampleCap, sampleErrorText, type SampleFn } from '../../platform';
 
 const ExtractedValue = z.object({
   /** Name wie im Befund, z. B. „Ferritin“ */
@@ -43,66 +37,42 @@ Regeln:
 - Unleserliche oder abgeschnittene Stellen in notes nennen, nicht raten.`;
 
 export class LabExtractError extends Error {
-  constructor(public kind: 'schluessel' | 'format' | 'abgelehnt' | 'netz' | 'antwort', message: string) {
+  constructor(public kind: 'nicht_verfuegbar' | 'format' | 'abgelehnt' | 'netz' | 'antwort', message: string) {
     super(message);
   }
 }
 
-const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
-type ImageType = (typeof IMAGE_TYPES)[number];
+export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-export function createClient(apiKey: string): Anthropic {
-  // Nur für den privaten Test: Der Schlüssel liegt auf diesem Gerät. Für den Betrieb über einen Server-Proxy.
-  return new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
+/** Anweisung, Daten und Antwortformat in einem Text: Claude sieht auf der Seite nur, was wir schicken. */
+export function promptWithSchema(instructions: string, schema: z.ZodType, task: string): string {
+  return `${instructions}\n\nAntworte ausschließlich mit einem JSON-Objekt nach diesem JSON-Schema, ohne weiteren Text:\n${JSON.stringify(z.toJSONSchema(schema))}\n\n${task}`;
 }
 
-async function toBase64(file: Blob): Promise<string> {
-  const buf = new Uint8Array(await file.arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-  return btoa(bin);
-}
-
-/** Liest einen Befund (PDF oder Foto) aus. Die Werte werden danach von der Nutzerin geprüft, nie direkt gespeichert. */
-export async function extractLabReport(file: File, apiKey: string, client: Anthropic = createClient(apiKey)): Promise<LabExtractionResult> {
-  if (!apiKey.trim()) throw new LabExtractError('schluessel', 'Kein API-Schlüssel hinterlegt.');
-  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  const isImage = (IMAGE_TYPES as readonly string[]).includes(file.type);
-  if (!isPdf && !isImage) throw new LabExtractError('format', 'Bitte ein PDF oder ein Foto (JPG, PNG, WEBP) wählen.');
-  if (file.size > 20 * 1024 * 1024) throw new LabExtractError('format', 'Die Datei ist größer als 20 MB.');
-
-  const data = await toBase64(file);
-  const fileBlock: Anthropic.Beta.BetaContentBlockParam = isPdf
-    ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data } }
-    : { type: 'image', source: { type: 'base64', media_type: file.type as ImageType, data } };
-
-  let response;
-  try {
-    response = await client.beta.messages.create({
-      model: LAB_MODEL,
-      max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      system: SYSTEM,
-      messages: [{ role: 'user', content: [fileBlock, { type: 'text', text: 'Lies alle Blutwerte aus diesem Befund aus.' }] }],
-      output_config: { format: betaZodOutputFormat(LabExtraction) },
-    });
-  } catch (e) {
-    if (e instanceof Anthropic.AuthenticationError) throw new LabExtractError('schluessel', 'Der API-Schlüssel wurde abgelehnt.');
-    if (e instanceof Anthropic.RateLimitError) throw new LabExtractError('netz', 'Zu viele Anfragen. Bitte in einer Minute erneut versuchen.');
-    if (e instanceof Anthropic.BadRequestError) throw new LabExtractError('format', `Die Datei konnte nicht gelesen werden (${e.message}).`);
-    if (e instanceof Anthropic.APIError) throw new LabExtractError('netz', `Fehler bei der Auslesung (${e.status ?? 'Netz'}).`);
-    throw new LabExtractError('netz', 'Keine Verbindung zur Auslesung.');
+/** Fehler der Plattform in einen verständlichen Fehler der App übersetzen. */
+export function toAppError(e: unknown, fallback: string): LabExtractError {
+  if (e instanceof LabExtractError) return e;
+  if (isSampleError(e)) {
+    const kind = e.code === 'refused' ? 'abgelehnt' : e.code === 'invalid_json' ? 'antwort' : ['not_granted', 'sampling_disabled', 'images_unavailable'].includes(e.code) ? 'nicht_verfuegbar' : 'netz';
+    return new LabExtractError(kind, sampleErrorText(e));
   }
-  // Erst den Stopp-Grund prüfen, dann lesen: Eine Ablehnung hat keinen auswertbaren Inhalt.
-  if (response.stop_reason === 'refusal') throw new LabExtractError('abgelehnt', 'Die Auslesung wurde abgelehnt. Bitte die Werte von Hand eintragen.');
-  if (response.stop_reason === 'max_tokens') throw new LabExtractError('antwort', 'Der Befund ist zu lang für eine Auslesung. Bitte in Teilen hochladen.');
-  const text = response.content.map((b) => (b.type === 'text' ? b.text : '')).join('');
+  return new LabExtractError('netz', fallback);
+}
+
+/** Liest einen Befund (Foto) aus. Die Werte werden danach von der Nutzerin geprüft, nie direkt gespeichert. */
+export async function extractLabReport(file: File, sample?: SampleFn | null): Promise<LabExtractionResult> {
+  const fn = sample === undefined ? await sampleCap() : sample;
+  if (!fn) throw new LabExtractError('nicht_verfuegbar', 'Die KI-Auslesung gibt es nur in der LIVION-Version auf claude.ai.');
+  const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (isPdf) throw new LabExtractError('format', 'Bitte ein Foto des Befunds wählen (JPG oder PNG). Ein PDF kann hier nicht gelesen werden; mach einfach ein Foto oder einen Screenshot davon.');
+  if (!IMAGE_TYPES.includes(file.type)) throw new LabExtractError('format', 'Bitte ein Foto (JPG, PNG, WEBP) wählen.');
+  if (file.size > 20 * 1024 * 1024) throw new LabExtractError('format', 'Das Foto ist größer als 20 MB.');
+
   let json: unknown;
   try {
-    json = JSON.parse(text);
-  } catch {
-    throw new LabExtractError('antwort', 'Die Antwort konnte nicht gelesen werden. Bitte erneut versuchen oder von Hand eintragen.');
+    json = await fn.json(promptWithSchema(SYSTEM, LabExtraction, 'Das Bild zeigt einen Laborbefund. Lies alle Blutwerte aus.'), { images: [file] });
+  } catch (e) {
+    throw toAppError(e, 'Keine Verbindung zur Auslesung.');
   }
   const parsed = LabExtraction.safeParse(json);
   if (!parsed.success) throw new LabExtractError('antwort', 'Die Antwort hatte nicht das erwartete Format. Bitte erneut versuchen.');

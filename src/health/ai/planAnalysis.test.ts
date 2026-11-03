@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import Anthropic from '@anthropic-ai/sdk';
+import type { SampleFn } from '../../platform';
 import { analyzePlan, applySafety, buildAnalysisContext, type PlanAnalysisResult } from './planAnalysis';
 import { EXERCISES } from '../data/exercises';
 import { buildDayCard } from '../logic/plan';
@@ -71,21 +71,21 @@ describe('KI-Auswertung: Sicherheitsfilter', () => {
 });
 
 describe('KI-Auswertung: Aufruf', () => {
-  it('schickt Text mit Schema und liest die Antwort', async () => {
-    let body: Record<string, unknown> = {};
-    const fetchFn = (async (_u: string, init?: RequestInit) => {
-      body = JSON.parse(String(init?.body));
-      return new Response(JSON.stringify({
-        id: 'm', type: 'message', role: 'assistant', model: 'claude-opus-5-5', stop_reason: 'end_turn', stop_sequence: null,
-        content: [{ type: 'text', text: JSON.stringify(result) }], usage: { input_tokens: 1, output_tokens: 1 },
-      }), { status: 200, headers: { 'content-type': 'application/json' } });
-    }) as unknown as typeof fetch;
-    const client = new Anthropic({ apiKey: 'x', dangerouslyAllowBrowser: true, fetch: fetchFn, maxRetries: 0 });
+  it('schickt Anweisung, Daten und Schema in einem Text und filtert die Antwort', async () => {
+    let prompt = '';
+    const fn = (async () => ({ text: '', truncated: false })) as unknown as SampleFn;
+    fn.json = (async (p: string) => { prompt = p; return { ...result, uebungen: [...result.uebungen, { id: 'gibt-es-nicht', grund: 'x' }] }; }) as SampleFn['json'];
+    fn.limits = async () => ({});
     const ctx = buildAnalysisContext(data(), today);
-    const r = await analyzePlan(ctx, 'x', client);
-    expect(body.model).toBe('claude-opus-5-5');
-    expect((body.output_config as { format: { type: string } }).format.type).toBe('json_schema');
-    expect(r.uebungen).toHaveLength(1);
+    const r = await analyzePlan(ctx, fn);
+    expect(prompt).toContain('Keine Diagnosen');
+    expect(prompt).toContain('Erlaubte Übungen');
+    expect(prompt).toContain('JSON-Schema');
+    expect(r.uebungen.map((u) => u.id)).toEqual([knee[1].id]);
+    expect(r.zusammenfassung).not.toContain('mg');
+  });
+  it('ohne Claude-Seite: verständlicher Hinweis', async () => {
+    await expect(analyzePlan(buildAnalysisContext(data(), today), null)).rejects.toMatchObject({ kind: 'nicht_verfuegbar' });
   });
 });
 
