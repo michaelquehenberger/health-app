@@ -11,6 +11,6 @@ export default defineConfig(({ mode }) => ({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   build: mode === 'claude'
-    ? { outDir: 'dist-claude', assetsInlineLimit: 100_000_000, cssCodeSplit: false, modulePreload: false }
+    ? { outDir: 'dist-claude', assetsInlineLimit: 100_000_000, cssCodeSplit: false, modulePreload: false, rollupOptions: { output: { inlineDynamicImports: true } } }
     : undefined,
 }));

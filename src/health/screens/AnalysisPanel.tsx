@@ -11,12 +11,34 @@ import type { HealthState } from '../types';
 import { formatDate, todayIso, uid } from '../../store';
 import { APP_LANGUAGE, APP_VERSION } from '../../version';
 
-export const AI_ANALYSIS_CONSENT_VERSION = '2026-11-02-ki-auswertung-claude-konto';
+export const AI_ANALYSIS_CONSENT_VERSION = '2026-11-03-ki-auswertung-und-coach';
+
+/** Eine Einwilligung für Auswertung und Coach: beide schicken dieselben Daten ohne Namen an Claude. */
+export function HealthAiConsent({ label, title, update }: { label: string; title: string; update: (fn: (d: HealthState) => HealthState) => void }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <div className="card">
+      <span className="label">{label}</span>
+      <h3>{title}</h3>
+      <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
+        <li>Claude (Anthropic) bekommt über dein eigenes Claude-Konto deine Testwerte, Blutwerte mit Laborbereich, Beschwerden, Oura-Mittelwerte und, im Coach, deine Nachrichten. <strong>Ohne Namen und ohne Teilnehmer-ID;</strong> Medikamente und Allergien nur als „angegeben“.</li>
+        <li>Die Auswertung wählt Übungen nur aus der geprüften Übungsliste der App. Der Coach gibt Tipps zur Vorbeugung im Alltag. Rote Flaggen und die Schmerzregel gehen immer vor.</li>
+        <li>Das ist Information, keine Diagnose, keine Therapie und keine medizinische Empfehlung.</li>
+      </ul>
+      <Check checked={ok} onChange={setOk}>
+        Ich willige ein, dass meine Gesundheitsdaten ohne Namen für Auswertung und Coach an Claude geschickt werden. Ich kann das jederzeit widerrufen; der Tagesplan nach den Regeln funktioniert auch ohne KI.
+      </Check>
+      <button className="btn primary" disabled={!ok}
+        onClick={() => update((d) => ({ ...d, aiAnalysisConsent: { acceptedAt: new Date().toISOString(), textVersion: AI_ANALYSIS_CONSENT_VERSION, appVersion: APP_VERSION, language: APP_LANGUAGE } }))}>
+        Einwilligen
+      </button>
+    </div>
+  );
+}
 
 export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d: HealthState) => HealthState) => void }) {
   const h = data.health!;
   const today = todayIso();
-  const [consentOk, setConsentOk] = useState(false);
   const ai = useAiAvailable();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,25 +82,9 @@ export function AnalysisPanel({ data, update }: { data: AppData; update: (fn: (d
   }
 
   if (h.aiAnalysisConsent?.textVersion !== AI_ANALYSIS_CONSENT_VERSION) {
-    return (
-      <div className="card">
-        <span className="label">KI-Auswertung · Schritt 5</span>
-        <h3>Alle Daten zusammen auswerten</h3>
-        <ul className="small" style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
-          <li>Claude (Anthropic) bekommt über dein eigenes Claude-Konto deine Testwerte, Blutwerte mit Laborbereich, Beschwerden und Oura-Mittelwerte. <strong>Ohne Namen und ohne Teilnehmer-ID;</strong> Medikamente und Allergien nur als „angegeben“.</li>
-          <li>Sie fasst zusammen und wählt Übungen, aber nur aus der geprüften Übungsliste der App. Rote Flaggen und die Schmerzregel gehen immer vor.</li>
-          <li>Das Ergebnis ist Information, keine Diagnose und keine Therapie.</li>
-        </ul>
-        <Check checked={consentOk} onChange={setConsentOk}>
-          Ich willige ein, dass meine Gesundheitsdaten ohne Namen zur Auswertung an Claude geschickt werden. Ich kann das jederzeit widerrufen; der Tagesplan nach den Regeln funktioniert auch ohne KI.
-        </Check>
-        <button className="btn primary" disabled={!consentOk}
-          onClick={() => update((d) => ({ ...d, aiAnalysisConsent: { acceptedAt: new Date().toISOString(), textVersion: AI_ANALYSIS_CONSENT_VERSION, appVersion: APP_VERSION, language: APP_LANGUAGE } }))}>
-          Einwilligen
-        </button>
-      </div>
-    );
+    return <HealthAiConsent label="KI-Auswertung · Schritt 5" title="Alle Daten zusammen auswerten" update={update} />;
   }
+
 
   return (
     <div className="card">

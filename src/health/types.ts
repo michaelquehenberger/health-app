@@ -127,6 +127,10 @@ export interface HealthState {
   analyses?: AnalysisRecord[];
   /** Übungen aus einer KI-Auswertung, die in den Tagesplan übernommen wurden */
   planChoice?: { analysisId: string; exerciseIds: string[]; date: string } | null;
+  /** Tagesimpulse des Coaches, je Datum (die letzten 14) */
+  coachDays?: { date: string; impulse: import('./ai/coach').CoachImpulseResult }[];
+  /** Gespräch mit dem Coach (die letzten 40 Nachrichten) */
+  coachChat?: import('./ai/coach').ChatTurn[];
 }
 
 export interface AnalysisRecord {

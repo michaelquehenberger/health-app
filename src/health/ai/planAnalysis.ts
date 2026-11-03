@@ -119,10 +119,15 @@ Regeln:
 
 const DOSE_PATTERN = /\b\d+([.,]\d+)?\s?(mg|µg|mcg|ug|IE|I\.E\.|kcal)\b/i;
 
+/** Entfernt Sätze mit Dosisangaben (Medikamente, Supplements, Kalorien). */
+export function stripDoses(s: string): string {
+  return s.split(/(?<=[.!?])\s+/).filter((x) => !DOSE_PATTERN.test(x)).join(' ');
+}
+
 /** Entfernt Sätze mit Dosisangaben und nicht erlaubte oder doppelte Übungen. */
 export function applySafety(r: PlanAnalysisResult, allowed: Exercise[]): PlanAnalysisResult {
   const ok = new Set(allowed.map((e) => e.id));
-  const clean = (s: string) => s.split(/(?<=[.!?])\s+/).filter((x) => !DOSE_PATTERN.test(x)).join(' ');
+  const clean = stripDoses;
   const seen = new Set<string>();
   return {
     zusammenfassung: clean(r.zusammenfassung),

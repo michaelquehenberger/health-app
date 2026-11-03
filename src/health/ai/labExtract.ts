@@ -3,6 +3,7 @@
 // ohne API-Schlüssel. Auf GitHub Pages gibt es keine KI; Werte werden dort von Hand eingetragen.
 import { z } from 'zod';
 import { MARKERS } from '../logic/labs';
+import { pdfToImages, type PdfPages } from './pdfPages';
 import { isSampleError, sampleCap, sampleErrorText, type SampleFn } from '../../platform';
 
 const ExtractedValue = z.object({
@@ -59,23 +60,48 @@ export function toAppError(e: unknown, fallback: string): LabExtractError {
   return new LabExtractError('netz', fallback);
 }
 
-/** Liest einen Befund (Foto) aus. Die Werte werden danach von der Nutzerin geprüft, nie direkt gespeichert. */
-export async function extractLabReport(file: File, sample?: SampleFn | null): Promise<LabExtractionResult> {
+/** Liest einen Befund (Foto oder PDF) aus. Die Werte werden danach von der Nutzerin geprüft, nie direkt gespeichert. */
+export async function extractLabReport(
+  file: File,
+  sample?: SampleFn | null,
+  convertPdf: (f: Blob, maxPages: number) => Promise<PdfPages> = pdfToImages,
+): Promise<LabExtractionResult> {
   const fn = sample === undefined ? await sampleCap() : sample;
   if (!fn) throw new LabExtractError('nicht_verfuegbar', 'Die KI-Auslesung gibt es nur in der LIVION-Version auf claude.ai.');
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  if (isPdf) throw new LabExtractError('format', 'Bitte ein Foto des Befunds wählen (JPG oder PNG). Ein PDF kann hier nicht gelesen werden; mach einfach ein Foto oder einen Screenshot davon.');
-  if (!IMAGE_TYPES.includes(file.type)) throw new LabExtractError('format', 'Bitte ein Foto (JPG, PNG, WEBP) wählen.');
-  if (file.size > 20 * 1024 * 1024) throw new LabExtractError('format', 'Das Foto ist größer als 20 MB.');
+  if (!isPdf && !IMAGE_TYPES.includes(file.type)) throw new LabExtractError('format', 'Bitte ein PDF oder ein Foto (JPG, PNG, WEBP) wählen.');
+  if (file.size > 20 * 1024 * 1024) throw new LabExtractError('format', 'Die Datei ist größer als 20 MB.');
+
+  let images: Blob[] = [file];
+  let task = 'Das Bild zeigt einen Laborbefund. Lies alle Blutwerte aus.';
+  let skipped = 0;
+  if (isPdf) {
+    const maxPages = (await fn.limits().catch(() => null))?.images?.maxCount ?? 5;
+    let pages: PdfPages;
+    try {
+      pages = await convertPdf(file, maxPages);
+    } catch {
+      throw new LabExtractError('format', 'Das PDF konnte nicht geöffnet werden. Ist es passwortgeschützt? Sonst mach einen Screenshot und lade das Foto hoch.');
+    }
+    if (pages.images.length === 0) throw new LabExtractError('format', 'Das PDF hat keine lesbaren Seiten.');
+    images = pages.images;
+    skipped = Math.max(0, pages.pageCount - pages.images.length);
+    task = `Die ${images.length} Bilder sind die Seiten eines Laborbefunds (PDF). Lies alle Blutwerte aus.`;
+    if (pages.text) task += `\n\nText aus dem PDF, zur Kontrolle beim Lesen (die Anordnung kann durcheinander sein; maßgeblich sind die Bilder):\n${pages.text.slice(0, 40_000)}`;
+  }
 
   let json: unknown;
   try {
-    json = await fn.json(promptWithSchema(SYSTEM, LabExtraction, 'Das Bild zeigt einen Laborbefund. Lies alle Blutwerte aus.'), { images: [file] });
+    json = await fn.json(promptWithSchema(SYSTEM, LabExtraction, task), { images });
   } catch (e) {
     throw toAppError(e, 'Keine Verbindung zur Auslesung.');
   }
   const parsed = LabExtraction.safeParse(json);
   if (!parsed.success) throw new LabExtractError('antwort', 'Die Antwort hatte nicht das erwartete Format. Bitte erneut versuchen.');
+  if (skipped > 0) {
+    const note = `Nur die ersten ${images.length} Seiten wurden gelesen; ${skipped} weitere Seiten bitte einzeln als Foto hochladen.`;
+    return { ...parsed.data, notes: parsed.data.notes ? `${parsed.data.notes} ${note}` : note };
+  }
   return parsed.data;
 }
 

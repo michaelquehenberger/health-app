@@ -50,6 +50,8 @@ export function normalizeHealth(h: Partial<HealthState> | undefined): HealthStat
     aiAnalysisConsent: h?.aiAnalysisConsent ?? null,
     analyses: arr(h?.analyses),
     planChoice: h?.planChoice ?? null,
+    coachDays: arr(h?.coachDays),
+    coachChat: arr(h?.coachChat),
   };
 }
 
@@ -67,13 +69,14 @@ type Parts = Record<string, unknown>;
 function toParts(d: AppData): Parts {
   const { health, ...app } = d;
   const h = health ?? EMPTY_HEALTH;
-  const { wearables, analyses, ...core } = h;
-  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [] };
+  const { wearables, analyses, coachDays, coachChat, ...core } = h;
+  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [], coach: { coachDays: coachDays ?? [], coachChat: coachChat ?? [] } };
 }
 function fromParts(p: Parts): AppData | null {
   if (!p.app) return null;
   const core = (p.health ?? {}) as Partial<HealthState>;
-  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [] } as Partial<HealthState>;
+  const coach = (p.coach ?? {}) as Partial<HealthState>;
+  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [], coachDays: coach.coachDays ?? [], coachChat: coach.coachChat ?? [] } as Partial<HealthState>;
   return parseData(JSON.stringify({ ...(p.app as object), health }));
 }
 
