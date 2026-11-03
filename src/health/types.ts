@@ -131,6 +131,10 @@ export interface HealthState {
   coachDays?: { date: string; impulse: import('./ai/coach').CoachImpulseResult }[];
   /** Gespräch mit dem Coach (die letzten 40 Nachrichten) */
   coachChat?: import('./ai/coach').ChatTurn[];
+  /** Coach-Plan: Ziel in 12 Wochen, Phasen und Aufgaben der aktuellen Woche */
+  coachPlan?: { id: string; createdAt: string; startDate: string; weekStart: string; plan: import('./ai/coach').CoachPlanResult } | null;
+  /** Abgehakte Aufgaben je Datum (Übungen stehen in feedback.done) */
+  todoDone?: Record<string, string[]>;
 }
 
 export interface AnalysisRecord {

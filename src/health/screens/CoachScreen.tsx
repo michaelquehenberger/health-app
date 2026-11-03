@@ -6,11 +6,14 @@ import type { HealthState } from '../types';
 import { EMPTY_HEALTH } from '../types';
 import { buildDayCard } from '../logic/plan';
 import { blocksPlan, checkRedFlags } from '../logic/redFlags';
-import { buildCoachContext, coachReply, dailyImpulse, type ChatTurn } from '../ai/coach';
+import { buildCoachContext, buildPlanContext, coachReply, createCoachPlan, dailyImpulse, type ChatTurn } from '../ai/coach';
+import { buildAnalysisContext } from '../ai/planAnalysis';
+import { computeScore, GoalCard, ScoreCard, TodayTodos, WeekView } from './CoachPlanParts';
+import { weekStart } from '../logic/score';
 import { LabExtractError } from '../ai/labExtract';
 import { CLAUDE_APP_URL, useAiAvailable } from '../ai/useAi';
 import { AI_ANALYSIS_CONSENT_VERSION, HealthAiConsent } from './AnalysisPanel';
-import { todayIso } from '../../store';
+import { todayIso, uid } from '../../store';
 
 const STARTERS = [
   'Wie bringe ich heute mehr Bewegung in meinen Alltag?',
@@ -26,6 +29,7 @@ export function CoachScreen({ data, update, goPlan }: { data: AppData; update: (
   const today = todayIso();
   const ai = useAiAvailable();
   const [busy, setBusy] = useState(false);
+  const [planBusy, setPlanBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [streaming, setStreaming] = useState<string | null>(null);
@@ -36,6 +40,35 @@ export function CoachScreen({ data, update, goPlan }: { data: AppData; update: (
     [today, h.profile, h.complaints, h.feedback, h.values, h.reports, h.planChoice],
   );
   const blocked = useMemo(() => blocksPlan(checkRedFlags(h.complaints, h.values, h.reports)), [h.complaints, h.values, h.reports]);
+  const firstDay = h.consent?.acceptedAt.slice(0, 10) ?? null;
+  const score = useMemo(() => computeScore(h, today, blocked, firstDay), [h, today, blocked, firstDay]);
+  const thisWeek = weekStart(today);
+  const planCurrent = h.coachPlan?.weekStart === thisWeek;
+
+  async function makePlan() {
+    setPlanBusy(true);
+    setError(null);
+    try {
+      const actx = buildAnalysisContext(data, today);
+      const plan = await createCoachPlan(buildPlanContext(data, today, actx.input), actx.allowed.map((e) => e.id));
+      update((d) => {
+        const old = d.coachPlan;
+        const keep = old && Date.parse(today) - Date.parse(old.startDate) < 84 * 86_400_000;
+        const merged = keep ? { ...plan, ziel: old.plan.ziel, phasen: old.plan.phasen } : plan;
+        const id = uid();
+        return {
+          ...d,
+          coachPlan: { id, createdAt: new Date().toISOString(), startDate: keep ? old.startDate : today, weekStart: thisWeek, plan: merged },
+          planChoice: merged.uebungen.length ? { analysisId: id, exerciseIds: merged.uebungen.map((u) => u.id), date: today } : d.planChoice,
+        };
+      });
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setPlanBusy(false);
+    }
+  }
+
   const impulse = h.coachDays?.find((d) => d.date === today)?.impulse ?? null;
   const chat = h.coachChat ?? [];
 
@@ -84,17 +117,11 @@ export function CoachScreen({ data, update, goPlan }: { data: AppData; update: (
         </div>
       )}
 
-      <div className="card dark">
-        <span className="label">Heute · {card.focusLabel}</span>
-        {card.exercises.length > 0 && !blocked ? (
-          <p>{card.exercises.length} Übungen: {card.exercises.map((e) => e.name).join(', ')}.</p>
-        ) : (
-          <p>{card.endurance ?? 'Heute stehen keine Übungen an.'}</p>
-        )}
-        <p className="small">{'text' in card.drink ? card.drink.text : card.drink.blocked}</p>
-        {card.nutrition && <p className="small">{card.nutrition.text}</p>}
-        {!blocked && card.exercises.length > 0 && <button className="btn primary" onClick={goPlan}>Zum Tagesplan</button>}
-      </div>
+      <ScoreCard score={score} today={today} />
+      <TodayTodos h={h} today={today} blocked={blocked} update={update} goPlan={goPlan} focusLabel={card.focusLabel} />
+      {card.nutrition && <div className="card note"><span className="label">Tipp für heute</span><p className="small">{card.nutrition.text}</p></div>}
+      <WeekView h={h} today={today} blocked={blocked} />
+      <GoalCard data={data} today={today} />
 
       {ai === false && (
         <div className="card note">
@@ -109,6 +136,19 @@ export function CoachScreen({ data, update, goPlan }: { data: AppData; update: (
 
       {ai && h.aiAnalysisConsent?.textVersion === AI_ANALYSIS_CONSENT_VERSION && (
         <>
+          <div className="card">
+            <span className="label">Coach-Plan aus all deinen Daten</span>
+            <p className="small">{planCurrent
+              ? 'Dein Plan für diese Woche steht. Am Montag kannst du die neue Woche planen lassen; dein 12-Wochen-Ziel bleibt.'
+              : h.coachPlan
+                ? 'Eine neue Woche: Lass die Aufgaben für diese Woche planen. Dein 12-Wochen-Ziel bleibt.'
+                : 'Aus Anamnese, Tests, Blutwerten, Beschwerden, Oura bzw. Garmin und VO2max: ein Ziel für 12 Wochen und deine Aufgaben für diese Woche.'}</p>
+            <button className={planCurrent ? 'btn ghost' : 'btn primary'} disabled={planBusy} onClick={makePlan}>
+              {planBusy ? 'Plan wird erstellt …' : planCurrent ? 'Woche neu planen' : h.coachPlan ? 'Diese Woche planen' : 'Plan erstellen'}
+            </button>
+            {planBusy && <p className="muted small" role="status">Das dauert meist ein bis zwei Minuten.</p>}
+          </div>
+
           <div className="card">
             <span className="label">Dein Impuls für heute</span>
             {impulse ? (

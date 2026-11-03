@@ -135,3 +135,75 @@ export async function coachReply(
     throw toAppError(e, 'Keine Verbindung zum Coach.');
   }
 }
+
+// ---------- Plan: Ziel in 12 Wochen und diese Woche ----------
+
+const DAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as const;
+
+export const CoachPlan = z.object({
+  ziel: z.object({
+    titel: z.string(),
+    beschreibung: z.string(),
+    /** messbare Größen aus Tests, Wearable und Gewohnheiten, keine Laborwerte */
+    messgroessen: z.array(z.object({ name: z.string(), ausgangswert: z.string(), ziel: z.string(), wie_messen: z.string() })),
+  }),
+  phasen: z.array(z.object({ wochen: z.string(), schwerpunkt: z.string(), inhalt: z.string() })),
+  woche: z.object({
+    schwerpunkt: z.string(),
+    tage: z.array(z.object({ tag: z.enum(DAYS), todos: z.array(z.object({ bereich: z.enum(AREAS), text: z.string() })) })),
+  }),
+  uebungen: z.array(z.object({ id: z.string(), grund: z.string() })),
+  hinweise: z.array(z.string()),
+});
+export type CoachPlanResult = z.infer<typeof CoachPlan>;
+
+const PLAN_RULES = `Erstelle einen Plan für die nächsten 12 Wochen und konkret für die aktuelle Woche.
+- ziel: ein motivierendes, realistisches Ziel für 12 Wochen. messgroessen nur aus den Fitnesstests, aus Wearable-Werten (Ruhepuls, HRV, Schlaf, VO2max) und aus Gewohnheiten (z. B. Übungstage pro Woche). Ausgangswert aus den Daten; fehlt er, schreib „noch offen“. Keine Ziele für Blutwerte, Gewicht oder Medikamente. Ziele vorsichtig formulieren („verbessern“, „halten“), keine Versprechen.
+- Kontrollpunkte sind die Wiederholungstests an Tag 30 und Tag 90; nenne sie in wie_messen.
+- phasen: drei Phasen (Woche 1–4, 5–8, 9–12), aufbauend und an die Schmerzregel gebunden.
+- woche: für jeden Tag Mo–So 1 bis 3 kleine Aufgaben außerhalb der Übungen (Bewegung im Alltag, Ausdauer, Erholung, Schlaf, Trinken, allgemeine Ernährung, Alltag). Die Übungen selbst kommen automatisch aus dem Tagesplan; nenne sie hier nicht einzeln. Folge dem Wochenmuster der App. Bei ärztlicher Trinkvorgabe keine Trinkmengen.
+- uebungen: 3 bis 5 IDs aus „Erlaubte Übungen“, die im Tagesplan bevorzugt werden sollen, mit kurzem Grund.
+- hinweise: was ärztlich besprochen werden sollte (z. B. Werte außerhalb des Laborbereichs), ohne Deutung.`;
+
+const fmtN = (n: number | null, d = 1) => (n === null ? '–' : String(Math.round(n * 10 ** d) / 10 ** d).replace('.', ','));
+
+/** Alle vorhandenen Daten für den Plan: Auswertungs-Eingabe plus Verlauf, Wearable über 28 Tage, Wochenmuster. */
+export function buildPlanContext(data: AppData, today: string, analysisInput: string): string {
+  const h = data.health ?? EMPTY_HEALTH;
+  const out = [analysisInput, '', '## Weitere Angaben', buildCoachContext(data, today)];
+  const w28 = summarizeWearables(h.wearables, today, 28);
+  const sources = [...new Set(h.wearables.map((w) => (w.source === 'oura' ? 'Oura' : 'Datei-Import (z. B. Garmin)')))];
+  if (w28.nights) out.push(`Wearable 28 Tage (${sources.join(', ')}): Schlaf ${fmtN(w28.avgSleepHours)} h, Ruhepuls ${fmtN(w28.avgRestingHr, 0)}, HRV ${fmtN(w28.avgHrv, 0)} ms, VO2max zuletzt ${fmtN(w28.latestVo2max)}`);
+  const tps = (['tag30', 'tag90'] as const).map((tp) => TESTS.map((t) => `${t.name}: ${summarize(data.records, t.id, tp).text}`).join('; '));
+  out.push(`Tests Tag 30: ${tps[0]}`, `Tests Tag 90: ${tps[1]}`);
+  out.push('Wochenmuster der App: Mo Kräftigung und Beweglichkeit, Di Ausdauer und Beweglichkeit, Mi Beweglichkeit leicht, Do Kräftigung und Beweglichkeit, Fr Ausdauer und Beweglichkeit, Sa Beweglichkeit leicht oder Pause, So Ruhetag oder Spaziergang.');
+  if (h.coachPlan) out.push(`Bisheriges 12-Wochen-Ziel (seit ${h.coachPlan.startDate}, beibehalten): ${h.coachPlan.plan.ziel.titel}. ${h.coachPlan.plan.ziel.beschreibung}`);
+  return out.join('\n');
+}
+
+export async function createCoachPlan(context: string, allowedIds: string[], sample?: SampleFn | null): Promise<CoachPlanResult> {
+  const fn = sample === undefined ? await sampleCap() : sample;
+  if (!fn) throw new LabExtractError('nicht_verfuegbar', 'Der Coach-Plan mit KI läuft in der LIVION-Version auf claude.ai.');
+  let json: unknown;
+  try {
+    json = await fn.json(promptWithSchema(`${RULES}\n\n${PLAN_RULES}`, CoachPlan, `Daten:\n${context}`), { cache: false });
+  } catch (e) {
+    throw toAppError(e, 'Keine Verbindung zum Coach.');
+  }
+  const parsed = CoachPlan.safeParse(json);
+  if (!parsed.success) throw new LabExtractError('antwort', 'Die Antwort hatte nicht das erwartete Format. Bitte erneut versuchen.');
+  const r = parsed.data;
+  const ok = new Set(allowedIds);
+  const seen = new Set<string>();
+  const clean = (t: string) => stripDoses(t);
+  return {
+    ziel: { ...r.ziel, beschreibung: clean(r.ziel.beschreibung), messgroessen: r.ziel.messgroessen.slice(0, 5) },
+    phasen: r.phasen.slice(0, 3).map((p) => ({ ...p, inhalt: clean(p.inhalt) })),
+    woche: {
+      schwerpunkt: clean(r.woche.schwerpunkt),
+      tage: DAYS.map((tag) => ({ tag, todos: (r.woche.tage.find((t) => t.tag === tag)?.todos ?? []).map((t) => ({ ...t, text: clean(t.text) })).filter((t) => t.text).slice(0, 3) })),
+    },
+    uebungen: r.uebungen.filter((u) => ok.has(u.id) && !seen.has(u.id) && seen.add(u.id)).slice(0, 5),
+    hinweise: r.hinweise.map(clean).filter(Boolean),
+  };
+}

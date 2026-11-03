@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { GENERAL_RULES, regionInfo, type VideoLink } from '../data/exercises';
+import { ExerciseDetails } from '../../components/ExerciseDetails';
 import { buildDayCard, judgeFeedback, PAIN_LIMIT, WEEK_PATTERN, dayOfWeek } from '../logic/plan';
 import { blocksPlan, checkRedFlags } from '../logic/redFlags';
 import { Icon, PainScale, Ring, Check } from '../../components/ui';
@@ -156,8 +157,7 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
                           {e.name}
                           <div className="dose">{e.dose}</div>
                         </summary>
-                        <p className="small">{e.instruction}</p>
-                        <p className="small muted" style={{ marginTop: 6 }}><strong>Worauf achten:</strong> {e.watch}</p>
+                        <div className="ex-detail-light"><ExerciseDetails e={e} /></div>
                       </details>
                     </div>
                   );
