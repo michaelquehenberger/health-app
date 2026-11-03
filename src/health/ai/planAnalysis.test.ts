@@ -102,3 +102,16 @@ describe('Tagesplan mit KI-Auswahl', () => {
     expect(card.exercises.some((e) => e.id === strength.id)).toBe(false);
   });
 });
+
+describe('Laborbereich in der Eingabe', () => {
+  it('einseitige Bereiche als „bis“ und „ab“', () => {
+    const d = data();
+    d.health!.values = [
+      { id: 'a', reportId: 'r', marker: 'crp', value: 1.2, unit: 'mg/L', refLow: null, refHigh: 5 },
+      { id: 'b', reportId: 'r', marker: 'hdl', value: 58, unit: 'mg/dL', refLow: 45, refHigh: null },
+    ];
+    const input = buildAnalysisContext(d, today).input;
+    expect(input).toContain('Bereich bis 5');
+    expect(input).toContain('Bereich ab 45');
+  });
+});

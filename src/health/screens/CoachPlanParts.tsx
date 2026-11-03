@@ -151,12 +151,15 @@ export function GoalCard({ data, today }: { data: AppData; today: string }) {
           <p className="small">{cp.plan.ziel.beschreibung}</p>
           {week && <div className="progress" aria-hidden="true"><span style={{ width: `${(100 * week) / 12}%` }} /></div>}
           {cp.plan.ziel.messgroessen.length > 0 && (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table">
-                <thead><tr><th>Messgröße</th><th>Start</th><th>Ziel</th></tr></thead>
-                <tbody>{cp.plan.ziel.messgroessen.map((m) => <tr key={m.name}><td>{m.name}<div className="muted small">{m.wie_messen}</div></td><td>{m.ausgangswert}</td><td>{m.ziel}</td></tr>)}</tbody>
-              </table>
-            </div>
+            <ul className="goal-list">
+              {cp.plan.ziel.messgroessen.map((m) => (
+                <li key={m.name}>
+                  <strong>{m.name}</strong>
+                  <span className="small">Start: {m.ausgangswert} → Ziel: <strong>{m.ziel}</strong></span>
+                  <span className="small muted">{m.wie_messen}</span>
+                </li>
+              ))}
+            </ul>
           )}
           {cp.plan.phasen.map((p) => <p key={p.wochen} className="small"><strong>Woche {p.wochen}: {p.schwerpunkt}.</strong> {p.inhalt}</p>)}
           {cp.plan.hinweise.length > 0 && (
@@ -166,12 +169,15 @@ export function GoalCard({ data, today }: { data: AppData; today: string }) {
       ) : (
         <p className="small">Dein Ziel: die Tests an Tag 30 und Tag 90 mit deinen Ausgangswerten vergleichen und dazwischen dranbleiben. Mit dem Coach-Plan auf claude.ai bekommst du ein persönliches Ziel aus all deinen Daten.</p>
       )}
-      <div style={{ overflowX: 'auto' }}>
-        <table className="table">
-          <thead><tr><th>Test</th><th>Start</th><th>Tag 30</th><th>Tag 90</th></tr></thead>
-          <tbody>{TESTS.map((t) => <tr key={t.id}><td>{t.name}</td>{(['baseline', 'tag30', 'tag90'] as const).map((tp) => <td key={tp} className="small">{summarize(data.records, t.id, tp).text}</td>)}</tr>)}</tbody>
-        </table>
-      </div>
+      <strong className="small">Deine Tests: Start · Tag 30 · Tag 90</strong>
+      <ul className="goal-list">
+        {TESTS.map((t) => (
+          <li key={t.id}>
+            <span className="small"><strong>{t.name}</strong></span>
+            <span className="small">{(['baseline', 'tag30', 'tag90'] as const).map((tp) => summarize(data.records, t.id, tp).text).join(' · ')}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

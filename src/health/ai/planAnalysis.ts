@@ -72,7 +72,10 @@ export function buildAnalysisContext(data: AppData, today: string): AnalysisCont
   for (const v of latest) {
     const m = marker(v.marker);
     const ev = evaluateValue(v);
-    const range = v.refLow === null && v.refHigh === null ? 'kein Bereich' : `Bereich ${fmt(v.refLow, 2)}–${fmt(v.refHigh, 2)}`;
+    const range = v.refLow === null && v.refHigh === null ? 'kein Bereich'
+      : v.refLow === null ? `Bereich bis ${fmt(v.refHigh, 2)}`
+      : v.refHigh === null ? `Bereich ab ${fmt(v.refLow, 2)}`
+      : `Bereich ${fmt(v.refLow, 2)}–${fmt(v.refHigh, 2)}`;
     const status = ev.status === 'imBereich' ? 'im Bereich' : ev.status === 'ausserhalb' ? `außerhalb (${ev.direction ?? ''})` : ev.status === 'nurAnzeige' ? 'nur Anzeige, nicht deuten' : 'nicht bewertbar';
     lines.push(`${m.label}: ${fmt(v.value, 2)} ${v.unit} (${range}) → ${status}`);
   }
