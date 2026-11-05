@@ -5,7 +5,7 @@ Baseline → Tag 30 → Tag 90. Grundlage: MVP-Übergabe v0.4 ([`docs/health-app
 
 Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push auf `main` neu veröffentlicht).
 
-**Keine Diagnose.** Daten bleiben nur im Browser des Geräts, gespeichert wird eine Teilnehmer-ID, kein Name.
+**Keine Diagnose.** Gespeichert wird eine Teilnehmer-ID, kein Name. Web-Version: Daten nur im Browser des Geräts. Claude-Version: privater Speicher der Seite auf claude.ai (nur die Person selbst kann ihn lesen).
 
 **Alle Funktionen im Überblick: [`docs/funktionen.md`](docs/funktionen.md).**
 
@@ -59,7 +59,7 @@ npm run build    # fertige Web-App im Ordner dist/
 | Kein Back-Scratch-Test | erledigt |
 | Liegestütz Frauen ohne Normwert | erledigt |
 | Abbruchregeln implementiert, getestet, verständlich | erledigt: zentrale Liste (7 Warnzeichen), Abbruch mit Grund, Zeitstempel, Test und Messzeitpunkt; **medizinischer Review offen** |
-| Keine Supplement-Empfehlungen | erledigt |
+| Keine Supplement-Empfehlungen | für den privaten Test aufgehoben (Entscheidung 02.11.2026): Infokarten ohne Dosis, nur nach niedrigem Laborwert; Claims- und Rechtsprüfung vor jeder Weitergabe |
 | Vor Release: Intended Purpose, MDR, DSGVO Art. 9, DSFA | offen (nicht für Gabis privaten Test nötig) |
 
 ## Gesundheitsmodul (Version 0.5)

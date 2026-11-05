@@ -1,3 +1,4 @@
+import { inClaude } from '../platform';
 // Abschluss eines Messzeitpunkts: Ergebnisse auf einen Blick und klare nächste Schritte.
 import { useState } from 'react';
 import { TESTS, timepointLabel } from '../tests';
@@ -74,7 +75,7 @@ export function CompletionPanel({ data, update, timepoint, step, openTest, goHea
           )}
           <li>
             <strong>Sicherung speichern</strong>
-            <span className="muted small">Deine Daten liegen nur auf diesem Handy. Eine Sicherung schützt sie, falls der Browser-Speicher gelöscht wird.</span>
+            <span className="muted small">{inClaude ? 'Deine Daten liegen privat in deinem Claude-Konto. Eine Sicherungsdatei schadet trotzdem nicht.' : 'Deine Daten liegen nur auf diesem Handy. Eine Sicherung schützt sie, falls der Browser-Speicher gelöscht wird.'}</span>
             <button className="btn ghost" onClick={goSettings}>Zur Sicherung</button>
           </li>
           <li className={given ? 'done' : ''}>
@@ -129,7 +130,7 @@ function FeedbackForm({ onSave }: { onSave: (f: Omit<FeedbackEntry, 'id' | 'time
       <button className="btn primary" disabled={!a.trim() && !b.trim() && !c.trim()} onClick={() => onSave({ usedAsIntended: a.trim(), understandable: b.trim(), missing: c.trim() })}>
         Rückmeldung speichern
       </button>
-      <p className="muted small">Wird mit der Sicherung exportiert und bleibt sonst auf diesem Handy.</p>
+      <p className="muted small">{inClaude ? 'Wird mit deinen Daten privat gespeichert und mit der Sicherung exportiert.' : 'Wird mit der Sicherung exportiert und bleibt sonst auf diesem Handy.'}</p>
     </div>
   );
 }
