@@ -1,4 +1,4 @@
-// Daten nur lokal im Browser auf diesem Gerät. Kein Server, keine Cloud.
+// Web-Version: Daten nur lokal im Browser. Claude-Version: zusätzlich im privaten Speicher der Seite auf claude.ai.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppData, TestRecord } from './types';
 import { EMPTY_HEALTH, type HealthState } from './health/types';

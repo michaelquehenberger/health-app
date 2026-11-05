@@ -1,3 +1,4 @@
+import { inClaude } from '../platform';
 import { useRef, useState } from 'react';
 import type { AppData, Profile } from '../types';
 import { exportCsv, exportJson, formatDate, parseData, todayIso } from '../store';
@@ -47,7 +48,7 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
       <div className="card">
         <span className="label">Einwilligung und Daten</span>
         {data.consent && <p className="small">Einwilligung am {formatDate(data.consent.acceptedAt.slice(0, 10))} (Textversion {data.consent.textVersion}).</p>}
-        <p className="small">Alle Angaben liegen nur in diesem Browser auf diesem Gerät.</p>
+        <p className="small">{inClaude ? 'Alle Angaben liegen im privaten Speicher dieser Seite auf claude.ai (nur du kannst sie lesen) und als Kopie in diesem Browser.' : 'Alle Angaben liegen nur in diesem Browser auf diesem Gerät.'}</p>
         {data.health?.consent && <p className="small">Gesundheitsmodul: Einwilligung am {formatDate(data.health.consent.acceptedAt.slice(0, 10))} (Textversion {data.health.consent.textVersion}).</p>}
         {!confirmExport ? (
           <button className="btn dark" onClick={() => setConfirmExport(true)}>Sicherung exportieren (Datei)</button>
@@ -65,7 +66,7 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
         <input ref={file} type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { onImport(e.target.files?.[0]); e.target.value = ''; }} />
         {pendingImport && (
           <div className="card note">
-            <p className="small">Die Datei enthält {pendingImport.records.length} Messungen, {pendingImport.health?.reports.length ?? 0} Befunde und {pendingImport.health?.wearables.length ?? 0} Wearable-Tage. Der Import ersetzt alle Daten auf diesem Gerät; ein Oura-Zugang wird dabei entfernt.</p>
+            <p className="small">Die Datei enthält {pendingImport.records.length} Messungen, {pendingImport.health?.reports.length ?? 0} Befunde und {pendingImport.health?.wearables.length ?? 0} Wearable-Tage. Der Import ersetzt alle Daten in der App; ein Oura-Zugang wird dabei entfernt.</p>
             <div className="row">
               <button className="btn dark" onClick={() => { replace(pendingImport); setImportMsg(`Importiert: ${pendingImport.records.length} Messungen.`); setPendingImport(null); }}>Ja, importieren</button>
               <button className="btn ghost" onClick={() => setPendingImport(null)}>Abbrechen</button>

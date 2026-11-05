@@ -1,6 +1,6 @@
 # LIVION – Funktionsübersicht
 
-Stand: 03.11.2026 · App-Version siehe `package.json` · Testphase mit Teilnehmerin T01
+Stand: 05.11.2026 · App-Version 0.6.0 · Testphase mit Teilnehmerin T01
 
 Diese Übersicht beschreibt, was die App heute kann. Entscheidungen und ihre Gründe stehen in [`entscheidungen.md`](entscheidungen.md), die fachlichen Vorgaben in den Übergaben ([v0.4](health-app-mvp-uebergabe-v0.4.md)).
 
