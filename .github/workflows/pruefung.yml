@@ -1,0 +1,28 @@
+# Prüft jede vorgeschlagene Änderung (Pull Request), bevor sie freigegeben wird:
+# Typprüfung, alle automatischen Tests und der Bau beider Versionen (Web und claude.ai).
+# Ein grüner Haken am Pull Request heißt: Die Änderung kann eingespielt werden.
+name: Prüfung vor der Freigabe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruefung-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruefen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm audit --omit=dev --audit-level=high

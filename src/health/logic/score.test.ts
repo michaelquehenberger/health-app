@@ -71,3 +71,24 @@ describe('Score am ersten Tag', () => {
     expect(s.value).toBeLessThan(60);
   });
 });
+
+describe('Festgehaltener Tagesstand', () => {
+  it('vergangene Tage behalten ihren Stand, auch wenn sich der Plan ändert', async () => {
+    const { dayStat, withTodayStat } = await import('./score');
+    const yesterday = addDays(today, -1);
+    let h = withTodayStat(doAll(base, yesterday), yesterday, false);
+    const kept = h.dayStats![yesterday];
+    expect(kept.done).toBe(kept.planned);
+    // andere Beschwerde: die Übungen von gestern gäbe es heute so nicht mehr
+    h = { ...h, complaints: [{ ...knee, region: 'schulter' }] };
+    expect(dayStat(h, yesterday, today, false).complete).toBe(true);
+    expect(computeScore(h, today, false, yesterday).streak).toBe(1);
+  });
+  it('schreibt nichts, wenn sich nichts geändert hat, und räumt alte Einträge auf', async () => {
+    const { withTodayStat } = await import('./score');
+    const h1 = withTodayStat(base, today, false);
+    expect(withTodayStat(h1, today, false)).toBe(h1);
+    const old = { ...h1, todoDone: { '2026-01-01': ['x'] } };
+    expect(withTodayStat(old, today, false).todoDone).toEqual({});
+  });
+});

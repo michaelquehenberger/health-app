@@ -7,7 +7,7 @@ Online: https://michaelquehenberger.github.io/health-app/ (wird bei jedem Push a
 
 **Keine Diagnose.** Gespeichert wird eine Teilnehmer-ID, kein Name. Web-Version: Daten nur im Browser des Geräts. Claude-Version: privater Speicher der Seite auf claude.ai (nur die Person selbst kann ihn lesen).
 
-**Alle Funktionen im Überblick: [`docs/funktionen.md`](docs/funktionen.md).**
+**Alle Funktionen im Überblick: [`docs/funktionen.md`](docs/funktionen.md).** Updates und Dateiablage: [`docs/updates.md`](docs/updates.md). Was sich geändert hat: [`docs/aenderungen.md`](docs/aenderungen.md).
 
 Seit Version 0.5 gibt es zusätzlich das **Gesundheitsmodul** (Beschwerden mit roten Flaggen, Blutwerte, Tageskarte mit Übungen und Videos, Ernährung, Trinkmenge, Supplement-Infokarten, Wearable-Daten). Grundlage: Konzept, Auswertungslogik und Übungsdatenbank im Claude-Projekt „Health App“.
 
@@ -33,6 +33,7 @@ npm install
 npm run dev      # Entwicklung, http://localhost:5173
 npm test         # automatische Tests der Berechnungen
 npm run build    # fertige Web-App im Ordner dist/
+npm run check    # alles auf einmal: Typprüfung, Tests, Web-Version, Claude-Version
 ```
 
 ## Umsetzung der Übergabe

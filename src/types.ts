@@ -72,4 +72,6 @@ export interface AppData {
   feedback?: FeedbackEntry[];
   /** Gesundheitsmodul (Beschwerden, Befunde, Tageskarte, Wearables). Fehlt in älteren Sicherungen. */
   health?: HealthState;
+  /** Zeitpunkt der letzten Änderung; entscheidet, ob der Stand im Browser oder im Claude-Speicher neuer ist. */
+  updatedAt?: string;
 }

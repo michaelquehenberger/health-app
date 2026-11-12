@@ -78,7 +78,7 @@ export function SettingsScreen({ data, update, replace, reset, openGate }: {
           <button className="btn danger" onClick={() => setConfirmDelete(true)}>Alle Daten löschen</button>
         ) : (
           <div className="card alert">
-            <p className="small"><strong>Wirklich alles löschen?</strong> Profil, Anamnesen, alle Messungen, Befunde, Beschwerden, Wearable-Daten, der Oura-Zugang und die Einwilligungen werden unwiderruflich entfernt.</p>
+            <p className="small"><strong>Wirklich alles löschen?</strong> Profil, Anamnesen, alle Messungen, Befunde, Beschwerden, Wearable-Daten, Auswertungen, Coach-Plan, Gespräch und Häkchen, der Oura-Zugang und die Einwilligungen werden unwiderruflich entfernt{inClaude ? ', auch im privaten Speicher auf claude.ai' : ''}.</p>
             <div className="row">
               <button className="btn danger" onClick={reset}>Ja, alles löschen</button>
               <button className="btn ghost" onClick={() => setConfirmDelete(false)}>Abbrechen</button>

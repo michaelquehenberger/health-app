@@ -75,6 +75,7 @@ export async function extractLabReport(
   let images: Blob[] = [file];
   let task = 'Das Bild zeigt einen Laborbefund. Lies alle Blutwerte aus.';
   let skipped = 0;
+  let read = 0;
   if (isPdf) {
     const maxPages = (await fn.limits().catch(() => null))?.images?.maxCount ?? 5;
     let pages: PdfPages;
@@ -85,8 +86,9 @@ export async function extractLabReport(
     }
     if (pages.images.length === 0) throw new LabExtractError('format', 'Das PDF hat keine lesbaren Seiten.');
     images = pages.images;
-    skipped = Math.max(0, pages.pageCount - pages.images.length);
-    task = `Die ${images.length} Bilder sind die Seiten eines Laborbefunds (PDF). Lies alle Blutwerte aus.`;
+    skipped = Math.max(0, pages.pageCount - pages.pagesRead);
+    read = pages.pagesRead;
+    task = `Die ${images.length} Bilder zeigen ${pages.pagesRead === 1 ? 'eine Seite' : `${pages.pagesRead} Seiten`} eines Laborbefunds (PDF), in Lesereihenfolge${images.length > pages.pagesRead ? '; jede Seite ist in eine obere und eine untere Hälfte geteilt, die sich leicht überlappen. Nenne jeden Wert nur einmal' : ''}. Lies alle Blutwerte aus.`;
     if (pages.text) task += `\n\nText aus dem PDF, zur Kontrolle beim Lesen (die Anordnung kann durcheinander sein; maßgeblich sind die Bilder):\n${pages.text.slice(0, 40_000)}`;
   }
 
@@ -99,7 +101,7 @@ export async function extractLabReport(
   const parsed = LabExtraction.safeParse(json);
   if (!parsed.success) throw new LabExtractError('antwort', 'Die Antwort hatte nicht das erwartete Format. Bitte erneut versuchen.');
   if (skipped > 0) {
-    const note = `Nur die ersten ${images.length} Seiten wurden gelesen; ${skipped} weitere Seiten bitte einzeln als Foto hochladen.`;
+    const note = `Nur die ersten ${read} Seiten wurden gelesen; ${skipped} weitere Seiten bitte einzeln als Foto hochladen.`;
     return { ...parsed.data, notes: parsed.data.notes ? `${parsed.data.notes} ${note}` : note };
   }
   return parsed.data;

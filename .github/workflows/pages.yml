@@ -27,10 +27,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run typecheck
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      # Die Version für claude.ai als eine Datei ablegen (Reiter Actions, Lauf öffnen, unten „Artifacts“).
+      - run: npm run build:claude
+      - uses: actions/upload-artifact@v4
+        with:
+          name: livion-claude
+          path: dist-claude/livion.html
+          retention-days: 90
 
   deploy:
     needs: build

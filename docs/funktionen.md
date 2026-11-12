@@ -1,6 +1,6 @@
 # LIVION – Funktionsübersicht
 
-Stand: 05.11.2026 · App-Version 0.6.0 · Testphase mit Teilnehmerin T01
+Stand: 12.11.2026 · App-Version 0.7.0 · Testphase mit Teilnehmerin T01
 
 Diese Übersicht beschreibt, was die App heute kann. Entscheidungen und ihre Gründe stehen in [`entscheidungen.md`](entscheidungen.md), die fachlichen Vorgaben in den Übergaben ([v0.4](health-app-mvp-uebergabe-v0.4.md)).
 
@@ -49,7 +49,7 @@ Die Navigation unten hat sechs Bereiche: **Heute, Coach, Gesundheit, Tests, Verl
 - Sicherheitsfragen (rote Flaggen): Notfall oder ärztliche Abklärung sperren den Übungsplan.
 
 **Blutwerte**
-- Auf claude.ai: Befund als **PDF** (Seiten werden im Browser zu Bildern, dazu der Text zur Kontrolle) oder **Foto**; die KI liest Werte, Einheiten, Referenzbereiche, Datum und Labor aus.
+- Auf claude.ai: Befund als **PDF** (Seiten werden im Browser zu Bildern, bei ein bis zwei Seiten in je zwei Hälften für kleine Schrift, dazu der Text zur Kontrolle; höchstens 5 Seiten pro Upload) oder **Foto**; die KI liest Werte, Einheiten, Referenzbereiche, Datum und Labor aus.
 - Jede erkannte Zeile wird vor dem Übernehmen geprüft, kann korrigiert oder abgewählt werden. Die Datei selbst wird nicht gespeichert.
 - Eingabe von Hand bleibt. 24 Blutwerte; bewertet wird nur gegen den Bereich des Labors (im Bereich / außerhalb), Hormone nur anzeigen.
 
@@ -76,7 +76,7 @@ Die Navigation unten hat sechs Bereiche: **Heute, Coach, Gesundheit, Tests, Verl
 ## 7. Coach
 
 **Ohne KI (beide Versionen)**
-- **LIVION-Score** (0–100, letzte 7 Tage): 70 % erledigte To-dos, 30 % Tage mit mindestens einem Häkchen; Serie „Tage in Folge drangeblieben“ ab zwei Drittel erledigt; Balken je Tag. Heute zählt voll, senkt den Score aber nicht. Misst das Dranbleiben, nicht die Gesundheit (Entwurf, eigene Definition).
+- **LIVION-Score** (0–100, letzte 7 Tage): 70 % erledigte To-dos, 30 % Tage mit mindestens einem Häkchen; Serie „Tage in Folge drangeblieben“ ab zwei Drittel erledigt; Balken je Tag. Heute zählt voll, senkt den Score aber nicht. Vergangene Tage behalten ihren festgehaltenen Stand. Misst das Dranbleiben, nicht die Gesundheit (Entwurf, eigene Definition).
 - **Heute abhaken:** Übungen des Tagesplans, Aufgaben (z. B. Trinken, Ausdauer, Spaziergang) und die Schmerz-Rückmeldung; Übungshäkchen sind dieselben wie im Tagesplan. Zu jeder Übung „So geht's“ mit Bild.
 - **Diese Woche:** sieben Tage mit Schwerpunkt, Übungsanzahl, Aufgaben und Erledigt-Stand.
 - **Ziel in 12 Wochen:** ohne Coach-Plan der Vergleich der Tests Start, Tag 30, Tag 90.
@@ -95,6 +95,7 @@ Die Navigation unten hat sechs Bereiche: **Heute, Coach, Gesundheit, Tests, Verl
 - Keine Namen, nur Teilnehmer-ID. An die KI gehen weder Name noch Kennung; Medikamente und Allergien nur als „angegeben“.
 - Getrennte, protokollierte Einwilligungen (Text, Fassung, Zeitpunkt, App-Version, Sprache): Grund-Einwilligung, Gesundheitsdaten, KI-Auslesung der Befunde, KI-Auswertung und Coach. Die KI-Einwilligungen sind in der App widerrufbar.
 - Sicherung als Datei (JSON), Messwerte als CSV, Import und „alle Daten löschen“ unter „Mehr“. Der Oura-Zugang steht nie in der Sicherung.
+- Claude-Version: Es gilt der Stand mit der jüngsten Änderung. Ist der private Speicher nicht erreichbar, zeigt die App einen Hinweis, speichert im Browser und trägt später nach; „Alles löschen“ leert auch den Speicher auf claude.ai.
 
 ## 9. Bewusst offen
 
@@ -105,6 +106,6 @@ Die Navigation unten hat sechs Bereiche: **Heute, Coach, Gesundheit, Tests, Verl
 
 ## 10. Technik in Kürze
 
-- Vite, React, TypeScript; 129 automatische Tests (`npm test`).
+- Vite, React, TypeScript; 138 automatische Tests (`npm test`); `npm run check` prüft und baut alles. Jeder Pull Request wird automatisch geprüft, Updates siehe [`updates.md`](updates.md).
 - `npm run build` baut die Web-Version (`dist/`), `npm run build:claude` die Claude-Version als eine Datei (`dist-claude/livion.html`).
 - Wichtige Ordner: `src/health/ai/` (Auslesung, Auswertung, Coach), `src/health/logic/` (Regeln, Score), `src/health/data/` (Übungen, Skizzen, Suchbegriffe), `src/platform.ts` (Anbindung an claude.ai).
