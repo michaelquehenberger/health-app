@@ -40,7 +40,7 @@ describe('KI-Auslesung Befund', () => {
     const pages = [new Blob(['a']), new Blob(['b'])];
     const fs = fakeSample(sample, seen);
     fs.limits = async () => ({ images: { maxCount: 2, maxInputBytes: 1e7, mediaTypes: ['image/jpeg'] } });
-    const r = await extractLabReport(pdf, fs, async (_f, max) => ({ images: pages.slice(0, max), text: 'Ferritin 12 ng/mL', pageCount: 3 }));
+    const r = await extractLabReport(pdf, fs, async (_f, max) => ({ images: pages.slice(0, max), text: 'Ferritin 12 ng/mL', pageCount: 3, pagesRead: 2 }));
     expect(seen.options?.images).toEqual(pages);
     expect(seen.prompt).toContain('Ferritin 12 ng/mL');
     expect(r.notes).toContain('Nur die ersten 2 Seiten');
@@ -68,5 +68,15 @@ describe('KI-Auslesung Befund', () => {
     expect(markerKeyFor({ name: 'Ferritin', marker_key: 'ferritin' })).toBe('ferritin');
     expect(isIsoDate('2026-10-20')).toBe(true);
     expect(isIsoDate('20.10.2026')).toBe(false);
+  });
+});
+
+describe('PDF-Seitenplan', () => {
+  it('teilt Seiten in Hälften, solange genug Bilder erlaubt sind', async () => {
+    const { pagePlan } = await import('./pdfPages');
+    expect(pagePlan(1, 5)).toEqual({ pages: 1, split: true });
+    expect(pagePlan(2, 5)).toEqual({ pages: 2, split: true });
+    expect(pagePlan(3, 5)).toEqual({ pages: 3, split: false });
+    expect(pagePlan(8, 5)).toEqual({ pages: 5, split: false });
   });
 });

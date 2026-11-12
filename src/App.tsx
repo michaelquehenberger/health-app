@@ -15,6 +15,8 @@ import { TodayScreen } from './health/screens/TodayScreen';
 import { HealthHome, type HealthView } from './health/screens/HealthHome';
 import { AnalysisPanel } from './health/screens/AnalysisPanel';
 import { CoachScreen } from './health/screens/CoachScreen';
+import { withTodayStat } from './health/logic/score';
+import { blocksPlan, checkRedFlags } from './health/logic/redFlags';
 import { HealthConsent } from './health/screens/HealthConsent';
 import { OURA_CLIENT_KEY, OURA_STATE_KEY } from './health/screens/WearablesPanel';
 import { connectionFromToken, parseTokenHash } from './health/wearables/oura';
@@ -34,7 +36,7 @@ const TABS: { id: Tab; label: string; icon: () => ReactNode }[] = [
 ];
 
 export function App() {
-  const { data, update, replace, reset, storage } = useAppData();
+  const { data, update, replace, reset, storage, retry } = useAppData();
   const [tab, setTab] = useState<Tab>('heute');
   const [healthView, setHealthView] = useState<HealthView>('beschwerden');
   const [test, setTest] = useState<TestId | null>(null);
@@ -46,12 +48,12 @@ export function App() {
   const health = data.health ?? EMPTY_HEALTH;
   // Stabil und ohne neue Objekte, wenn sich nichts ändert; sonst würden Effekte in den Bildschirmen endlos laufen.
   const updateHealth = useCallback(
-    (fn: (h: HealthState) => HealthState) =>
+    (fn: (h: HealthState) => HealthState, quiet = false) =>
       update((d) => {
         const cur = d.health ?? EMPTY_HEALTH;
         const next = fn(cur);
         return next === cur && d.health ? d : { ...d, health: next };
-      }),
+      }, quiet),
     [update],
   );
   const healthView4Today = useMemo(
@@ -62,6 +64,13 @@ export function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [tab, test, healthView]);
+
+  // Tagesstand für den LIVION-Score festhalten, egal in welchem Bereich abgehakt wird.
+  useEffect(() => {
+    if (!health.consent || storage === 'laedt') return;
+    const today = todayIso();
+    updateHealth((h) => withTodayStat(h, today, blocksPlan(checkRedFlags(h.complaints, h.values, h.reports))), true);
+  }, [health, updateHealth, storage]);
 
   // Rückkehr vom Oura-Login: Der Zugang steht im Adressteil nach dem „#“.
   useEffect(() => {
@@ -129,6 +138,13 @@ export function App() {
     <>
       <main className="app">
         <div className="topbar"><Wordmark /><span className="badge-test">{profile.participantId} · Testphase</span></div>
+        {storage === 'claude-fehler' && (
+          <div className="card alert" role="status">
+            <strong>Gerade nur auf diesem Gerät gespeichert</strong>
+            <p className="small">Der private Speicher auf claude.ai ist im Moment nicht erreichbar. Deine Eingaben bleiben in diesem Browser und werden nachgetragen, sobald die Verbindung wieder steht.</p>
+            <button className="btn dark" onClick={() => void retry()}>Erneut verbinden</button>
+          </div>
+        )}
         {tab === 'heute' && <JourneyPanel journey={journey} go={go} />}
         {tab === 'gesundheit' && <HealthChecklist items={journey.healthItems} />}
         {needsHealthConsent && <HealthConsent onAccept={(consent) => updateHealth((h) => ({ ...h, consent }))} />}

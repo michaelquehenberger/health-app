@@ -33,7 +33,7 @@ function VideoList({ videos }: { videos: VideoLink[] }) {
 
 export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goWearables }: {
   data: HealthState;
-  update: (fn: (d: HealthState) => HealthState) => void;
+  update: (fn: (d: HealthState) => HealthState, quiet?: boolean) => void;
   goComplaint: () => void;
   /** PAR-Q+-Freigabe gültig? Ohne sie zeigt die App keine Übungen. */
   unlocked: boolean;
@@ -75,7 +75,7 @@ export function TodayScreen({ data, update, goComplaint, unlocked, openGate, goW
         ...d,
         dayCards: [...d.dayCards.filter((c) => c.date !== today), { date: today, exerciseIds: card.exercises.map((e) => e.id), level: card.level, rulesVersion: card.rulesVersion }],
       };
-    });
+    }, true);
   }, [ids, card.level, card.rulesVersion, blocked, hasComplaint, today, update, card.exercises]);
 
   const doneCount = card.exercises.filter((e) => fb.done.includes(e.id)).length;

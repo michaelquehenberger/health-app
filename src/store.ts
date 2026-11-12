@@ -54,6 +54,7 @@ export function normalizeHealth(h: Partial<HealthState> | undefined): HealthStat
     coachChat: arr(h?.coachChat),
     coachPlan: h?.coachPlan ?? null,
     todoDone: h?.todoDone && typeof h.todoDone === 'object' ? h.todoDone : {},
+    dayStats: h?.dayStats && typeof h.dayStats === 'object' ? h.dayStats : {},
   };
 }
 
@@ -68,21 +69,43 @@ function save(data: AppData): void {
 // Auf claude.ai: Daten im privaten Speicher der Seite (nur die Person selbst kann sie lesen).
 // Aufgeteilt in mehrere Dokumente, weil ein Dokument höchstens 256 KiB haben darf.
 type Parts = Record<string, unknown>;
-function toParts(d: AppData): Parts {
+export function toParts(d: AppData): Parts {
   const { health, ...app } = d;
   const h = health ?? EMPTY_HEALTH;
-  const { wearables, analyses, coachDays, coachChat, coachPlan, todoDone, ...core } = h;
-  return { app, health: { ...core, oura: null }, wearables, analyses: analyses ?? [], coach: { coachDays: coachDays ?? [], coachChat: coachChat ?? [], coachPlan: coachPlan ?? null, todoDone: todoDone ?? {} } };
+  const { wearables, analyses, coachDays, coachChat, coachPlan, todoDone, dayStats, ...core } = h;
+  return {
+    app,
+    health: { ...core, oura: null },
+    wearables,
+    analyses: analyses ?? [],
+    coach: { coachDays: coachDays ?? [], coachChat: coachChat ?? [], coachPlan: coachPlan ?? null, todoDone: todoDone ?? {}, dayStats: dayStats ?? {} },
+  };
 }
-function fromParts(p: Parts): AppData | null {
+export function fromParts(p: Parts): AppData | null {
   if (!p.app) return null;
   const core = (p.health ?? {}) as Partial<HealthState>;
   const coach = (p.coach ?? {}) as Partial<HealthState>;
-  const health = { ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [], coachDays: coach.coachDays ?? [], coachChat: coach.coachChat ?? [], coachPlan: coach.coachPlan ?? null, todoDone: coach.todoDone ?? {} } as Partial<HealthState>;
+  const health = {
+    ...core, wearables: p.wearables ?? [], analyses: p.analyses ?? [],
+    coachDays: coach.coachDays ?? [], coachChat: coach.coachChat ?? [], coachPlan: coach.coachPlan ?? null, todoDone: coach.todoDone ?? {}, dayStats: coach.dayStats ?? {},
+  } as Partial<HealthState>;
   return parseData(JSON.stringify({ ...(p.app as object), health }));
 }
 
-async function cloudStore(): Promise<{ load(): Promise<AppData | null>; save(d: AppData): Promise<void>; clear(): Promise<void> } | null> {
+/** Leerer Stand (nach „Alles löschen“ oder vor dem Start): Dafür wird im Claude-Speicher nichts abgelegt. */
+export function isBlank(d: AppData): boolean {
+  return !d.consent && !d.profile && d.records.length === 0 && d.anamneses.length === 0 && !d.health?.consent;
+}
+
+/** Welcher Stand gilt: der mit der jüngeren Änderung. Ohne Zeitstempel (ältere Stände) gewinnt der Claude-Speicher. */
+export function pickNewer(local: AppData, remote: AppData | null): 'local' | 'remote' {
+  if (!remote) return 'local';
+  return (local.updatedAt ?? '') > (remote.updatedAt ?? '') ? 'local' : 'remote';
+}
+
+interface CloudStore { load(): Promise<AppData | null>; save(d: AppData): Promise<void>; clear(): Promise<void> }
+
+async function cloudStore(): Promise<CloudStore | null> {
   const [db, user] = await Promise.all([useCapability<Db>('db'), useCapability<UserCap>('user')]);
   const id = user ? await user.id() : null;
   if (!db || !id) return null;
@@ -96,7 +119,11 @@ async function cloudStore(): Promise<{ load(): Promise<AppData | null>; save(d: 
         const json = d.data()?.json;
         if (typeof json === 'string') {
           written.set(d.id, json);
-          parts[d.id] = JSON.parse(json);
+          try {
+            parts[d.id] = JSON.parse(json);
+          } catch {
+            /* beschädigter Teil: wird beim nächsten Speichern ersetzt */
+          }
         }
       }
       return fromParts(parts);
@@ -110,62 +137,99 @@ async function cloudStore(): Promise<{ load(): Promise<AppData | null>; save(d: 
       }
     },
     async clear() {
-      for (const k of written.keys()) await db.doc(`${col}/${k}`).delete().catch(() => undefined);
-      written.clear();
+      for (const k of [...written.keys()]) {
+        await db.doc(`${col}/${k}`).delete();
+        written.delete(k);
+      }
     },
   };
 }
 
+/** lokal = Web-Version; laedt = Claude-Speicher wird geladen; claude = gespeichert; claude-fehler = gerade nur im Browser gespeichert */
 export type StorageState = 'lokal' | 'laedt' | 'claude' | 'claude-fehler';
+
+const stamp = (d: AppData): AppData => ({ ...d, updatedAt: new Date().toISOString() });
 
 export function useAppData() {
   const [data, setData] = useState<AppData>(load);
   const [storage, setStorage] = useState<StorageState>(inClaude ? 'laedt' : 'lokal');
-  const cloud = useRef<Awaited<ReturnType<typeof cloudStore>>>(null);
+  const cloud = useRef<CloudStore | null>(null);
+  const latest = useRef(data);
+  latest.current = data;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const connecting = useRef(false);
+
+  /** Schreibt den aktuellen Stand in den Claude-Speicher (oder leert ihn, wenn alles gelöscht wurde). */
+  const push = useCallback(async () => {
+    const c = cloud.current;
+    if (!c) return;
+    try {
+      const d = latest.current;
+      if (isBlank(d)) await c.clear();
+      else await c.save(d);
+      setStorage('claude');
+    } catch {
+      setStorage('claude-fehler');
+    }
+  }, []);
+
+  /** Verbindet mit dem Claude-Speicher und gleicht ab: Der jüngere Stand gilt, der ältere wird ersetzt. */
+  const connect = useCallback(async () => {
+    if (!inClaude || connecting.current) return;
+    connecting.current = true;
+    try {
+      const c = cloud.current ?? (await cloudStore());
+      if (!c) throw new Error('kein Speicher');
+      const remote = await c.load();
+      cloud.current = c;
+      if (pickNewer(latest.current, remote) === 'remote' && remote) {
+        latest.current = remote;
+        setData(remote);
+        setStorage('claude');
+      } else {
+        await push();
+      }
+    } catch {
+      setStorage('claude-fehler');
+    } finally {
+      connecting.current = false;
+    }
+  }, [push]);
 
   useEffect(() => {
     if (!inClaude) return;
-    let done = false;
-    // Höchstens 10 Sekunden warten, dann mit den Daten im Browser weiterarbeiten.
-    const t = setTimeout(() => { if (!done) { done = true; setStorage('claude-fehler'); } }, 10_000);
-    cloudStore()
-      .then(async (c) => {
-        if (!c) throw new Error('kein Speicher');
-        const remote = await c.load();
-        if (done) return;
-        done = true;
-        clearTimeout(t);
-        cloud.current = c;
-        if (remote) setData(remote);
-        setStorage('claude');
-      })
-      .catch(() => { if (!done) { done = true; clearTimeout(t); setStorage('claude-fehler'); } });
-    return () => clearTimeout(t);
-  }, []);
+    // Höchstens 10 Sekunden auf den Speicher warten; kommt er später, wird trotzdem abgeglichen.
+    const t = setTimeout(() => setStorage((s) => (s === 'laedt' ? 'claude-fehler' : s)), 10_000);
+    void connect();
+    // Beim Verlassen der Seite sofort speichern, nicht erst nach der kurzen Wartezeit.
+    const flush = () => { if (document.visibilityState === 'hidden' && timer.current) { clearTimeout(timer.current); timer.current = null; void push(); } };
+    document.addEventListener('visibilitychange', flush);
+    return () => { clearTimeout(t); document.removeEventListener('visibilitychange', flush); };
+  }, [connect, push]);
 
   useEffect(() => {
     save(data);
-    if (storage !== 'claude' || !cloud.current) return;
+    if (!cloud.current) return;
     if (timer.current) clearTimeout(timer.current);
-    const c = cloud.current;
-    timer.current = setTimeout(() => { c.save(data).catch(() => setStorage('claude-fehler')); }, 800);
-  }, [data, storage]);
+    timer.current = setTimeout(() => { timer.current = null; void push(); }, 800);
+  }, [data, push]);
 
-  const update = useCallback((fn: (d: AppData) => AppData) => setData((d) => fn(d)), []);
-  const replace = useCallback((d: AppData) => setData(d), []);
+  // quiet: Buchhaltung der App selbst (Tagesstand, Tageskarte). Sie setzt keinen Zeitstempel, damit ein Gerät mit
+  // altem Stand nicht allein durch das Öffnen der App einen neueren Stand im Claude-Speicher verdrängt.
+  const update = useCallback((fn: (d: AppData) => AppData, quiet = false) => setData((d) => { const n = fn(d); return n === d || quiet ? n : stamp(n); }), []);
+  const replace = useCallback((d: AppData) => setData(stamp(d)), []);
   const reset = useCallback(() => {
-    void cloud.current?.clear();
     try {
-      localStorage.removeItem(KEY);
       localStorage.removeItem('livion-oura-client');
       sessionStorage.removeItem('livion-oura-state');
     } catch {
       /* ignorieren */
     }
-    setData(EMPTY);
+    // Der leere Stand bekommt einen Zeitstempel: So wird auch ein gerade nicht erreichbarer Claude-Speicher
+    // beim nächsten Abgleich geleert, statt die gelöschten Daten zurückzubringen.
+    setData(stamp(EMPTY));
   }, []);
-  return { data, update, replace, reset, storage };
+  return { data, update, replace, reset, storage, retry: connect };
 }
 
 function download(name: string, content: string, type: string): void {

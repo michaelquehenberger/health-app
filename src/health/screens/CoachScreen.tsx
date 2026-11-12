@@ -143,10 +143,11 @@ export function CoachScreen({ data, update, goPlan }: { data: AppData; update: (
               : h.coachPlan
                 ? 'Eine neue Woche: Lass die Aufgaben für diese Woche planen. Dein 12-Wochen-Ziel bleibt.'
                 : 'Aus Anamnese, Tests, Blutwerten, Beschwerden, Oura bzw. Garmin und VO2max: ein Ziel für 12 Wochen und deine Aufgaben für diese Woche.'}</p>
-            <button className={planCurrent ? 'btn ghost' : 'btn primary'} disabled={planBusy} onClick={makePlan}>
+            <button className={planCurrent ? 'btn ghost' : 'btn primary'} disabled={planBusy || blocked} onClick={makePlan}>
               {planBusy ? 'Plan wird erstellt …' : planCurrent ? 'Woche neu planen' : h.coachPlan ? 'Diese Woche planen' : 'Plan erstellen'}
             </button>
             {planBusy && <p className="muted small" role="status">Das dauert meist ein bis zwei Minuten.</p>}
+            {blocked && <p className="small">Solange eine Angabe ärztlich abgeklärt werden muss, erstellt der Coach keinen Plan.</p>}
           </div>
 
           <div className="card">

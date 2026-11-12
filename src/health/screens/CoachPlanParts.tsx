@@ -5,7 +5,7 @@ import type { HealthState, Feedback } from '../types';
 import { EMPTY_HEALTH } from '../types';
 import { Icon } from '../../components/ui';
 import { ExerciseDetails } from '../../components/ExerciseDetails';
-import { addDays, computeScore, todosFor, weekStart, WEEKDAYS_SHORT, type Score, type Todo } from '../logic/score';
+import { addDays, computeScore, dayStat, todosFor, weekStart, WEEKDAYS_SHORT, type Score, type Todo } from '../logic/score';
 import { WEEK_PATTERN, dayOfWeek } from '../logic/plan';
 import { summarize } from '../../results';
 import { TESTS } from '../../tests';
@@ -121,7 +121,7 @@ export function WeekView({ h, today, blocked }: { h: HealthState; today: string;
           const t = todosFor(h, d, blocked);
           const ex = t.filter((x) => x.kind === 'uebung').length;
           const tasks = t.filter((x) => x.kind === 'aufgabe');
-          const done = t.filter((x) => x.done).length;
+          const st = dayStat(h, d, today, blocked);
           return (
             <div key={d} className={`week-day${d === today ? ' today' : ''}`}>
               <strong>{WEEKDAYS_SHORT[dayOfWeek(d)]}<br /><span className="muted small">{formatDate(d).slice(0, 6)}</span></strong>
@@ -129,7 +129,7 @@ export function WeekView({ h, today, blocked }: { h: HealthState; today: string;
                 <div>{WEEK_PATTERN[dayOfWeek(d)].label}{ex ? ` · ${ex} Übungen` : ''}</div>
                 {tasks.map((x) => <div key={x.id} className="muted">{x.text}</div>)}
               </div>
-              <span className="muted num small">{d <= today && t.length ? `${done}/${t.length}` : ''}</span>
+              <span className="muted num small">{d <= today && st.planned ? `${st.done}/${st.planned}` : ''}</span>
             </div>
           );
         })}

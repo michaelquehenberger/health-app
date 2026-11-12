@@ -135,6 +135,8 @@ export interface HealthState {
   coachPlan?: { id: string; createdAt: string; startDate: string; weekStart: string; plan: import('./ai/coach').CoachPlanResult } | null;
   /** Abgehakte Aufgaben je Datum (Übungen stehen in feedback.done) */
   todoDone?: Record<string, string[]>;
+  /** Festgehaltener Tagesstand (geplant, erledigt), damit spätere Planänderungen vergangene Tage nicht umrechnen */
+  dayStats?: Record<string, { planned: number; done: number }>;
 }
 
 export interface AnalysisRecord {

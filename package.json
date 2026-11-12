@@ -1,23 +1,24 @@
 {
   "name": "health-app",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc -b --noEmit",
-    "build:claude": "tsc -p tsconfig.json && vite build --mode claude && node tools/claude-page.mjs"
+    "typecheck": "tsc -p tsconfig.json",
+    "build:claude": "tsc -p tsconfig.json && vite build --mode claude && node tools/claude-page.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run build:claude"
   },
   "dependencies": {
-    "@fontsource/inter": "5.2.8",
-    "@fontsource/sora": "5.2.8",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/sora": "5.3.0",
     "pdfjs-dist": "6.4.299",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "zod": "4.1.12"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
@@ -25,7 +26,7 @@
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "4.7.0",
     "typescript": "5.9.3",
-    "vite": "6.4.5",
-    "vitest": "3.2.7"
+    "vite": "6.4.6",
+    "vitest": "5.1.0"
   }
 }

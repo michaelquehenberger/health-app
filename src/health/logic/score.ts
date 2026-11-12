@@ -43,7 +43,8 @@ export function todosFor(h: HealthState, date: string, blocked: boolean): Todo[]
     ? plan.plan.woche.tage.find((t) => t.tag === WEEKDAYS_SHORT[dayOfWeek(date)])
     : undefined;
   if (planDay) {
-    planDay.todos.forEach((t, i) => out.push({ id: `plan:${i}`, kind: 'aufgabe', text: t.text, bereich: t.bereich, done: doneExtra.has(`plan:${i}`) }));
+    // Die Plan-ID steckt im Häkchen: Nach „Woche neu planen“ gelten alte Häkchen nicht für andere Aufgaben.
+    planDay.todos.forEach((t, i) => { const id = `plan:${plan!.id}:${i}`; out.push({ id, kind: 'aufgabe', text: t.text, bereich: t.bereich, done: doneExtra.has(id) }); });
   } else {
     if ('text' in card.drink) out.push({ id: 'trinken', kind: 'aufgabe', bereich: 'Trinken', text: 'Über den Tag verteilt trinken (Richtwert rund 1,5 Liter Getränke).', done: doneExtra.has('trinken') });
     if (card.focus === 'ausdauer') out.push({ id: 'ausdauer', kind: 'aufgabe', bereich: 'Bewegung', text: 'Ausdauer: zügig gehen, Rad fahren oder schwimmen, so dass du noch sprechen kannst.', done: doneExtra.has('ausdauer') });
@@ -71,16 +72,39 @@ export const COMPLETE_SHARE = 2 / 3;
 
 /**
  * LIVION-Score der letzten 7 Tage: 70 % Anteil erledigter To-dos, 30 % Anteil der Tage mit mindestens einem Häkchen.
+ * Vergangene Tage zählen mit ihrem festgehaltenen Stand.
  * Gezählt wird ab dem ersten Tag der Nutzung; der heutige Tag zählt voll, kann den Score aber nicht senken.
  */
+/**
+ * Stand eines Tages. Für vergangene Tage gilt der festgehaltene Stand (dayStats), damit ein neuer Wochenplan
+ * oder eine geänderte Beschwerde frühere Tage nicht nachträglich umrechnet; sonst wird aus den Daten gerechnet.
+ */
+export function dayStat(h: HealthState, date: string, today: string, blocked: boolean): DayStat {
+  const kept = date < today ? h.dayStats?.[date] : undefined;
+  const t = kept ? null : todosFor(h, date, blocked);
+  const planned = kept ? kept.planned : t!.length;
+  const done = kept ? kept.done : t!.filter((x) => x.done).length;
+  return { date, planned, done, complete: planned > 0 && done / planned >= COMPLETE_SHARE };
+}
+
+/** Hält den heutigen Stand fest und räumt Einträge auf, die älter als 120 Tage sind. Gibt denselben Stand zurück, wenn nichts zu tun ist. */
+export function withTodayStat(h: HealthState, today: string, blocked: boolean): HealthState {
+  const t = todosFor(h, today, blocked);
+  const next = { planned: t.length, done: t.filter((x) => x.done).length };
+  const cur = h.dayStats?.[today];
+  const limit = addDays(today, -120);
+  const stale = Object.keys(h.dayStats ?? {}).some((d) => d < limit) || Object.keys(h.todoDone ?? {}).some((d) => d < limit);
+  if (cur && cur.planned === next.planned && cur.done === next.done && !stale) return h;
+  const keep = <T,>(o: Record<string, T> | undefined) => Object.fromEntries(Object.entries(o ?? {}).filter(([d]) => d >= limit));
+  return { ...h, dayStats: { ...keep(h.dayStats), [today]: next }, todoDone: keep(h.todoDone) };
+}
+
 export function computeScore(h: HealthState, today: string, blocked: boolean, firstDay: string | null): Score {
   const days: DayStat[] = [];
   for (let i = 6; i >= 0; i--) {
     const date = addDays(today, -i);
     if (firstDay && date < firstDay) continue;
-    const t = todosFor(h, date, blocked);
-    const done = t.filter((x) => x.done).length;
-    days.push({ date, planned: t.length, done, complete: t.length > 0 && done / t.length >= COMPLETE_SHARE });
+    days.push(dayStat(h, date, today, blocked));
   }
   const past = days.filter((d) => d.date < today && d.planned > 0);
   const todayStat = days.find((d) => d.date === today && d.planned > 0);
@@ -101,9 +125,7 @@ export function computeScore(h: HealthState, today: string, blocked: boolean, fi
   for (let i = todayStat?.complete ? 0 : 1; i < 365; i++) {
     const date = addDays(today, -i);
     if (firstDay && date < firstDay) break;
-    const t = todosFor(h, date, blocked);
-    const d = t.filter((x) => x.done).length;
-    if (t.length === 0 || d / t.length < COMPLETE_SHARE) break;
+    if (!dayStat(h, date, today, blocked).complete) break;
     streak++;
   }
   return { value, streak, days, doneRate, activeRate };

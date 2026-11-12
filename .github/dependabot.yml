@@ -1,0 +1,23 @@
+# Einmal im Monat schlägt GitHub Updates der verwendeten Bausteine als Pull Request vor.
+# Kleine Updates kommen gebündelt in einem Vorschlag; große Versionssprünge (z. B. React 19) kommen nicht automatisch,
+# weil sie Umbauten brauchen. Sicherheitsupdates meldet GitHub zusätzlich sofort.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      kleine-updates:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
