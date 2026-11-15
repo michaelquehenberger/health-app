@@ -1,0 +1,905 @@
+{
+  "version": 2,
+  "consent": {
+    "acceptedAt": "2026-11-15T19:38:08.731Z",
+    "textVersion": "2026-11-05-claude",
+    "appVersion": "0.7.0",
+    "language": "de-AT"
+  },
+  "profile": {
+    "participantId": "Michael Muster",
+    "age": 52,
+    "sex": "maennlich",
+    "heightCm": 182,
+    "weightKg": 88,
+    "goal": "Wieder schmerzfrei wandern und Treppen steigen, fitter werden und den Rücken stärken"
+  },
+  "anamneses": [
+    {
+      "id": "6epwjyncmwi8lrwj",
+      "participantId": "Michael Muster",
+      "formVersion": "DE 01.07.2024",
+      "date": "2026-11-15",
+      "validUntil": "2027-11-15",
+      "answersA": {
+        "1": "nein",
+        "2": "nein",
+        "3": "nein",
+        "4": "nein",
+        "5": "nein",
+        "6": "nein",
+        "7": "nein"
+      },
+      "textsA": {},
+      "answersB": {},
+      "medicationText": "",
+      "consent": {
+        "given": true,
+        "date": "2026-11-15",
+        "at": "2026-11-15T19:38:09.281Z",
+        "textVersion": "DE 01.07.2024",
+        "text": "Personen, die den PAR-Q+ ausgefüllt haben, lesen und unterzeichnen bitte folgende Einverständniserklärung.\nWenn Sie noch nicht volljährig sind oder die Einwilligung eines gesetzlichen Vertreters (z.B. Eltern, Vormund, Betreuer:in) benötigen, müssen diese ebenfalls unterschreiben.\nHiermit bestätige ich, dass ich den Fragebogen vollständig gelesen, verstanden und ausgefüllt habe. Ich nehme zur Kenntnis, dass diese Freigabe für mehr Bewegung ab Ausfülldatum für maximal 12 Monate gültig ist und ungültig wird, falls mein (gesundheitlicher) Zustand sich verändert. Ich bin damit einverstanden, dass mein Verein, Fitnessstudio, Sport- oder Gesundheitseinrichtung bei Bedarf eine Kopie meines ausgefüllten Fragebogens aufbewahrt. Entsprechend der Europäischen Datenschutz-Grundverordnung (DS-GVO) wird die Vertraulichkeit der Kopie gewahrt.",
+        "event": "haekchen_bestaetigt",
+        "participantId": "Michael Muster",
+        "appVersion": "0.7.0",
+        "language": "de-AT"
+      },
+      "result": "freigegeben",
+      "clearance": null,
+      "endedAt": null
+    }
+  ],
+  "records": [
+    {
+      "id": "v2x0axh6mwi8lslz",
+      "testId": "T1",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "bpm": 66,
+        "position": "liegend",
+        "irregular": false
+      },
+      "measurements": [
+        {
+          "metric": "ruhepuls",
+          "unit": "bpm",
+          "value": 66
+        }
+      ],
+      "method": "manuell gezählt, liegend",
+      "aborted": null
+    },
+    {
+      "id": "7pi17prwmwi8lsos",
+      "testId": "T5",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "links": 7,
+        "rechts": 10,
+        "schmerz": false,
+        "ferse_abgehoben_links": false,
+        "ferse_abgehoben_rechts": false
+      },
+      "measurements": [
+        {
+          "metric": "abstand_links",
+          "unit": "cm",
+          "value": 7
+        },
+        {
+          "metric": "abstand_rechts",
+          "unit": "cm",
+          "value": 10
+        },
+        {
+          "metric": "seitendifferenz",
+          "unit": "cm",
+          "value": 3
+        }
+      ],
+      "method": "Knie-zur-Wand",
+      "aborted": null
+    },
+    {
+      "id": "3unvsvmsmwi8lsr1",
+      "testId": "T7",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "links": -11,
+        "rechts": -9,
+        "schmerz": false
+      },
+      "measurements": [
+        {
+          "metric": "abstand_links",
+          "unit": "cm",
+          "value": -11
+        },
+        {
+          "metric": "abstand_rechts",
+          "unit": "cm",
+          "value": -9
+        }
+      ],
+      "method": "Chair Sit-and-Reach",
+      "aborted": null
+    },
+    {
+      "id": "3ff2rw8zmwi8lsua",
+      "testId": "T4",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "links_1": 21,
+        "links_2": 26,
+        "links_3": 24,
+        "rechts_1": 15,
+        "rechts_2": 19,
+        "rechts_3": 17
+      },
+      "measurements": [
+        {
+          "metric": "bester_versuch_links",
+          "unit": "s",
+          "value": 26
+        },
+        {
+          "metric": "bester_versuch_rechts",
+          "unit": "s",
+          "value": 19
+        }
+      ],
+      "method": "Einbeinstand, Augen offen, 3 Versuche, max. 45 s, 60 s Pause",
+      "aborted": null
+    },
+    {
+      "id": "lxdkwz2mmwi8lswk",
+      "testId": "T3",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "anzahl": 13,
+        "armeinsatz": false
+      },
+      "measurements": [
+        {
+          "metric": "wiederholungen_30s",
+          "unit": "Wdh.",
+          "value": 13
+        }
+      ],
+      "method": "30-s-Chair-Stand",
+      "aborted": null
+    },
+    {
+      "id": "motnp04vmwi8lsyw",
+      "testId": "T8",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "wiederholungen": 14,
+        "variante": "knie",
+        "abbruchgrund": "Erschöpfung"
+      },
+      "measurements": [
+        {
+          "metric": "wiederholungen",
+          "unit": "Wdh.",
+          "value": 14
+        }
+      ],
+      "method": "Liegestütz auf Knien",
+      "aborted": null
+    },
+    {
+      "id": "g8tr0g28mwi8lt17",
+      "testId": "T2",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-15",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "minuten": 18,
+        "sekunden": 30,
+        "puls": 142,
+        "groesse": 182,
+        "gewicht": 88,
+        "strecke": "weg",
+        "gehen_eingeschraenkt": false
+      },
+      "measurements": [
+        {
+          "metric": "gehzeit",
+          "unit": "s",
+          "value": 1110
+        },
+        {
+          "metric": "puls_ende",
+          "unit": "bpm",
+          "value": 142
+        },
+        {
+          "metric": "bmi",
+          "unit": "kg/m²",
+          "value": 26.6
+        },
+        {
+          "metric": "alter",
+          "unit": "Jahre",
+          "value": 52
+        },
+        {
+          "metric": "fitness_index",
+          "unit": "Index",
+          "value": 67
+        }
+      ],
+      "method": "UKK 2 km, flacher Weg",
+      "aborted": null
+    },
+    {
+      "id": "muster-t1-0",
+      "testId": "T1",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-11",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "bpm": 66,
+        "position": "liegend",
+        "irregular": false
+      },
+      "measurements": [
+        {
+          "metric": "ruhepuls",
+          "unit": "bpm",
+          "value": 67
+        }
+      ],
+      "method": "manuell gezählt, liegend",
+      "aborted": null
+    },
+    {
+      "id": "muster-t1-1",
+      "testId": "T1",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-12",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "bpm": 66,
+        "position": "liegend",
+        "irregular": false
+      },
+      "measurements": [
+        {
+          "metric": "ruhepuls",
+          "unit": "bpm",
+          "value": 65
+        }
+      ],
+      "method": "manuell gezählt, liegend",
+      "aborted": null
+    },
+    {
+      "id": "muster-t1-2",
+      "testId": "T1",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-13",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "bpm": 66,
+        "position": "liegend",
+        "irregular": false
+      },
+      "measurements": [
+        {
+          "metric": "ruhepuls",
+          "unit": "bpm",
+          "value": 68
+        }
+      ],
+      "method": "manuell gezählt, liegend",
+      "aborted": null
+    },
+    {
+      "id": "muster-t1-3",
+      "testId": "T1",
+      "timepoint": "baseline",
+      "timepointSource": "vorschlag",
+      "protocolVersion": "v0.4",
+      "date": "2026-11-14",
+      "time": "19:38",
+      "quality": "B",
+      "comment": "",
+      "inputs": {
+        "bpm": 66,
+        "position": "liegend",
+        "irregular": false
+      },
+      "measurements": [
+        {
+          "metric": "ruhepuls",
+          "unit": "bpm",
+          "value": 66
+        }
+      ],
+      "method": "manuell gezählt, liegend",
+      "aborted": null
+    }
+  ],
+  "health": {
+    "consent": {
+      "acceptedAt": "2026-11-15T19:38:10.830Z",
+      "textVersion": "2026-11-05-gesundheit-claude",
+      "appVersion": "0.7.0",
+      "language": "de-AT"
+    },
+    "profile": {
+      "age": null,
+      "sex": "",
+      "diet": "Mischkost",
+      "allergies": "",
+      "medications": "",
+      "fluidRestriction": false,
+      "experience": "mittel",
+      "minutesPerDay": 15,
+      "rhythm": "taeglich"
+    },
+    "complaints": [
+      {
+        "id": "le8oi0vimwi8luml",
+        "date": "2026-11-15",
+        "region": "knie",
+        "type": "belastungsschmerz",
+        "since": "6 Wochen bis 3 Monate",
+        "intensity": 4,
+        "swellingOrWarmth": false,
+        "redFlags": {
+          "acuteHotJoint": false,
+          "fever": false,
+          "injury": false,
+          "systemic": false,
+          "neuro": false,
+          "suddenOnset": false,
+          "caudaEquina": false,
+          "chestPain": false,
+          "multipleSwollenJoints": false,
+          "longMorningStiffness": false
+        },
+        "active": true,
+        "side": "links",
+        "qualities": [
+          "belastungsschmerz",
+          "steifigkeit"
+        ],
+        "timing": [
+          "belastung",
+          "nach_belastung"
+        ],
+        "triggers": [
+          "treppen",
+          "gehen"
+        ],
+        "duration": "6wbis3m"
+      },
+      {
+        "id": "1j4reo0ymwi8lvww",
+        "date": "2026-11-15",
+        "region": "ruecken",
+        "type": "steifigkeit",
+        "since": "über 3 Monate",
+        "intensity": 3,
+        "swellingOrWarmth": false,
+        "redFlags": {
+          "acuteHotJoint": false,
+          "fever": false,
+          "injury": false,
+          "systemic": false,
+          "neuro": false,
+          "suddenOnset": false,
+          "caudaEquina": false,
+          "chestPain": false,
+          "multipleSwollenJoints": false,
+          "longMorningStiffness": false
+        },
+        "active": true,
+        "qualities": [
+          "steifigkeit"
+        ],
+        "timing": [
+          "morgens"
+        ],
+        "triggers": [
+          "sitzen",
+          "buecken"
+        ],
+        "duration": "ueber3m"
+      }
+    ],
+    "reports": [
+      {
+        "id": "bc09dsr4mwi8ltzi",
+        "date": "2026-11-10",
+        "lab": "Musterlabor"
+      }
+    ],
+    "values": [
+      {
+        "id": "krmxx7cnmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "haemoglobin",
+        "value": 15.1,
+        "unit": "g/dL",
+        "refLow": 13.5,
+        "refHigh": 17.5
+      },
+      {
+        "id": "g6i0bryvmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "ferritin",
+        "value": 140,
+        "unit": "ng/mL",
+        "refLow": 30,
+        "refHigh": 400
+      },
+      {
+        "id": "ukhf2hf2mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "crp",
+        "value": 1.8,
+        "unit": "mg/L",
+        "refLow": null,
+        "refHigh": 5
+      },
+      {
+        "id": "j4frsl2dmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "glukose",
+        "value": 98,
+        "unit": "mg/dL",
+        "refLow": 70,
+        "refHigh": 100
+      },
+      {
+        "id": "dndqem7fmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "hba1c",
+        "value": 5.8,
+        "unit": "%",
+        "refLow": 4,
+        "refHigh": 5.6
+      },
+      {
+        "id": "fas96s70mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "cholesterin",
+        "value": 238,
+        "unit": "mg/dL",
+        "refLow": null,
+        "refHigh": 200
+      },
+      {
+        "id": "83rm4xsemwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "ldl",
+        "value": 172,
+        "unit": "mg/dL",
+        "refLow": null,
+        "refHigh": 160
+      },
+      {
+        "id": "bk3tqpz2mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "hdl",
+        "value": 44,
+        "unit": "mg/dL",
+        "refLow": 40,
+        "refHigh": null
+      },
+      {
+        "id": "d2c3d9l5mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "triglyceride",
+        "value": 165,
+        "unit": "mg/dL",
+        "refLow": null,
+        "refHigh": 150
+      },
+      {
+        "id": "i4bytofgmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "ggt",
+        "value": 48,
+        "unit": "U/L",
+        "refLow": null,
+        "refHigh": 60
+      },
+      {
+        "id": "tajspn64mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "kreatinin",
+        "value": 1,
+        "unit": "mg/dL",
+        "refLow": 0.7,
+        "refHigh": 1.2
+      },
+      {
+        "id": "uh88m20jmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "harnsaeure",
+        "value": 6.9,
+        "unit": "mg/dL",
+        "refLow": 3.4,
+        "refHigh": 7
+      },
+      {
+        "id": "apfdnpntmwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "tsh",
+        "value": 1.9,
+        "unit": "mU/L",
+        "refLow": 0.4,
+        "refHigh": 4
+      },
+      {
+        "id": "mvn8918imwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "vitd",
+        "value": 21,
+        "unit": "ng/mL",
+        "refLow": 30,
+        "refHigh": 100
+      },
+      {
+        "id": "qt1cnqm1mwi8ltzi",
+        "reportId": "bc09dsr4mwi8ltzi",
+        "marker": "magnesium",
+        "value": 0.85,
+        "unit": "mmol/L",
+        "refLow": 0.75,
+        "refHigh": 1.05
+      }
+    ],
+    "feedback": [],
+    "dayCards": [],
+    "wearables": [
+      {
+        "date": "2026-10-18",
+        "source": "datei",
+        "sleepHours": 6.1,
+        "sleepScore": 64,
+        "readiness": 70,
+        "restingHr": 67,
+        "hrv": 29,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-19",
+        "source": "datei",
+        "sleepHours": 5.8,
+        "sleepScore": 70,
+        "readiness": 61,
+        "restingHr": 64,
+        "hrv": 38,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-20",
+        "source": "datei",
+        "sleepHours": 5.8,
+        "sleepScore": 70,
+        "readiness": 64,
+        "restingHr": 62,
+        "hrv": 30,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-21",
+        "source": "datei",
+        "sleepHours": 6.2,
+        "sleepScore": 63,
+        "readiness": 65,
+        "restingHr": 62,
+        "hrv": 37,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-22",
+        "source": "datei",
+        "sleepHours": 6.2,
+        "sleepScore": 75,
+        "readiness": 61,
+        "restingHr": 63,
+        "hrv": 38,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-23",
+        "source": "datei",
+        "sleepHours": 6.7,
+        "sleepScore": 71,
+        "readiness": 70,
+        "restingHr": 62,
+        "hrv": 32,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-24",
+        "source": "datei",
+        "sleepHours": 5.8,
+        "sleepScore": 75,
+        "readiness": 62,
+        "restingHr": 64,
+        "hrv": 35,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-25",
+        "source": "datei",
+        "sleepHours": 5.9,
+        "sleepScore": 63,
+        "readiness": 67,
+        "restingHr": 66,
+        "hrv": 31,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-26",
+        "source": "datei",
+        "sleepHours": 5.8,
+        "sleepScore": 71,
+        "readiness": 64,
+        "restingHr": 64,
+        "hrv": 30,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-27",
+        "source": "datei",
+        "sleepHours": 6.3,
+        "sleepScore": 63,
+        "readiness": 59,
+        "restingHr": 66,
+        "hrv": 32,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-28",
+        "source": "datei",
+        "sleepHours": 6.2,
+        "sleepScore": 70,
+        "readiness": 71,
+        "restingHr": 64,
+        "hrv": 36,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-29",
+        "source": "datei",
+        "sleepHours": 6.3,
+        "sleepScore": 69,
+        "readiness": 69,
+        "restingHr": 64,
+        "hrv": 32,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-30",
+        "source": "datei",
+        "sleepHours": 6.6,
+        "sleepScore": 73,
+        "readiness": 65,
+        "restingHr": 62,
+        "hrv": 38,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-10-31",
+        "source": "datei",
+        "sleepHours": 6,
+        "sleepScore": 69,
+        "readiness": 68,
+        "restingHr": 67,
+        "hrv": 36,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-11-01",
+        "source": "datei",
+        "sleepHours": 6,
+        "sleepScore": 63,
+        "readiness": 61,
+        "restingHr": 66,
+        "hrv": 35,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-11-02",
+        "source": "datei",
+        "sleepHours": 5.9,
+        "sleepScore": 67,
+        "readiness": 62,
+        "restingHr": 65,
+        "hrv": 35,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-11-03",
+        "source": "datei",
+        "sleepHours": 5.7,
+        "sleepScore": 72,
+        "readiness": 60,
+        "restingHr": 66,
+        "hrv": 38,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-11-04",
+        "source": "datei",
+        "sleepHours": 6.6,
+        "sleepScore": 75,
+        "readiness": 68,
+        "restingHr": 64,
+        "hrv": 34,
+        "vo2max": 36
+      },
+      {
+        "date": "2026-11-05",
+        "source": "datei",
+        "sleepHours": 6.4,
+        "sleepScore": 71,
+        "readiness": 72,
+        "restingHr": 62,
+        "hrv": 30,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-06",
+        "source": "datei",
+        "sleepHours": 6.7,
+        "sleepScore": 69,
+        "readiness": 60,
+        "restingHr": 62,
+        "hrv": 33,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-07",
+        "source": "datei",
+        "sleepHours": 6.4,
+        "sleepScore": 72,
+        "readiness": 72,
+        "restingHr": 64,
+        "hrv": 35,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-08",
+        "source": "datei",
+        "sleepHours": 6.7,
+        "sleepScore": 67,
+        "readiness": 58,
+        "restingHr": 65,
+        "hrv": 34,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-09",
+        "source": "datei",
+        "sleepHours": 5.9,
+        "sleepScore": 63,
+        "readiness": 73,
+        "restingHr": 62,
+        "hrv": 32,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-10",
+        "source": "datei",
+        "sleepHours": 6.5,
+        "sleepScore": 64,
+        "readiness": 65,
+        "restingHr": 65,
+        "hrv": 35,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-11",
+        "source": "datei",
+        "sleepHours": 6.7,
+        "sleepScore": 69,
+        "readiness": 60,
+        "restingHr": 63,
+        "hrv": 36,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-12",
+        "source": "datei",
+        "sleepHours": 6.1,
+        "sleepScore": 66,
+        "readiness": 62,
+        "restingHr": 65,
+        "hrv": 37,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-13",
+        "source": "datei",
+        "sleepHours": 6,
+        "sleepScore": 68,
+        "readiness": 69,
+        "restingHr": 67,
+        "hrv": 35,
+        "vo2max": 37
+      },
+      {
+        "date": "2026-11-14",
+        "source": "datei",
+        "sleepHours": 6.8,
+        "sleepScore": 64,
+        "readiness": 60,
+        "restingHr": 63,
+        "hrv": 31,
+        "vo2max": 37
+      }
+    ],
+    "oura": null,
+    "dayStats": {},
+    "todoDone": {},
+    "aiConsent": null,
+    "analyses": [],
+    "coachDays": [],
+    "coachChat": [],
+    "coachPlan": null,
+    "planChoice": null,
+    "aiAnalysisConsent": null
+  }
+}
