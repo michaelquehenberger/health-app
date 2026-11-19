@@ -148,6 +148,35 @@ h3{font-size:clamp(26px,3vw,44px)}
 .copy{margin-top:56px;color:var(--mute);font-size:14px}
 @media (max-width:820px){.f-grid{grid-template-columns:1fr}}
 
+/* UX / a11y layer */
+.skip{position:fixed;left:16px;top:-60px;z-index:100;background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:10px;transition:top .2s}
+.skip:focus{top:16px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+.no-js .reveal,.no-js .split .line>span{opacity:1;transform:none}
+section[id],main{scroll-margin-top:80px}
+.progress{position:fixed;left:0;top:0;height:2px;width:100%;z-index:70;background:var(--accent);transform:scaleX(var(--p,0));transform-origin:left}
+.nav nav a.active:not(.pill){opacity:1;box-shadow:0 1px 0 var(--accent)}
+.menu-btn{display:none;width:48px;height:48px;border:1px solid var(--line);border-radius:50%;background:transparent;cursor:pointer;position:relative;z-index:2}
+.menu-btn span{position:absolute;left:15px;right:15px;height:1.5px;background:var(--fg);transition:transform .35s var(--ease)}
+.menu-btn span:first-child{top:20px}.menu-btn span:last-child{top:27px}
+.menu-open .menu-btn span:first-child{transform:translateY(3.5px) rotate(45deg)}
+.menu-open .menu-btn span:last-child{transform:translateY(-3.5px) rotate(-45deg)}
+.sticky-cta{display:none}
+.pill,.btn,.faq summary,.nav nav a{min-height:44px}
+.nav nav a{display:inline-flex;align-items:center}
+@media (max-width:760px){
+  .menu-btn{display:block}
+  .nav nav{position:fixed;inset:0;background:var(--bg);flex-direction:column;justify-content:center;gap:10px;font:400 clamp(40px,12vw,64px)/1.1 var(--serif);
+    opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;z-index:1}
+  .nav nav a:not(.pill){display:inline-flex;opacity:1}
+  .nav nav .pill{font:500 18px var(--sans);margin-top:18px}
+  .menu-open .nav nav{opacity:1;visibility:visible}
+  .menu-open{overflow:hidden}
+  .sticky-cta{display:block;position:fixed;left:12px;right:12px;bottom:12px;z-index:45;text-align:center;padding:16px;border-radius:99px;background:var(--accent);color:#0c0c0d;font-weight:500;
+    transform:translateY(140%);transition:transform .45s var(--ease)}
+  .sticky-cta.show{transform:none}
+  .footer{padding-bottom:110px}
+}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .reveal,.split .line>span{opacity:1;transform:none}

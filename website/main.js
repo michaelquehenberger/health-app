@@ -38,6 +38,29 @@
     addEventListener('scroll', update, { passive: true }); update();
   }
 
+  // Scroll progress, active nav link, sticky mobile CTA
+  const bar = document.querySelector('.progress'), cta = document.querySelector('.sticky-cta');
+  const links = $$('.nav nav a[href^="#"]:not(.pill)');
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  const onScroll = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.setProperty('--p', max > 0 ? scrollY / max : 0);
+    cta.classList.toggle('show', scrollY > innerHeight * .8 && !(document.getElementById('gespraech').getBoundingClientRect().top < innerHeight));
+    links.forEach((a, i) => a.classList.toggle('active', !!secs[i] && secs[i].getBoundingClientRect().top < innerHeight * .4 && secs[i].getBoundingClientRect().bottom > innerHeight * .4));
+  };
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // Mobile menu
+  const btn = document.querySelector('.menu-btn');
+  const setMenu = (open) => {
+    document.body.classList.toggle('menu-open', open);
+    btn.setAttribute('aria-expanded', open);
+    btn.setAttribute('aria-label', open ? 'Menü schließen' : 'Menü öffnen');
+  };
+  btn.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  $$('.nav nav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
   // Glow + custom cursor
