@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, useScroll, useSpring, useTransform, useMotionValueEvent } from "motion/react"
+import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern"
+import { Ripple } from "@/components/magicui/ripple"
 import { BlurFade } from "@/components/magicui/blur-fade"
 import { BorderBeam } from "@/components/magicui/border-beam"
 import { Marquee } from "@/components/magicui/marquee"
@@ -103,7 +105,13 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className={cn("flex min-h-svh flex-col justify-end gap-[clamp(28px,5vh,56px)] pb-12 pt-[clamp(120px,18vh,180px)]", pad)}>
+    <section className={cn("relative isolate flex min-h-svh flex-col justify-end gap-[clamp(28px,5vh,56px)] overflow-hidden pb-12 pt-[clamp(120px,18vh,180px)]", pad)}>
+      <AnimatedGridPattern
+        numSquares={24}
+        maxOpacity={0.18}
+        duration={4}
+        className="fill-accent/20 stroke-fg/10 mask-[radial-gradient(900px_circle_at_75%_35%,white,transparent)] -z-10"
+      />
       <BlurFade delay={0.05}><p className={eyebrow}>Strategieberatung · Salzburg</p></BlurFade>
       <h1 className="text-[clamp(56px,13.2vw,220px)] font-normal leading-[.98] tracking-[-.025em]">
         <BlurFade delay={0.15} duration={0.9} offset={40} blur="12px" direction="up"><span className="block">Strategien,</span></BlurFade>
@@ -271,7 +279,8 @@ function Faq() {
 
 function Cta() {
   return (
-    <section id="gespraech" className={cn("grid gap-8 py-[clamp(100px,16vw,240px)]", pad)}>
+    <section id="gespraech" className={cn("relative isolate grid gap-8 overflow-hidden py-[clamp(100px,16vw,240px)]", pad)}>
+      <Ripple mainCircleSize={260} mainCircleOpacity={0.3} className="-z-10 mask-[radial-gradient(circle_at_80%_50%,white,transparent_70%)] [&>div]:border-accent/50 [&>div]:bg-accent/5" />
       <BlurFade inView><p className={eyebrow}>Nächster Schritt</p></BlurFade>
       <BlurFade inView delay={0.1}>
         <h2 className="text-[clamp(48px,10.5vw,180px)] font-normal leading-[.98] tracking-[-.025em]">Sprechen wir über <em className={serif}>Ihre Situation.</em></h2>

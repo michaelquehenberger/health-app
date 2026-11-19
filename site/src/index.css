@@ -10,7 +10,10 @@
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
   --animate-marquee: marquee var(--duration) infinite linear;
+  --color-foreground: #f3efe7;
+  --animate-ripple: ripple 4s ease calc(var(--i, 0) * 0.2s) infinite;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes ripple { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(0.9); } }
   @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(calc(-100% - var(--gap))); } }
   @keyframes marquee-vertical { from { transform: translateY(0); } to { transform: translateY(calc(-100% - var(--gap))); } }
 }
